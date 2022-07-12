@@ -5,7 +5,9 @@ TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter
 
 # Documentation
 
-TODO 
+For a general overview of the protocol see:
+
+- The [whitepaper]() for the original proposal
 
 # Contracts
 
@@ -26,6 +28,21 @@ Curation, as an NFT, is the core of the protocol, that is, it can be cast into a
 - **$Feed\ Curation$**: Featured or specific types of information streams, such as news, funny videos, audio novels, etc.
   
 ![](resources/imgs/curation_types.png)
+
+### Stakeholders
+
+Curation should allow nesting, each level of curation can share part of the revenue of NFT sales, and the stakeholders of NFT sales can also be multi-faceted, including creators, curators, delegators, and Developer.
+
+- Creator: Creators publish microblogs, articles, pictures, audios, videos, Q&A, etc. as NFTs.
+  
+- Curator: Curators are also creators. However, They try to combine different elements to tell a story. Like a literati combining words into prose, like a musician combining notes into a symphony. It is worth noting that the main curation method of this article is combined curation, protfdio curation, and feed curation, excludes the other two special curation types. The TheBards rewards Curators that tell a unique and valuable story earn a share of sale fees of NFTs and rewards.
+- Delegator: Delegator are critical to the decentralized curation economy. They use their knowledge or intuition to assess and signal on the curations.  Delegator are economically incentivized to siganl early. By signalling on a curation, you will earn a share of all the curation share revenue that this curation generates. x% of all curation share revenue goes to the delegators pro-rata to their delegation shares.
+- Developer: Create a feed curation or use existing data or feeds in a dapp.
+
+As shown in the figure below, the system includes two value distribution modes: static and dynamic distribution. Static distribution occurs on a single curation entity, whose distribution is fixed. Whereas dynamic distribution is related to the context of each transaction, i.e. curation. When the curation is different, the benefit distribution will be different. For example, 2-level nested curation and 3-level nested curation allocation scheme will be different.
+
+
+![](resources/imgs/curation_nested.png)
 
 ## Epoch Manager
 
