@@ -11,10 +11,10 @@ pragma solidity ^0.8.15;
 library DataTypes {
 
 	enum ContentType {
-
+		aaa
 	}
 
 	enum CurationType {
-		
+		aaa
 	}
 }
