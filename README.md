@@ -1,5 +1,15 @@
-# thebards-protocol
+# TheBards-Protocol
 
-NFT
-Curation
-Depostion
+# Documentation
+
+
+# Contracts
+
+
+# Development
+
+
+# Copyright
+Copyright © 2022 The Bards Lab
+
+Licensed under GPL license.
