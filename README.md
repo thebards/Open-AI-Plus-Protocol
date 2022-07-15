@@ -8,6 +8,8 @@ TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter
 
 For a general overview of the protocol see:
 
+- The [Official website]()
+
 - The [whitepaper]() for the original proposal
 
 # Contracts
@@ -49,9 +51,9 @@ As shown in the figure below, the system includes two value distribution modes: 
 
 Keeps track of protocol Epochs. Epochs are configured to be a certain block length, which is configurable by The Governor.
 
-## Controller
+## BardsHub
 
-The Controller is a contract that has a registry of all protocol contract addresses. It also is the owner of all the contracts. The owner of the Controller is The Governor, which makes The Governor the address that can configure the whole protocol. The Governor is The Bards Council.
+The BardsHub is a contract that has a registry of all protocol contract addresses. It also is the owner of all the contracts. The owner of the BardsHub is The Governor, which makes The Governor the address that can configure the whole protocol. The Governor is The Bards Council.
 
 ## Rewards Manager
 

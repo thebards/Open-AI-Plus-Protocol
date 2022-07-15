@@ -12,4 +12,16 @@ pragma solidity ^0.8.15;
  */
 interface IBardsHub {
 
+	// -- Governance --
+
+	// -- Registry --
+
+	// -- Pausing --
+
+	// -- Epoch Manage --
+
+	// -- Reward Manage --
+
+	// -- cruation funtions --
+
 }
