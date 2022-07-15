@@ -2,6 +2,7 @@
 
 TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
 
+![](resources/imgs/thebards_arch.png)
 
 # Documentation
 
@@ -66,9 +67,22 @@ An ERC-20 token (TBT) that is used as a work token to power the network incentiv
 
 # Development
 
+# Contributing
 
+Contributions are welcomed and encouraged! You can do so by:
+
+- Creating an issue
+- Opening a PR
+
+If you are opening a PR, it is a good idea to first go to [The Bards Discord](https://discord.gg/HmWHB3Y5) and discuss your idea! Discussions on the Discord are another great way to contribute.
 
 # Copyright
 Copyright © 2022 The Bards Lab
 
 Licensed under GPL license.
+
+# Refs
+
+- [zora V3](https://github.com/ourzora/v3)
+- [graphprotocol](https://github.com/graphprotocol/contracts)
+- [lens-protocol](https://github.com/aave/lens-protocol)
