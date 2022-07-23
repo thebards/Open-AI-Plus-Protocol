@@ -82,9 +82,3 @@ If you are opening a PR, it is a good idea to first go to [The Bards Discord](ht
 Copyright © 2022 The Bards Lab
 
 Licensed under GPL license.
-
-# Refs
-
-- [zora V3](https://github.com/ourzora/v3)
-- [graphprotocol](https://github.com/graphprotocol/contracts)
-- [lens-protocol](https://github.com/aave/lens-protocol)
