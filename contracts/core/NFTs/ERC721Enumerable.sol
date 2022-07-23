@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import './ERC721MultFee.sol';
+import './ERC721Time.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
 
 /**
@@ -12,7 +12,7 @@ import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
  *
  * NOTE: Modified from Openzeppelin to inherit from a modified ERC721 contract.
  */
-abstract contract ERC721Enumerable is ERC721MultFee, IERC721Enumerable {
+abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
     // Mapping from owner to list of owned token IDs
     mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
 

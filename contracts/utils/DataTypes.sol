@@ -32,4 +32,21 @@ library DataTypes {
         bytes32 s;
         uint256 deadline;
     }
+
+    /**
+     * @notice Contains the curation BPS and staking BPSfor every Curation.
+     *
+	 * @param sellers The addresses of the sellers.
+	 * @param sellerFundsRecipients The addresses where funds are sent after the trade.
+	 * @param sellerBpses The fee that is sent to the sellers.
+	 * @param curationBps The points fee of willing to share of the NFT income to curators.
+	 * @param stakingBps The points fee of willing to share of the NFT income to delegators who staking tokens.
+     */
+    struct CurationData {
+		address[] sellers;
+        address[] sellerFundsRecipients;
+		uint16[] sellerBpses;
+		uint16 curationBps;
+		uint16 stakingBps;
+    }
 }

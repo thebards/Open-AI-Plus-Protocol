@@ -6,7 +6,7 @@ import {IBardsNFTBase} from '../../interfaces/NFTs/IBardsNFTBase.sol';
 import {Errors} from '../../utils/Errors.sol';
 import {DataTypes} from '../../utils/DataTypes.sol';
 import {Events} from '../../utils/Events.sol';
-import {ERC721MultFee} from './ERC721MultFee.sol';
+import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from './ERC721Enumerable.sol';
 
 /**

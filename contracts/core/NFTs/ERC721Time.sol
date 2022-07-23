@@ -2,8 +2,7 @@
 
 pragma solidity ^0.8.15;
 
-import '../../interfaces/NFTs/IERC721MultFee.sol';
-import '../../utils/constants.sol';
+import '../../interfaces/NFTs/IERC721Time.sol';
 import '../../utils/Events.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
@@ -23,7 +22,7 @@ import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
  * 3. Mint timestamp is now stored in a TokenData struct alongside the owner address.
  * 4. curationBps and stakingBps is now stored in a TokenData struct alongside the owner address.
  */
-abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metadata {
+abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     using Address for address;
     using Strings for uint256;
 
@@ -90,26 +89,8 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
         return owner;
     }
 
-	/**
-     * @dev See {IERC721MultFee-curationBpsOf}
-     */
-    function curationBpsOf(uint256 tokenId) public view virtual override returns (uint16) {
-        uint16 curationBps = _tokenData[tokenId].curationBps;
-        require(curationBps <= constants.MAX_BPS, 'curationBpsOf must set bps <= 100%');
-        return curationBps;
-    }
-
-	/**
-     * @dev See {IERC721MultFee-stakingBpsOf}
-     */
-    function stakingBpsOf(uint256 tokenId) public view virtual override returns (uint16) {
-        uint16 stakingBps = _tokenData[tokenId].stakingBps;
-        require(stakingBps <= constants.MAX_BPS, 'stakingBps must set bps <= 100%');
-        return stakingBps;
-    }
-
     /**
-     * @dev See {IERC721MultFee-mintTimestampOf}
+     * @dev See {IERC721Time-mintTimestampOf}
      */
     function mintTimestampOf(uint256 tokenId) public view virtual override returns (uint256) {
         uint96 mintTimestamp = _tokenData[tokenId].mintTimestamp;
@@ -118,7 +99,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
     }
 
     /**
-     * @dev See {IERC721MultFee-tokenDataOf}
+     * @dev See {IERC721Time-tokenDataOf}
      */
     function tokenDataOf(uint256 tokenId)
         public
@@ -132,7 +113,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
     }
 
     /**
-     * @dev See {IERC721MultFee-exists}
+     * @dev See {IERC721Time-exists}
      */
     function exists(uint256 tokenId) public view virtual override returns (bool) {
         return _exists(tokenId);
@@ -176,7 +157,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public virtual override {
-        address owner = ERC721MultFee.ownerOf(tokenId);
+        address owner = ERC721Time.ownerOf(tokenId);
         require(to != owner, 'ERC721: approval to current owner');
 
         require(
@@ -319,7 +300,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
         returns (bool)
     {
         require(_exists(tokenId), 'ERC721: operator query for nonexistent token');
-        address owner = ERC721MultFee.ownerOf(tokenId);
+        address owner = ERC721Time.ownerOf(tokenId);
         return (spender == owner ||
             getApproved(tokenId) == spender ||
             isApprovedForAll(owner, spender));
@@ -380,55 +361,6 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
         emit Transfer(address(0), to, tokenId);
     }
 
-	/**
-     * @dev See {IERC721MultFee-setCurationFeeParams}.
-     */
-	function setCurationBpsParams(uint256 tokenId, uint16 curationBps) override {
-		require(curationBps <= constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
-
-		_tokenData[tokenId].curationBps = curationBps;
-
-		emit Events.CurationBpsUpdated(tokenId, curationBps);
-	}
-
-	/**
-     * @dev See {IERC721MultFee-setStakingBpsParams}.
-     */
-	function setStakingBpsParams(uint256 tokenId, uint16 stakingBps) override {
-		require(stakingBps <= constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
-
-		_tokenData[tokenId].stakingBps = stakingBps;
-
-		emit Events.StakingBpsUpdated(tokenId, stakingBps);
-	}
-
-	/**
-     * @dev See {IERC721MultFee-setBpsParams}.
-     */
-	function setBpsParams(uint256 tokenId, uint16 curationBps, uint16 stakingBps) override {
-		require(curationBps + stakingBps <= constants.MAX_BPS, 'curationBps + stakingBps <= 100%');
-		
-		_tokenData[tokenId].curationBps = curationBps;
-		emit Events.CurationBpsUpdated(tokenId, curationBps);
-
-		_tokenData[tokenId].stakingBps = stakingBps;
-		emit Events.StakingBpsUpdated(tokenId, stakingBps);
-	}
-
-	/**
-	 * @dev see {getCurationFeeAmount-getCurationFeeAmount}
-	 */
-	function getCurationFeeAmount(uint256 tokenId, uint256 amount) override {
-		return (amount * curationBpsOf(tokenId)) / constants.MAX_BPS;
-	}
-
-	/**
-	 * @dev see {getCurationFeeAmount-getCurationFeeAmount}
-	 */
-	function getStakingFeeAmount(uint256 tokenId, uint256 amount)(uint256 tokenId, uint256 amount) override {
-		return (amount * curationBpsOf(tokenId)) / constants.MAX_BPS;
-	}
-
     /**
      * @dev Destroys `tokenId`.
      * The approval is cleared when the token is burned.
@@ -440,7 +372,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
      * Emits a {Transfer} event.
      */
     function _burn(uint256 tokenId) internal virtual {
-        address owner = ERC721MultFee.ownerOf(tokenId);
+        address owner = ERC721Time.ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
 
@@ -469,7 +401,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(ERC721MultFee.ownerOf(tokenId) == from, 'ERC721: transfer of token that is not own');
+        require(ERC721Time.ownerOf(tokenId) == from, 'ERC721: transfer of token that is not own');
         require(to != address(0), 'ERC721: transfer to the zero address');
 
         _beforeTokenTransfer(from, to, tokenId);
@@ -491,7 +423,7 @@ abstract contract ERC721MultFee is Context, ERC165, IERC721MultFee, IERC721Metad
      */
     function _approve(address to, uint256 tokenId) internal virtual {
         _tokenApprovals[tokenId] = to;
-        emit Approval(ERC721MultFee.ownerOf(tokenId), to, tokenId);
+        emit Approval(ERC721Time.ownerOf(tokenId), to, tokenId);
     }
 
     /**
