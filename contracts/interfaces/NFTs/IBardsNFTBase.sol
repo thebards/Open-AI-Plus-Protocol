@@ -12,7 +12,7 @@ import {DataTypes} from '../../utils/DataTypes.sol';
  * It is an expansion of a very slightly modified ERC721Enumerable contract, which allows expanded
  * meta-transaction functionality.
  */
-interface IBardsNFTBase {
+interface IBardsNFTBase {    
     /**
      * @notice Implementation of an EIP-712 permit function for an ERC-721 NFT. We don't need to check
      * if the tokenId exists, since the function calls ownerOf(tokenId), which reverts if the tokenId does

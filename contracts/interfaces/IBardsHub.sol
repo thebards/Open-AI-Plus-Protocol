@@ -24,4 +24,6 @@ interface IBardsHub {
 
 	// -- cruation funtions --
 
+	// -- market modules manage --
+
 }

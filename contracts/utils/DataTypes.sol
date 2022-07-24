@@ -49,4 +49,38 @@ library DataTypes {
 		uint16 curationBps;
 		uint16 stakingBps;
     }
+
+    /**
+     * @notice A struct containing the parameters required for the `createCuration()` function.
+     *
+     * @param tokenContract The address of token contract.
+     * @param tokenId The token id.
+     * @param curationData The data of curation.
+     */
+    struct CreateCurationData {
+        address tokenContract;
+        uint256 tokenId;
+        CurationData curationData;
+    }
+
+    /**
+     * @notice The metadata for a fix price market.
+     *
+     * @param currency The currency to ask.
+     * @param price The fix price of nft.
+     */
+    struct FixPriceMarketData {
+        address currency;
+        uint256 price;
+    }
+
+    /**
+     * @notice The metadata of a protocol fee setting
+     * @param feeBps The basis points fee
+     * @param treasury The recipient of the fee
+     */
+    struct ProtocolFeeSetting {
+        uint16 feeBps;
+        address treasury;
+    }
 }

@@ -12,6 +12,12 @@ import {DataTypes} from '../../utils/DataTypes.sol';
  * The proportion of relevant benefit-sharing involved in the curation is specified.
  */
 interface IBardsCurationBase {
+
+	/**
+     * @notice Creates a curation with the specified parameters. 
+     */
+	function createCuration(DataTypes.CreateCurationData calldata _vars) external;
+
 				/* GETTERs */
 
 	/**
@@ -24,7 +30,6 @@ interface IBardsCurationBase {
      */
     function sellersOf(address tokenContract, uint256 tokenId) external view returns (address[] memory);
 	
-
 	/**
      * @notice Returns the sellerFundsRecipients associated with a given NFT, stored only once upon initial mint.
      *

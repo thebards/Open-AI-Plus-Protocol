@@ -35,6 +35,8 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
 
     mapping(address => uint256) public sigNonces;
 
+    uint256 internal _counter;
+
     /**
      * @notice Initializer sets the name, symbol and the cached domain separator.
      *

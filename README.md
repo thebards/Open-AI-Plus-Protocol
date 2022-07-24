@@ -2,9 +2,9 @@
 
 TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
 
-![](resources/imgs/thebards_arch.png)
+![TheBards protocol](resources/imgs/thebards_arch.png)
 
-# Documentation
+## Documentation
 
 For a general overview of the protocol see:
 
@@ -12,13 +12,23 @@ For a general overview of the protocol see:
 
 - The [whitepaper]() for the original proposal
 
-# Contracts
+## Features
 
-## Curation
+- Curation is essentially storytelling, and we support users who are good at storytelling to drive the sales of NFTs by creating high-quality content and curation.
+
+- All content is seen as curation and will be minted into NFTs, including user profiles, various content, lists, feeds, Dapps, etc..
+
+- All curations can accept staking to share value on a larger scale.
+
+- Creators have the right to choose the selling method that best suits their own interests to sell their NFTs.
+
+## Contracts
+
+### Curation
 
 Curation, as an NFT, is the core of the protocol, that is, it can be cast into a profile that represents the user's identity, or it can be any form of content published by the user, which can be collected and pledged.
 
-### Curation Types
+#### Curation Types
 
 - **$Self\ Curation$**: Presented as a CV or profile NFT that explains who we are, what we have and what we do.
   
@@ -30,9 +40,9 @@ Curation, as an NFT, is the core of the protocol, that is, it can be cast into a
   
 - **$Feed\ Curation$**: Featured or specific types of information streams, such as news, funny videos, audio novels, etc.
   
-![](resources/imgs/curation_types.png)
+![curation types](resources/imgs/curation_types.png)
 
-### Stakeholders
+#### Stakeholders
 
 Curation should allow nesting, each level of curation can share part of the revenue of NFT sales, and the stakeholders of NFT sales can also be multi-faceted, including creators, curators, delegators, and Developer.
 
@@ -44,32 +54,31 @@ Curation should allow nesting, each level of curation can share part of the reve
 
 As shown in the figure below, the system includes two value distribution modes: static and dynamic distribution. Static distribution occurs on a single curation entity, whose distribution is fixed. Whereas dynamic distribution is related to the context of each transaction, i.e. curation. When the curation is different, the benefit distribution will be different. For example, 2-level nested curation and 3-level nested curation allocation scheme will be different.
 
+![static and dynamic distribution](resources/imgs/curation_nested.png)
 
-![](resources/imgs/curation_nested.png)
-
-## Epoch Manager
+### Epoch Manager
 
 Keeps track of protocol Epochs. Epochs are configured to be a certain block length, which is configurable by The Governor.
 
-## BardsHub
+### BardsHub
 
 The BardsHub is a contract that has a registry of all protocol contract addresses. It also is the owner of all the contracts. The owner of the BardsHub is The Governor, which makes The Governor the address that can configure the whole protocol. The Governor is The Bards Council.
 
-## Rewards Manager
+### Rewards Manager
 
 Tracks how inflationary TBT rewards should be handed out. It relies on the Curation contract and the Staking contract. Signaled TBT in Curation determine what percentage of inflationary tokens go towards each curation.
 
-## Staking
+### Staking
 
 The Staking contract allows Delegators to Stake on curations. The contract also contains the slashing functionality.
 
-## The Bards Token
+### The Bards Token
 
 An ERC-20 token (TBT) that is used as a work token to power the network incentives. The token is inflationary.
 
-# Development
+## Development
 
-# Contributing
+## Contributing
 
 Contributions are welcomed and encouraged! You can do so by:
 
@@ -78,7 +87,8 @@ Contributions are welcomed and encouraged! You can do so by:
 
 If you are opening a PR, it is a good idea to first go to [The Bards Discord](https://discord.gg/HmWHB3Y5) and discuss your idea! Discussions on the Discord are another great way to contribute.
 
-# Copyright
+## Copyright
+
 Copyright © 2022 The Bards Lab
 
 Licensed under GPL license.
