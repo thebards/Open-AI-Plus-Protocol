@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.15;
 
+import '../../utils/DataTypes.sol';
 
 /**
  * @title IBardsDaoData
@@ -75,9 +76,16 @@ interface IBardsDaoData {
     function getProtocolFee() external view returns (uint16);
 
     /**
+     * @notice Returns the protocol fee setting in a single call.
+     *
+     * @return ProtocolFeeSetting The DataType contains the treasury address and the protocol fee.
+     */
+    function getProtocolFeeSetting() external view returns (DataTypes.ProtocolFeeSetting memory);
+
+    /**
      * @notice Returns the treasury address and protocol fee in a single call.
      *
      * @return tuple First, the treasury address, second, the protocol fee.
      */
-    function getProtocolFeeSetting() external view returns (address, uint16);
+    function getProtocolFeePair() external view returns (address, uint16);
 }

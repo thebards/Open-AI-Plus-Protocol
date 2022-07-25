@@ -6,7 +6,7 @@ import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.s
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import '../../interfaces/curation/IBardsCurationBase.sol';
 import '../NFTs/BardsNFTBase.sol';
-import '../../utils/constants.sol';
+import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
 import '../../utils/MathUtils.sol';
 
@@ -45,11 +45,11 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				"Sellers, sellerFundsRecipients, and sellerBpses must have same length."
 			);
 			require(
-				MathUtils.sum(_vars.curationData.sellerBpses) == constants.MAX_BPS, 
+				MathUtils.sum(_vars.curationData.sellerBpses) == Constants.MAX_BPS, 
 				"Sellers fee bps must be equal to 10000."
 			);
 			require(
-				_vars.curationData.curationBps + _vars.curationData.stakingBps <= constants.MAX_BPS, 
+				_vars.curationData.curationBps + _vars.curationData.stakingBps <= Constants.MAX_BPS, 
 				"curationBps + stakingBps <= 100%"
 			);
 
@@ -113,7 +113,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		override 
 		returns (uint16) {
 			uint16 curationBps = _curationData[tokenContract][tokenId].curationBps;
-			require(curationBps <= constants.MAX_BPS, 'curationBpsOf must set bps <= 100%');
+			require(curationBps <= Constants.MAX_BPS, 'curationBpsOf must set bps <= 100%');
 			return curationBps;
     	}
 
@@ -127,7 +127,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		override 
 		returns (uint16) {
 			uint16 stakingBps = _curationData[tokenContract][tokenId].stakingBps;
-			require(stakingBps <= constants.MAX_BPS, 'stakingBps must set bps <= 100%');
+			require(stakingBps <= Constants.MAX_BPS, 'stakingBps must set bps <= 100%');
 			return stakingBps;
    		}
 
@@ -189,7 +189,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		external 
 		virtual 
 		override {
-			require(curationBps <= constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
+			require(curationBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
 
 			_curationData[tokenContract][tokenId].curationBps = curationBps;
 
@@ -203,7 +203,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		external 
 		virtual 
 		override {
-			require(stakingBps <= constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
+			require(stakingBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
 
 			_curationData[tokenContract][tokenId].stakingBps = stakingBps;
 
@@ -217,7 +217,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		external 
 		virtual 
 		override {
-			require(curationBps + stakingBps <= constants.MAX_BPS, 'curationBps + stakingBps <= 100%');
+			require(curationBps + stakingBps <= Constants.MAX_BPS, 'curationBps + stakingBps <= 100%');
 			
 			_curationData[tokenContract][tokenId].curationBps = curationBps;
 			emit Events.CurationBpsUpdated(tokenContract, tokenId, curationBps, block.timestamp);
@@ -235,7 +235,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
         virtual
         override
         returns (uint256 feeAmount) {
-			return (amount * curationBpsOf(tokenContract, tokenId)) / constants.MAX_BPS;
+			return (amount * curationBpsOf(tokenContract, tokenId)) / Constants.MAX_BPS;
 		}
 
 	/**
@@ -247,6 +247,6 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
         virtual
         override
         returns (uint256 feeAmount) {
-			return (amount * curationBpsOf(tokenContract, tokenId)) / constants.MAX_BPS;
+			return (amount * curationBpsOf(tokenContract, tokenId)) / Constants.MAX_BPS;
 		}
 }

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.15;
 
 import '../../interfaces/govs/IBardsDaoData.sol';
-import '../../utils/constants.sol';
+import '../../utils/Constants.sol';
 import '../../utils/Errors.sol';
 import '../../utils/Events.sol';
 import '../../utils/DataTypes.sol';
@@ -90,8 +90,13 @@ contract BardsDaoData is IBardsDaoData {
     }
 
     //@inheritdoc IBardsDaoData
-    function getProtocolFeeSetting() external view override returns (address, uint16) {
+    function getProtocolFeePair() external view override returns (address, uint16) {
         return (_protocolFeeSetting.treasury, _protocolFeeSetting.feeBps);
+    }
+
+    //@inheritdoc IBardsDaoData
+    function getProtocolFeeSetting() external view override returns (DataTypes.ProtocolFeeSetting memory) {
+        return _protocolFeeSetting;
     }
 
     function _setGovernance(address newGovernance) internal {
@@ -109,7 +114,7 @@ contract BardsDaoData is IBardsDaoData {
     }
 
     function _setProtocolFee(uint16 newProtocolFee) internal {
-        if (newProtocolFee >= constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
+        if (newProtocolFee >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
         uint16 prevProtocolFee = _protocolFeeSetting.feeBps;
         _protocolFeeSetting.feeBps = newProtocolFee;
         emit Events.ProtocolFeeSet(prevProtocolFee, newProtocolFee, block.timestamp);

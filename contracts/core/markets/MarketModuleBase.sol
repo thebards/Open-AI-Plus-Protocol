@@ -6,6 +6,7 @@ import '../../interfaces/markets/IMarketModule.sol';
 import '../../interfaces/govs/IBardsDaoData.sol';
 import '../../utils/Errors.sol';
 import '../../utils/Events.sol';
+import '../../utils/DataTypes.sol';
 
 abstract contract MarketModuleBase {
 	address public immutable _bardsDaoData;
@@ -26,7 +27,7 @@ abstract contract MarketModuleBase {
     function _protocolFeeSetting()
 		internal 
 		view 
-		returns (address, uint16) {
+		returns (DataTypes.ProtocolFeeSetting memory) {
         	return IBardsDaoData(_bardsDaoData).getProtocolFeeSetting();
     }
 

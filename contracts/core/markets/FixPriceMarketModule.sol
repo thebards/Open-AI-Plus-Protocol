@@ -2,15 +2,18 @@
 
 pragma solidity ^0.8.15;
 
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import '../../interfaces/markets/IMarketModule.sol';
 import '../../interfaces/curation/IBardsCurationBase.sol';
 import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
 import './MarketModuleBase.sol';
-import '../../utils/constants.sol';
+import '../../utils/Constants.sol';
 
 contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
-
+    using SafeERC20 for IERC20;
 	// tokenContract address -> tokenId -> market data
 	mapping(address => mapping(uint256 => DataTypes.FixPriceMarketData)) internal _marketMetaData;
 
@@ -47,18 +50,20 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
         uint256 tokenId,
         bytes calldata data
     ) external override {
-		uint256 price = _marketMetaData[tokenContract][tokenId].price;
-		address currency = _marketMetaData[tokenContract][tokenId].currency;
 
+        // The price and currency of NFT.
+        DataTypes.FixPriceMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
+
+        // The fee split setting of curation.
 		DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(tokenContract, tokenId);
+        
 
-		// TODO Royalty Payout + Protocol Fee + Curation Fees + sellers fee
+		// TODO Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
 
         // protocol fee setting
-        (
-            address treasury,
-            uint16 feeBps
-        ) = _protocolFeeSetting();
+        DataTypes.ProtocolFeeSetting memory protocolFeeSetting = _protocolFeeSetting();
+
+        delete _marketMetaData[tokenContract][tokenId];
 	}
 
 }
