@@ -14,13 +14,16 @@ For a general overview of the protocol see:
 
 ## Features
 
-- Curation is essentially storytelling, and we support users who are good at storytelling to drive the sales of NFTs by creating high-quality content and curation.
+- Curation is essentially storytelling, and we support users who are good at storytelling to drive the sales of NFTs by creating high-quality content and curations.
 
 - All content is seen as curation and will be minted into NFTs, including user profiles, various content, lists, feeds, Dapps, etc..
 
 - All curations can accept staking to share value on a larger scale.
 
 - Creators have the right to choose the selling method that best suits their own interests to sell their NFTs.
+
+- Support future applications such as 1. Information Curation Applications; 2. Audio or video streaming applications; 3. book or comic applications. 4.Decentralized NFT Market Applications. 5. Decentralized e-Print archive, like arXiv.org, etc..
+
 
 ## Contracts
 

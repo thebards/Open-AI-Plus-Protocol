@@ -14,14 +14,27 @@ library Events {
      */
     event BaseInitialized(string name, string symbol, uint256 timestamp);
 
+     /**
+     * @dev Emitted when the hub state is set.
+     *
+     * @param caller The caller who set the state.
+     * @param prevState The previous protocol state, an enum of either `Paused`, `PublishingPaused` or `Unpaused`.
+     * @param newState The newly set state, an enum of either `Paused`, `PublishingPaused` or `Unpaused`.
+     * @param timestamp The current block timestamp.
+     */
+    event StateSet(
+        address indexed caller,
+        DataTypes.ProtocolState indexed prevState,
+        DataTypes.ProtocolState indexed newState,
+        uint256 timestamp
+    );
+
     /**
      * @notice Emitted when the fee for a NFT is updated.
-     * @param tokenContract The address of token contract.
      * @param tokenId The token Id of a NFT.
      * @param curationBps The bps of curation.
      */
     event CurationBpsUpdated(
-        address indexed tokenContract, 
         uint256 indexed tokenId, 
         uint16 curationBps, 
         uint256 timestamp
@@ -29,12 +42,10 @@ library Events {
 
     /**
      * @notice Emitted when the fee for a NFT is updated.
-     * @param tokenContract The address of token contract.
      * @param tokenId The token Id of a NFT.
      * @param sellers The addressers of the sellers.
      */
     event CurationSellersUpdated(
-        address indexed tokenContract, 
         uint256 indexed tokenId, 
         address[] sellers, 
         uint256 timestamp
@@ -42,12 +53,10 @@ library Events {
 
     /**
      * @notice Emitted when the fee for a NFT is updated.
-     * @param tokenContract The address of token contract.
      * @param tokenId The token Id of a NFT.
      * @param sellerFundsRecipients The addresses where funds are sent after the trade.
      */
     event CurationSellerFundsRecipientsUpdated(
-        address indexed tokenContract, 
         uint256 indexed tokenId, 
         address[] sellerFundsRecipients, 
         uint256 timestamp
@@ -55,12 +64,10 @@ library Events {
 
     /**
      * @notice Emitted when the fee for a NFT is updated.
-     * @param tokenContract The address of token contract.
      * @param tokenId The token Id of a NFT.
      * @param sellerBpses The fee that is sent to the sellers.
      */
     event CurationSellerBpsesUpdated(
-        address indexed tokenContract, 
         uint256 indexed tokenId, 
         uint16[] sellerBpses, 
         uint256 timestamp
@@ -68,12 +75,10 @@ library Events {
    
     /**
      * @notice Emitted when the fee for a NFT is updated.
-     * @param tokenContract The address of token contract.
      * @param tokenId The token Id of a NFT.
      * @param stakingBps The bps of staking.
      */
     event StakingBpsUpdated(
-        address indexed tokenContract, 
         uint256 indexed tokenId, 
         uint16 stakingBps, 
         uint256 timestamp
@@ -81,12 +86,10 @@ library Events {
 
     /**
      * @notice Emitted when an curation is created.
-     * @param tokenContract The address of token contract.
      * @param tokenId The token Id of a NFT.
      * @param curationData The curation data.
      */
     event CurationCreated(
-        address indexed tokenContract, 
         uint256 indexed tokenId, 
         DataTypes.CurationData curationData, 
         uint256 timestamp
@@ -154,6 +157,19 @@ library Events {
      */
     event MarketModuleBaseConstructed(
         address indexed bardsDaoData, 
+        uint256 timestamp
+    );
+
+        /**
+     * @dev Emitted when a market module is added to or removed from the whitelist.
+     *
+     * @param marketModule The address of the market module.
+     * @param whitelisted Whether or not the follow module is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event MarketModuleWhitelisted(
+        address indexed marketModule,
+        bool indexed whitelisted,
         uint256 timestamp
     );
 }

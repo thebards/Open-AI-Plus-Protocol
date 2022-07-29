@@ -11,12 +11,106 @@ pragma solidity ^0.8.15;
 library DataTypes {
 
 	enum ContentType {
-		aaa
+		Microblog,
+        Article,
+        Audio,
+        Video
 	}
 
 	enum CurationType {
-		aaa
+		Profile,
+        Content,
+        Combined,
+        Protfolio,
+        Feed,
+        Dapp
 	}
+
+    /**
+     * @notice An enum containing the different states the protocol can be in, limiting certain actions.
+     *
+     * @param Unpaused The fully unpaused state.
+     * @param CurationPaused The state where only curation creation functions are paused.
+     * @param Paused The fully paused state.
+     */
+    enum ProtocolState {
+        Unpaused,
+        CurationPaused,
+        Paused
+    }
+
+    /**
+     * @notice A struct containing profile Curation data.
+     *
+     * @param handle The profile's associated handle.
+     * @param contentURI The URI to be used for the profile's image.
+     * @param marketModule The address of the current market module in use by this profile, can be empty.
+     */
+    struct ProfileCurationStruct {
+        string handle;
+        string contentURI;
+        address marketModule;
+    }
+
+    /**
+     * @notice A struct containing data associated with each new Content Curation.
+     *
+     * @param curationIdPointed The profile token ID this curation points to, for mirrors and comments.
+     * @param contentURI The URI associated with this publication.
+     * @param marketModule The address of the current reference module in use by this profile, can be empty.
+     */
+    struct CurationStruct {
+        uint256 curationIdPointed;
+        string contentURI;
+        address marketModule;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `createProfile()` function.
+     *
+     * @param to The address receiving the profile.
+     * @param handle The handle to set for the profile, must be unique and non-empty.
+     * @param contentURI The URI to set for the profile metadata.
+     * @param marketModule The market module to use, can be the zero address.
+     * @param marketModuleInitData The market module initialization data, if any.
+     */
+    struct CreateProfileData {
+        address to;
+        string handle;
+        string contentURI;
+        address marketModule;
+        bytes marketModuleInitData;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
+     * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
+     *
+     * @param wallet The address of the wallet setting the default profile.
+     * @param profileId The token ID of the profile which will be set as default, or zero.
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct SetDefaultProfileWithSigData {
+        address wallet;
+        uint256 profileId;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `setMarketModuleWithSig()` function. Parameters are
+     * the same as the regular `setMarketModule()` function, with an added EIP712Signature.
+     *
+     * @param curationId The token ID of the curation to change the marketModule for.
+     * @param marketModule The marketModule to set for the given curation, must be whitelisted.
+     * @param marketModuleInitData The data to be passed to the marketModule for initialization.
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct SetMarketModuleWithSigData {
+        uint256 curationId;
+        address marketModule;
+        bytes marketModuleInitData;
+        EIP712Signature sig;
+    }
 
 	/**
      * @notice A struct containing the necessary information to reconstruct an EIP-712 typed data signature.
@@ -53,12 +147,10 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `createCuration()` function.
      *
-     * @param tokenContract The address of token contract.
      * @param tokenId The token id.
      * @param curationData The data of curation.
      */
     struct CreateCurationData {
-        address tokenContract;
         uint256 tokenId;
         CurationData curationData;
     }
