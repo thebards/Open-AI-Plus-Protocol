@@ -15,10 +15,9 @@ library Errors {
     error NotGovernanceOrEmergencyAdmin();
     error EmergencyAdminCannotUnpause();
     error CallerNotWhitelistedModule();
-    error CollectModuleNotWhitelisted();
-    error FollowModuleNotWhitelisted();
-    error ReferenceModuleNotWhitelisted();
+    error MarketModuleNotWhitelisted();
     error ProfileCreatorNotWhitelisted();
+    error NotCurationOwner();
     error NotProfileOwner();
     error NotProfileOwnerOrDispatcher();
     error NotDispatcher();

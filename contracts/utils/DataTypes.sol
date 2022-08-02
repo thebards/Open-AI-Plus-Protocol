@@ -40,46 +40,18 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing profile Curation data.
+     * @notice A struct containing the necessary information to reconstruct an EIP-712 typed data signature.
      *
-     * @param handle The profile's associated handle.
-     * @param contentURI The URI to be used for the profile's image.
-     * @param marketModule The address of the current market module in use by this profile, can be empty.
+     * @param v The signature's recovery parameter.
+     * @param r The signature's r parameter.
+     * @param s The signature's s parameter
+     * @param deadline The signature's deadline
      */
-    struct ProfileCurationStruct {
-        string handle;
-        string contentURI;
-        address marketModule;
-    }
-
-    /**
-     * @notice A struct containing data associated with each new Content Curation.
-     *
-     * @param curationIdPointed The profile token ID this curation points to, for mirrors and comments.
-     * @param contentURI The URI associated with this publication.
-     * @param marketModule The address of the current reference module in use by this profile, can be empty.
-     */
-    struct CurationStruct {
-        uint256 curationIdPointed;
-        string contentURI;
-        address marketModule;
-    }
-
-    /**
-     * @notice A struct containing the parameters required for the `createProfile()` function.
-     *
-     * @param to The address receiving the profile.
-     * @param handle The handle to set for the profile, must be unique and non-empty.
-     * @param contentURI The URI to set for the profile metadata.
-     * @param marketModule The market module to use, can be the zero address.
-     * @param marketModuleInitData The market module initialization data, if any.
-     */
-    struct CreateProfileData {
-        address to;
-        string handle;
-        string contentURI;
-        address marketModule;
-        bytes marketModuleInitData;
+    struct EIP712Signature {
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+        uint256 deadline;
     }
 
     /**
@@ -97,34 +69,40 @@ library DataTypes {
     }
 
     /**
+     * @notice A struct containing the parameters required for the `setMarketModule()` function.
+     *
+     * @param curationId The token ID of the curation to change the marketModule for.
+	 * @param tokenContract The address of NFT token to curate.
+     * @param tokenId The NFT token ID to curate.
+     * @param marketModule The marketModule to set for the given curation, must be whitelisted.
+     * @param marketModuleInitData The data to be passed to the marketModule for initialization.
+     */
+    struct SetMarketModuleData {
+        uint256 curationId;
+        address tokenContract;
+        uint256 tokenId;
+        address marketModule;
+        bytes marketModuleInitData;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `setMarketModuleWithSig()` function. Parameters are
      * the same as the regular `setMarketModule()` function, with an added EIP712Signature.
      *
      * @param curationId The token ID of the curation to change the marketModule for.
+	 * @param tokenContract The address of NFT token to curate.
+     * @param tokenId The NFT token ID to curate.
      * @param marketModule The marketModule to set for the given curation, must be whitelisted.
      * @param marketModuleInitData The data to be passed to the marketModule for initialization.
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct SetMarketModuleWithSigData {
         uint256 curationId;
+        address tokenContract;
+        uint256 tokenId;
         address marketModule;
         bytes marketModuleInitData;
         EIP712Signature sig;
-    }
-
-	/**
-     * @notice A struct containing the necessary information to reconstruct an EIP-712 typed data signature.
-     *
-     * @param v The signature's recovery parameter.
-     * @param r The signature's r parameter.
-     * @param s The signature's s parameter
-     * @param deadline The signature's deadline
-     */
-    struct EIP712Signature {
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-        uint256 deadline;
     }
 
     /**
@@ -150,7 +128,7 @@ library DataTypes {
      * @param tokenId The token id.
      * @param curationData The data of curation.
      */
-    struct CreateCurationData {
+    struct InitializeCurationData {
         uint256 tokenId;
         CurationData curationData;
     }
@@ -174,5 +152,82 @@ library DataTypes {
     struct ProtocolFeeSetting {
         uint16 feeBps;
         address treasury;
+    }
+
+    /**
+     * @notice A struct containing data associated with each new Content Curation.
+     *
+     * @param handle The profile's associated handle.
+       @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
+     * @param tokenIdPointed The token ID this curation points to.
+     * @param contentURI The URI associated with this publication.
+     * @param marketModule The address of the current market module in use by this curation to trade itself, can be empty.
+     * @param mintModule The address of the current mint module in use by this curation, can be empty. 
+     * Make sure each curation can mint its own NFTs. MintModule is marketModule, but the initialization parameters are different.
+     */
+    struct CurationStruct {
+        string handle;
+        address tokenContractPointed;
+        uint256 tokenIdPointed;
+        string contentURI;
+        address marketModule;
+        address mintModule;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
+     *
+     * @param to The address receiving the curation.
+     * @param profileId the profile id creating the curation
+       @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
+     * @param tokenIdPointed The token ID this curation points to.
+     * @param handle The handle to set for the profile, must be unique and non-empty.
+     * @param contentURI The URI to set for the profile metadata.
+     * @param marketModule The market module to use, can be the zero address to trade itself.
+     * @param marketModuleInitData The market module initialization data, if any.
+     * @param mintModule The mint module to use, can be the zero address. Make sure each curation can mint its own NFTs.
+     * MintModule is marketModule, but the initialization parameters are different.
+     * @param mintModuleInitData The mint module initialization data, if any.
+     * @param curationMetaData The data of CurationData struct.
+     */
+    struct CreateCurationData {
+        address to;
+        uint256 profileId;
+        address tokenContractPointed;
+        uint256 tokenIdPointed;
+        string handle;
+        string contentURI;
+        address marketModule;
+        bytes marketModuleInitData;
+        address mintModule;
+        bytes mintModuleInitData;
+        CurationData curationMetaData;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
+     *
+     * @param to The address receiving the curation.
+     * @param profileId the profile id creating the curation
+     * @param handle The handle to set for the profile, must be unique and non-empty.
+     * @param contentURI The URI to set for the profile metadata.
+     * @param marketModule The market module to use, can be the zero address to trade itself.
+     * @param marketModuleInitData The market module initialization data, if any.
+     * @param mintModule The mint module to use, can be the zero address. Make sure each curation can mint its own NFTs.
+     * MintModule is marketModule, but the initialization parameters are different.
+     * @param mintModuleInitData The mint module initialization data, if any.
+     * @param curationMetaData The data of CurationData struct.
+     */
+    struct CreateCurationWithSigData {
+        address to;
+        uint256 profileId;
+        string handle;
+        string contentURI;
+        address marketModule;
+        bytes marketModuleInitData;
+        address mintModule;
+        bytes mintModuleInitData;
+        CurationData curationMetaData;
+        EIP712Signature sig;
     }
 }

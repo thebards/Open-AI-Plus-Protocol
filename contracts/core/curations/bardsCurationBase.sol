@@ -29,7 +29,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	/**
      * @dev See {IBardsCurationBase-createCuration}
      */
-	function createCuration(DataTypes.CreateCurationData calldata _vars)
+	function initializeCuration(DataTypes.InitializeCurationData calldata _vars)
 		external
 		override
 		nonReentrant {
@@ -61,7 +61,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				stakingBps: _vars.curationData.stakingBps
 			});
 			
-			emit CurationCreated(_vars.tokenId, _curationData[_vars.tokenId]);
+			emit CurationInitialized(_vars.tokenId, _curationData[_vars.tokenId]);
 		}
 
 	/**

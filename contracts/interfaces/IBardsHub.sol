@@ -91,16 +91,22 @@ interface IBardsHub {
 	/**
      * @notice Creates a profile with the specified parameters, minting a self curation as NFT to the given recipient.
      *
-     * @param vars A CreateProfileData struct containing the market params:
-     *      to: The address receiving the profile.
-     *      handle: The handle to set for the profile, must be unique and non-empty.
-     *      imageURI: The URI to set for the profile image.
-     *      marketModule: The market module to use, can be the zero address.
-     *      marketModuleInitData: The market module initialization data, if any.
+     * @param vars A CreateCurationData struct containing the needed parameters.
+     *
+     * @return uint256 An integer representing the profile's token ID.
      */
-    function createProfile(DataTypes.CreateProfileData calldata vars) 
+    function createProfile(DataTypes.CreateCurationData calldata vars) 
 		external 
 		returns (uint256);
+
+    /**
+     * @notice Creates a profile with the specified parameterse via signature with the specified parameters.
+     *
+     * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the profile's token ID.
+     */
+    function createProfileWithSig(DataTypes.CreateCurationWithSigData calldata vars) external returns (uint256);
 
     /**
      * @notice Sets the mapping between wallet and its main profile identity.
@@ -121,14 +127,15 @@ interface IBardsHub {
 	    /**
      * @notice Sets a curation's market module, must be called by the curator.
      *
-     * @param curationId The token ID of the profile to set the market module for.
-     * @param marketModule The market module to set for the given curation, must be whitelisted.
-     * @param marketModuleInitData The data to be passed to the market module for initialization.
+     * @param vars The SetMarketModuleData struct containing the following parameters:
+     *   curationId The token ID of the profile to set the market module for.
+     *   tokenContract The address of NFT token to curate.
+     *   tokenId The NFT token ID to curate.
+     *   marketModule The market module to set for the given curation, must be whitelisted.
+     *   marketModuleInitData The data to be passed to the market module for initialization.
      */
-    function setMarketModule(
-        uint256 curationId,
-        address marketModule,
-        bytes calldata marketModuleInitData
+    function setMarketModule( 
+        DataTypes.SetMarketModuleData calldata vars
     ) external;
 
     /**
@@ -136,8 +143,48 @@ interface IBardsHub {
      *
      * @param vars A SetMarketModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
-    function setFollowModuleWithSig(DataTypes.SetMarketModuleWithSigData calldata vars) 
+    function setMarketModuleWithSig(DataTypes.SetMarketModuleWithSigData calldata vars) 
 		external;
+
+	    /**
+     * @notice Sets a curation's mint module, must be called by the curator.
+     *
+     * @param vars The SetMintModuleData struct containing the following parameters:
+     *   curationId The token ID of the profile to set the mint module for.
+     *   tokenContract The address of NFT token to curate.
+     *   tokenId The NFT token ID to curate.
+     *   marketModule The mint module to set for the given curation, must be whitelisted.
+     *   marketModuleInitData The data to be passed to the mint module for initialization.
+     */
+    function setMintModule( 
+        DataTypes.SetMarketModuleData calldata vars
+    ) external;
+
+    /**
+     * @notice Sets a curation's mint module via signature with the specified parameters.
+     *
+     * @param vars A SetMintModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setMintModuleWithSig(DataTypes.SetMarketModuleWithSigData calldata vars) 
+		external;
+
+    /**
+     * @notice Creates a curation to a given profile, must be called by the profile owner.
+     *
+     * @param vars A CreateCurationData struct containing the needed parameters.
+     *
+     * @return uint256 An integer representing the curation's token ID.
+     */
+    function createCuration(DataTypes.CreateCurationData calldata vars) external returns (uint256);
+
+    /**
+     * @notice Creates a curation to a given profile via signature with the specified parameters.
+     *
+     * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the curation's token ID.
+     */
+    function createCurationWithSig(DataTypes.CreateCurationWithSigData calldata vars) external returns (uint256);
 
     /// ************************
     /// *****VIEW FUNCTIONS*****

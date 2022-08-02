@@ -172,4 +172,90 @@ library Events {
         bool indexed whitelisted,
         uint256 timestamp
     );
+
+    /**
+     * @dev Emitted when a profile is created.
+     *
+     * @param profileId The newly created profile's token ID.
+     * @param creator The profile creator, who created the token with the given profile ID.
+     * @param to The address receiving the profile with the given profile ID.
+     * @param handle The handle set for the profile.
+     * @param contentURI The content uri set for the profile.
+     * @param marketModule The profile's newly set market module. This CAN be the zero address.
+     * @param marketModuleReturnData The data returned from the market module's initialization. This is abi encoded
+     * and totally depends on the market module chosen.
+     * @param mintModule The profile's newly set mint module. This CAN be the zero address.
+     * @param mintModuleReturnData The data returned from the mint module's initialization. This is abi encoded
+     * and totally depends on the mint module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event ProfileCreated(
+        uint256 indexed profileId,
+        address indexed creator,
+        address indexed to,
+        string handle,
+        string contentURI,
+        address marketModule,
+        bytes marketModuleReturnData,
+        address mintModule,
+        bytes mintModuleReturnData,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a curation is created.
+     *
+     * @param profileId The newly created profile's token ID.
+     * @param curationId The newly created curation's token ID.
+     * @param contentURI The content uri set for the profile.
+     * @param marketModule The profile's newly set market module. This CAN be the zero address.
+     * @param marketModuleReturnData The data returned from the market module's initialization. This is abi encoded
+     * and totally depends on the market module chosen.
+     * @param mintModule The profile's newly set mint module. This CAN be the zero address.
+     * @param mintModuleReturnData The data returned from the mint module's initialization. This is abi encoded
+     * and totally depends on the mint module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event CurationCreated(
+        uint256 indexed profileId,
+        uint256 indexed curationId,
+        string contentURI,
+        address marketModule,
+        bytes marketModuleReturnData,
+        address mintModule,
+        bytes mintModuleReturnData,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a curation's market module is set.
+     *
+     * @param curationId The profile's token ID.
+     * @param marketModule The profile's newly set follow module. This CAN be the zero address.
+     * @param marketModuleReturnData The data returned from the follow module's initialization. This is abi encoded
+     * and totally depends on the follow module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event MarketModuleSet(
+        uint256 indexed curationId,
+        address marketModule,
+        bytes marketModuleReturnData,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a curation's mint module is set.
+     *
+     * @param curationId The profile's token ID.
+     * @param mintModule The profile's newly set follow module. This CAN be the zero address.
+     * @param mintModuleReturnData The data returned from the follow module's initialization. This is abi encoded
+     * and totally depends on the follow module chosen.
+     * @param timestamp The current block timestamp.
+     */
+    event MintModuleSet(
+        uint256 indexed curationId,
+        address mintModule,
+        bytes mintModuleReturnData,
+        uint256 timestamp
+    );
 }
