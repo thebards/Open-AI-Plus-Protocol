@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.9;
 
 import {DataTypes} from '../../utils/DataTypes.sol';
 
@@ -20,6 +20,10 @@ abstract contract BardsHubStorage {
     bytes32 internal constant SET_MARKET_MODULE_WITH_SIG_TYPEHASH =
         keccak256(
             'SetMarketModuleWithSig(uint256 curationId,address tokenContract,uint256 tokenId,address marketModule,bytes marketModuleInitData,uint256 nonce,uint256 deadline)'
+        );
+	bytes32 internal constant CREATE_CURATION_WITH_SIG_TYPEHASH =
+        keccak256(
+            'createCurationWithSig(address to,uint256 profileId,address tokenContractPointed,uint256 tokenIdPointed,string handle,string contentURI,address marketModule,bytes marketModuleInitData,address mintModule,bytes mintModuleInitData,bytes curationMetaData,uint256 nonce,uint256 deadline)'
         );
 
 	uint256 internal _curationCounter;

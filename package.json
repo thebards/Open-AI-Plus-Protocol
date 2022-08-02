@@ -17,7 +17,9 @@
         "@rari-capital/solmate": "^6.2.0"
     },
     "devDependencies": {
+        "@nomicfoundation/hardhat-toolbox": "^1.0.2",
         "@typechain/ethers-v5": "^10.0.0",
+        "hardhat": "^2.10.1",
         "husky": "^7.0.0",
         "lint-staged": "^12.3.7",
         "prettier": "^2.6.1",

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.15;
+pragma solidity ^0.8.9;
 
 import {IBardsNFTBase} from '../../interfaces/NFTs/IBardsNFTBase.sol';
 import {Errors} from '../../utils/Errors.sol';
@@ -47,7 +47,7 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
      * @param symbol The symbol to set in the ERC721 contract.
      */
     function _initialize(string calldata name, string calldata symbol) internal {
-        ERC721MultFee.__ERC721_Init(name, symbol);
+        ERC721Time.__ERC721_Init(name, symbol);
 
         emit Events.BaseInitialized(name, symbol, block.timestamp);
     }

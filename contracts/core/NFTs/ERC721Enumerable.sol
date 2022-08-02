@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 import './ERC721Time.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol';
@@ -32,7 +32,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
         public
         view
         virtual
-        override(IERC165, ERC721MultFee)
+        override(IERC165, ERC721Time)
         returns (bool)
     {
         return
@@ -50,7 +50,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
         override
         returns (uint256)
     {
-        require(index < ERC721MultFee.balanceOf(owner), 'ERC721Enumerable: owner index out of bounds');
+        require(index < ERC721Time.balanceOf(owner), 'ERC721Enumerable: owner index out of bounds');
         return _ownedTokens[owner][index];
     }
 
@@ -112,7 +112,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
      * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
      */
     function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
-        uint256 length = ERC721MultFee.balanceOf(to);
+        uint256 length = ERC721Time.balanceOf(to);
         _ownedTokens[to][length] = tokenId;
         _ownedTokensIndex[tokenId] = length;
     }
@@ -138,7 +138,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
-        uint256 lastTokenIndex = ERC721MultFee.balanceOf(from) - 1;
+        uint256 lastTokenIndex = ERC721Time.balanceOf(from) - 1;
         uint256 tokenIndex = _ownedTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary

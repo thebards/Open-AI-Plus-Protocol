@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.9;
 
 import './curations/BardsCurationBase.sol';
 import './storages/BardsHubStorage.sol';
@@ -160,6 +160,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                         abi.encode(
                             SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
                             vars.curationId,
+                            vars.tokenContractPointed,
+                            vars.tokenIdPointed,
                             vars.marketModule,
                             keccak256(vars.marketModuleInitData),
                             sigNonces[owner]++,
@@ -212,6 +214,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                         abi.encode(
                             SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
                             vars.curationId,
+                            vars.tokenContractPointed,
+                            vars.tokenIdPointed,
                             vars.marketModule,
                             keccak256(vars.marketModuleInitData),
                             sigNonces[owner]++,
@@ -254,7 +258,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
     }
 
     /// @inheritdoc IBardsHub
-    function createCurationWithSig(DataTypes.CreateCurationDataWithSigData calldata vars)
+    function createCurationWithSig(DataTypes.CreateCurationWithSigData calldata vars)
         external
         override
         whenPublishingEnabled
@@ -266,13 +270,17 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                 _calculateDigest(
                     keccak256(
                         abi.encode(
-                            POST_WITH_SIG_TYPEHASH,
+                            CREATE_CURATION_WITH_SIG_TYPEHASH,
                             vars.profileId,
+                            vars.tokenContractPointed,
+                            vars.tokenIdPointed,
+                            keccak256(bytes(vars.handle)),
                             keccak256(bytes(vars.contentURI)),
                             vars.marketModule,
                             keccak256(vars.marketModuleInitData),
                             vars.mintModule,
                             keccak256(vars.mintModuleInitData),
+                            keccak256(vars.curationMetaData),
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -331,7 +339,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                 _marketModuleWhitelisted
             ); 
             initializeCuration({tokenId: profileId, curationData: curationMetaData});
-            return pubId;
+            return curationId;
         }
     }
 

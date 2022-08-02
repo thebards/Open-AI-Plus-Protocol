@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.9;
 
 /**
  * @title DataTypes
@@ -126,11 +126,11 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `createCuration()` function.
      *
      * @param tokenId The token id.
-     * @param curationData The data of curation.
+     * @param curationData The data of CurationData curation.
      */
     struct InitializeCurationData {
         uint256 tokenId;
-        CurationData curationData;
+        bytes curationData;
     }
 
     /**
@@ -201,7 +201,7 @@ library DataTypes {
         bytes marketModuleInitData;
         address mintModule;
         bytes mintModuleInitData;
-        CurationData curationMetaData;
+        bytes curationMetaData;
     }
 
     /**
@@ -209,6 +209,8 @@ library DataTypes {
      *
      * @param to The address receiving the curation.
      * @param profileId the profile id creating the curation
+     * @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
+     * @param tokenIdPointed The token ID this curation points to.
      * @param handle The handle to set for the profile, must be unique and non-empty.
      * @param contentURI The URI to set for the profile metadata.
      * @param marketModule The market module to use, can be the zero address to trade itself.
@@ -221,13 +223,15 @@ library DataTypes {
     struct CreateCurationWithSigData {
         address to;
         uint256 profileId;
+        address tokenContractPointed;
+        uint256 tokenIdPointed;
         string handle;
         string contentURI;
         address marketModule;
         bytes marketModuleInitData;
         address mintModule;
         bytes mintModuleInitData;
-        CurationData curationMetaData;
+        bytes curationMetaData;
         EIP712Signature sig;
     }
 }

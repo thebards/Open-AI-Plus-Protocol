@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.9;
 
 import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -9,7 +9,7 @@ import '../NFTs/BardsNFTBase.sol';
 import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
 import '../../utils/MathUtils.sol';
-
+import '../../utils/DataTypes.sol';
 
 /**
  * @title BardsCurationBase
@@ -24,7 +24,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
      * @notice The curation for a given NFT, if one exists
      * @dev ERC-721 token id => Curation
 	 */
-    mapping(uint256 => CurationData) private _curationData;
+    mapping(uint256 => DataTypes.CurationData) private _curationData;
 
 	/**
      * @dev See {IBardsCurationBase-createCuration}
@@ -39,29 +39,37 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			// 	msg.sender == tokenOwner || IERC721(_vars._tokenContract).isApprovedForAll(tokenOwner, msg.sender),
 			// 	"Creating curation must be token owner or operator"
 			// );
+			(
+				address[] sellers,
+				address[] sellerFundsRecipients,
+				uint16[] sellerBpses,
+				uint16 curationBps,
+				uint16 stakingBps
+			) = abi.decode(_vars.curationData, (address[], address[], uint16[], uint16, uint16));
+
 			require(
-				_vars.curationData.sellers.length == _vars.curationData.sellerFundsRecipients.length && 
-				_vars.curationData.sellers.length == _vars.curationData.sellerBpses.length, 
+				sellers.length == sellerFundsRecipients.length && 
+				sellers.length == sellerBpses.length, 
 				"Sellers, sellerFundsRecipients, and sellerBpses must have same length."
 			);
 			require(
-				MathUtils.sum(_vars.curationData.sellerBpses) == Constants.MAX_BPS, 
+				MathUtils.sum(sellerBpses) == Constants.MAX_BPS, 
 				"Sellers fee bps must be equal to 10000."
 			);
 			require(
-				_vars.curationData.curationBps + _vars.curationData.stakingBps <= Constants.MAX_BPS, 
+				curationBps + stakingBps <= Constants.MAX_BPS, 
 				"curationBps + stakingBps <= 100%"
 			);
 
 			_curationData[_vars.tokenId] = DataTypes.CurationData({
-				sellers: _vars.curationData.sellers,
-				sellerFundsRecipients: _vars.curationData.sellerFundsRecipients,
-				sellerBpses: _vars.curationData.sellerBpses,
-				curationBps: _vars.curationData.curationBps,
-				stakingBps: _vars.curationData.stakingBps
+				sellers: sellers,
+				sellerFundsRecipients: sellerFundsRecipients,
+				sellerBpses: sellerBpses,
+				curationBps: curationBps,
+				stakingBps: stakingBps
 			});
 			
-			emit CurationInitialized(_vars.tokenId, _curationData[_vars.tokenId]);
+			emit CurationInitialized(_vars.tokenId, _vars.curationData, block.timestamp);
 		}
 
 	/**
@@ -139,7 +147,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
         view
         virtual
         override
-        returns (CurationData memory){
+        returns (DataTypes.CurationData memory){
 			// if (tokenContract == address(this)){
 			// 	require(_exists(tokenId), 'ERC721: token data query for nonexistent token');
 			// }
@@ -235,7 +243,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
         virtual
         override
         returns (uint256 feeAmount) {
-			return (amount * curationBpsOf(tokenId)) / Constants.MAX_BPS;
+			return (amount * _curationData[tokenId].curationBps) / Constants.MAX_BPS;
 		}
 
 	/**
@@ -247,6 +255,6 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
         virtual
         override
         returns (uint256 feeAmount) {
-			return (amount * curationBpsOf(tokenId)) / Constants.MAX_BPS;
+			return (amount * _curationData[tokenId].curationBps) / Constants.MAX_BPS;
 		}
 }

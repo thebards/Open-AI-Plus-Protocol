@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.15;
+pragma solidity ^0.8.9;
 
 import {DataTypes} from './DataTypes.sol';
 
@@ -33,6 +33,7 @@ library Events {
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param curationBps The bps of curation.
+     * @param timestamp The current block timestamp.
      */
     event CurationBpsUpdated(
         uint256 indexed tokenId, 
@@ -44,6 +45,7 @@ library Events {
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param sellers The addressers of the sellers.
+     * @param timestamp The current block timestamp.
      */
     event CurationSellersUpdated(
         uint256 indexed tokenId, 
@@ -55,6 +57,7 @@ library Events {
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param sellerFundsRecipients The addresses where funds are sent after the trade.
+     * @param timestamp The current block timestamp.
      */
     event CurationSellerFundsRecipientsUpdated(
         uint256 indexed tokenId, 
@@ -66,6 +69,7 @@ library Events {
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param sellerBpses The fee that is sent to the sellers.
+     * @param timestamp The current block timestamp.
      */
     event CurationSellerBpsesUpdated(
         uint256 indexed tokenId, 
@@ -77,6 +81,7 @@ library Events {
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param stakingBps The bps of staking.
+     * @param timestamp The current block timestamp.
      */
     event StakingBpsUpdated(
         uint256 indexed tokenId, 
@@ -88,10 +93,11 @@ library Events {
      * @notice Emitted when an curation is created.
      * @param tokenId The token Id of a NFT.
      * @param curationData The curation data.
+     * @param timestamp The current block timestamp.
      */
-    event CurationCreated(
-        uint256 indexed tokenId, 
-        DataTypes.CurationData curationData, 
+    event CurationInitialized(
+        uint256 indexed tokenId,
+        bytes curationData,
         uint256 timestamp
     );
 
