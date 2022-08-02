@@ -46,6 +46,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
      * @dev See {IMarketModule-buy}
      */
 	function buy(
+        uint256 curationId,
 		address tokenContract,
         uint256 tokenId,
         bytes calldata data
@@ -55,7 +56,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
         DataTypes.FixPriceMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
 
         // The fee split setting of curation.
-		DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(tokenContract, tokenId);
+		DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
         
 
 		// TODO Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees

@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
  */
 library MathUtils {
     using SafeMath for uint256;
+    using SafeMath for uint16;
 
     /**
      * @dev Calculates the weighted average of two values pondering each of these
@@ -46,11 +47,11 @@ library MathUtils {
 	/**
 	 * @dev Returns the sum of a uint256 array.
 	 */
-	function sum(uint256[] calldata arr) internal pure returns (uint256){
+	function sum(uint16[] memory arr) internal pure returns (uint16){
 		if (arr.length == 0) return 0;
 		
-		uint256 i;
-  		uint256 sum = 0;
+		uint16 i;
+  		uint16 sum = uint16(0);
     
 		for(i = 0; i < arr.length; i++)
 			sum = sum.add(arr[i]);

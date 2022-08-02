@@ -40,9 +40,9 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			// 	"Creating curation must be token owner or operator"
 			// );
 			(
-				address[] sellers,
-				address[] sellerFundsRecipients,
-				uint16[] sellerBpses,
+				address[] memory sellers,
+				address[] memory sellerFundsRecipients,
+				uint16[] memory sellerBpses,
 				uint16 curationBps,
 				uint16 stakingBps
 			) = abi.decode(_vars.curationData, (address[], address[], uint16[], uint16, uint16));
@@ -69,7 +69,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				stakingBps: stakingBps
 			});
 			
-			emit CurationInitialized(_vars.tokenId, _vars.curationData, block.timestamp);
+			emit Events.CurationInitialized(_vars.tokenId, _vars.curationData, block.timestamp);
 		}
 
 	/**
@@ -81,7 +81,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		virtual
 		override
 		returns (address[] memory) {
-			address[] sellers = _curationData[tokenId].sellers;
+			address[] memory sellers = _curationData[tokenId].sellers;
 			return sellers;
 		}
 
@@ -94,7 +94,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		virtual
 		override
 		returns (address[] memory) {
-			address[] sellerFundsRecipients = [tokenId].sellerFundsRecipients;
+			address[] memory sellerFundsRecipients = _curationData[tokenId].sellerFundsRecipients;
 			return sellerFundsRecipients;
 		}
 
@@ -107,7 +107,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		virtual
 		override
 		returns (uint16[] memory) {
-			uint16[] sellerBpses = _curationData[tokenId].sellerBpses;
+			uint16[] memory sellerBpses = _curationData[tokenId].sellerBpses;
 			return sellerBpses;
 		}
 

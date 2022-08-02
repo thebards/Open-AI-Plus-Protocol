@@ -8,6 +8,7 @@ import '../interfaces/IBardsHub.sol';
 import '../utils/DataTypes.sol';
 import '../upgradeablity/VersionedInitializable.sol';
 import '../utils/CurationHelpers.sol';
+import './govs/BardsPausable.sol';
 
 
 contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, VersionedInitializable, IBardsHub {
@@ -94,7 +95,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                 _isProfileById,
                 _marketModuleWhitelisted
             );
-            initializeCuration({tokenId: profileId, curationData: vars.curationMetaData});
+
+            BardsCurationBase.initializeCuration(DataTypes.InitializeCurationData(profileId, vars.curationMetaData));
             return profileId;
         }
     }
@@ -141,7 +143,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
             vars.tokenId,
             vars.marketModule,
             vars.marketModuleInitData,
-            _profileById[curationId],
+            _curationById[vars.curationId],
             _marketModuleWhitelisted
         );
     }
@@ -152,7 +154,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
         override
         whenNotPaused
     {
-        address owner = ownerOf(vars.profileId);
+        address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -160,8 +162,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                         abi.encode(
                             SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
                             vars.curationId,
-                            vars.tokenContractPointed,
-                            vars.tokenIdPointed,
+                            vars.tokenContract,
+                            vars.tokenId,
                             vars.marketModule,
                             keccak256(vars.marketModuleInitData),
                             sigNonces[owner]++,
@@ -179,8 +181,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
             vars.tokenId,
             vars.marketModule,
             vars.marketModuleInitData,
-            _profileById[vars.profileId],
-            _followModuleWhitelisted
+            _curationById[vars.curationId],
+            _marketModuleWhitelisted
         );
     }
 
@@ -195,7 +197,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
             vars.tokenId,
             vars.marketModule,
             vars.marketModuleInitData,
-            _profileById[curationId],
+            _curationById[vars.curationId],
             _marketModuleWhitelisted
         );
     }
@@ -214,8 +216,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                         abi.encode(
                             SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
                             vars.curationId,
-                            vars.tokenContractPointed,
-                            vars.tokenIdPointed,
+                            vars.tokenContract,
+                            vars.tokenId,
                             vars.marketModule,
                             keccak256(vars.marketModuleInitData),
                             sigNonces[owner]++,
@@ -233,8 +235,8 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
             vars.tokenId,
             vars.marketModule,
             vars.marketModuleInitData,
-            _profileById[vars.profileId],
-            _followModuleWhitelisted
+            _curationById[vars.curationId],
+            _marketModuleWhitelisted
         );
     }
 
@@ -242,18 +244,22 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
     function createCuration(DataTypes.CreateCurationData calldata vars)
         external
         override
-        whenPublishingEnabled
+        whenCurationEnabled
         returns (uint256)
     {
         _validateCallerIsProfileOwner(vars.profileId);
         return
-            _createPost(
+            _createCuration(
+                vars.to,
                 vars.profileId,
+                vars.tokenContractPointed,
+                vars.tokenIdPointed,
                 vars.contentURI,
-                vars.collectModule,
-                vars.collectModuleInitData,
-                vars.referenceModule,
-                vars.referenceModuleInitData
+                vars.marketModule,
+                vars.marketModuleInitData,
+                vars.mintModule,
+                vars.mintModuleInitData,
+                vars.curationMetaData
             );
     }
 
@@ -261,7 +267,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
     function createCurationWithSig(DataTypes.CreateCurationWithSigData calldata vars)
         external
         override
-        whenPublishingEnabled
+        whenCurationEnabled
         returns (uint256)
     {
         address owner = ownerOf(vars.profileId);
@@ -319,7 +325,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
         bytes memory marketModuleData,
         address mintModule,
         bytes memory mintModuleData,
-        DataTypes.InitializeCurationData calldata curationMetaData
+        bytes memory curationMetaData
     ) internal returns (uint256) {
         unchecked {
             uint256 curationId = ++_curationCounter;
@@ -338,7 +344,7 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
                 _isMintedByIdById,
                 _marketModuleWhitelisted
             ); 
-            initializeCuration({tokenId: profileId, curationData: curationMetaData});
+            BardsCurationBase.initializeCuration(DataTypes.InitializeCurationData(profileId, curationMetaData));
             return curationId;
         }
     }
@@ -347,6 +353,19 @@ contract BardsHub is BardsCurationBase, BardsHubStorage, BardsPausable, Versione
         address prevGovernance = _governance;
         _governance = newGovernance;
         emit Events.GovernanceSet(msg.sender, prevGovernance, newGovernance, block.timestamp);
+    }
+
+    /*
+     * If the profile ID is zero, this is the equivalent of "unsetting" a default profile.
+     * Note that the wallet address should either be the message sender or validated via a signature
+     * prior to this function call.
+     */
+    function _setDefaultProfile(address wallet, uint256 profileId) internal {
+        if (profileId > 0 && wallet != ownerOf(profileId)) revert Errors.NotProfileOwner();
+
+        _defaultProfileByAddress[wallet] = profileId;
+
+        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
     }
 
     function _validateCallerIsProfileOwner(uint256 profileId) internal view {

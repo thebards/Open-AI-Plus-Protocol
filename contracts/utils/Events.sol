@@ -30,6 +30,38 @@ library Events {
     );
 
     /**
+     * @dev Emitted when the governance address is changed. We emit the caller even though it should be the previous
+     * governance address, as we cannot guarantee this will always be the case due to upgradeability.
+     *
+     * @param caller The caller who set the governance address.
+     * @param prevGovernance The previous governance address.
+     * @param newGovernance The new governance address set.
+     * @param timestamp The current block timestamp.
+     */
+    event GovernanceSet(
+        address indexed caller,
+        address indexed prevGovernance,
+        address indexed newGovernance,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when the emergency admin is changed. We emit the caller even though it should be the previous
+     * governance address, as we cannot guarantee this will always be the case due to upgradeability.
+     *
+     * @param caller The caller who set the emergency admin address.
+     * @param oldEmergencyAdmin The previous emergency admin address.
+     * @param newEmergencyAdmin The new emergency admin address set.
+     * @param timestamp The current block timestamp.
+     */
+    event EmergencyAdminSet(
+        address indexed caller,
+        address indexed oldEmergencyAdmin,
+        address indexed newEmergencyAdmin,
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param curationBps The bps of curation.
@@ -176,6 +208,19 @@ library Events {
     event MarketModuleWhitelisted(
         address indexed marketModule,
         bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+    /**
+     * @dev Emitted when a a default profile is set for a wallet as its main identity
+     *
+     * @param wallet The wallet which set or unset its default profile.
+     * @param profileId The token ID of the profile being set as default, or zero.
+     * @param timestamp The current block timestamp.
+     */
+    event DefaultProfileSet(
+        address indexed wallet, 
+        uint256 indexed profileId, 
         uint256 timestamp
     );
 

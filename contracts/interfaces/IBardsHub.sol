@@ -294,7 +294,7 @@ interface IBardsHub {
     function getProfile(uint256 profileId) 
 		external 
 		view 
-		returns (DataTypes.ProfileCurationStruct memory);
+		returns (DataTypes.CurationStruct memory);
 
     /**
      * @notice Returns the full curationId struct.

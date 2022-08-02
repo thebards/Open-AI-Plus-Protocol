@@ -138,7 +138,7 @@ abstract contract ERC721Enumerable is ERC721Time, IERC721Enumerable {
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
-        uint256 lastTokenIndex = ERC721Time.balanceOf(from) - 1;
+        uint256 lastTokenIndex = ERC721Time.balanceOf(from) - 1; 
         uint256 tokenIndex = _ownedTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
