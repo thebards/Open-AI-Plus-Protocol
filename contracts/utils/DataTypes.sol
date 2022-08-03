@@ -178,8 +178,9 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
      *
      * @param to The address receiving the curation.
-     * @param profileId the profile id creating the curation
-       @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
+     * @param profileId the profile id creating the curation.
+     * @param curationId the curation ID.
+     * @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
      * @param tokenIdPointed The token ID this curation points to.
      * @param handle The handle to set for the profile, must be unique and non-empty.
      * @param contentURI The URI to set for the profile metadata.
@@ -193,6 +194,7 @@ library DataTypes {
     struct CreateCurationData {
         address to;
         uint256 profileId;
+        uint256 curationId;
         address tokenContractPointed;
         uint256 tokenIdPointed;
         string handle;
@@ -209,6 +211,7 @@ library DataTypes {
      *
      * @param to The address receiving the curation.
      * @param profileId the profile id creating the curation
+     * @param curationId the curation ID.
      * @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
      * @param tokenIdPointed The token ID this curation points to.
      * @param handle The handle to set for the profile, must be unique and non-empty.
@@ -223,6 +226,7 @@ library DataTypes {
     struct CreateCurationWithSigData {
         address to;
         uint256 profileId;
+        uint256 curationId;
         address tokenContractPointed;
         uint256 tokenIdPointed;
         string handle;

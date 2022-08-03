@@ -24,55 +24,53 @@ library CurationHelpers {
 	/**
      * @notice Executes the logic to create a profile with the given parameters to the given address.
      *
-     * @param vars The CreateProfileData struct.
-     * @param profileId The profile ID to associate with this profile NFT (token ID).
+     * @param _vars The CreateProfileData struct.
      * @param _profileIdByHandleHash The storage reference to the mapping of profile IDs by handle hash.
      * @param _curationById The storage reference to the mapping of profile structs by IDs.
 	 * @param _isProfileById The storage reference to whether the Id is belong to profile.
      * @param _marketModuleWhitelisted The storage reference to the mapping of whitelist status by market module address.
      */
     function createProfile(
-        DataTypes.CreateCurationData calldata vars,
-        uint256 profileId,
+        DataTypes.CreateCurationData memory _vars,
         mapping(bytes32 => uint256) storage _profileIdByHandleHash,
         mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
 		mapping(uint256 => bool) storage _isProfileById,
         mapping(address => bool) storage _marketModuleWhitelisted
     ) external {
-        _validateHandle(vars.handle);
-        bytes32 handleHash = keccak256(bytes(vars.handle));
+        _validateHandle(_vars.handle);
+        bytes32 handleHash = keccak256(bytes(_vars.handle));
         if (_profileIdByHandleHash[handleHash] != 0) revert Errors.HandleTaken();
 
-        _profileIdByHandleHash[handleHash] = profileId;
+        _profileIdByHandleHash[handleHash] = _vars.profileId;
 
-        _curationById[profileId].handle = vars.handle;
-        _curationById[profileId].contentURI = vars.contentURI;
-		_isProfileById[profileId] = true;
+        _curationById[_vars.profileId].handle = _vars.handle;
+        _curationById[_vars.profileId].contentURI = _vars.contentURI;
+		_isProfileById[_vars.profileId] = true;
 
         bytes memory marketModuleReturnData;
-        if (vars.marketModule != address(0)) {
-            _curationById[profileId].marketModule = vars.marketModule;
+        if (_vars.marketModule != address(0)) {
+            _curationById[_vars.profileId].marketModule = _vars.marketModule;
             marketModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
-                profileId,
-                vars.marketModule,
-                vars.marketModuleInitData,
+                _vars.profileId,
+                _vars.marketModule,
+                _vars.marketModuleInitData,
                 _marketModuleWhitelisted
             );
         }
 		bytes memory mintModuleReturnData;
-        if (vars.mintModule != address(0)) {
-            _curationById[profileId].mintModule = vars.mintModule;
+        if (_vars.mintModule != address(0)) {
+            _curationById[_vars.profileId].mintModule = _vars.mintModule;
 			mintModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
-                profileId,
-				vars.mintModule,
-				vars.mintModuleInitData,
+                _vars.profileId,
+				_vars.mintModule,
+				_vars.mintModuleInitData,
                 _marketModuleWhitelisted
             );
         }
 
-        _emitProfileCreated(profileId, vars, marketModuleReturnData, mintModuleReturnData);
+        _emitProfileCreated(_vars.profileId, _vars, marketModuleReturnData, mintModuleReturnData);
     }
 
     /**
@@ -164,69 +162,53 @@ library CurationHelpers {
      *
      * @dev To avoid a stack too deep error, reference parameters are passed in memory rather than calldata.
      *
-     * @param profileId The profile ID to associate this curation to.
-	 * @param curationId The token ID to associate with this curation.
-       @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
-     * @param tokenIdPointed The token ID this curation points to.
-     * @param contentURI The URI to set for this curation.
-     * @param marketModule The market module to set for this publication.
-     * @param marketModuleInitData The data to pass to the market module for curation initialization.
-     * @param mintModule The mint module to set for this curation, if any.
-     * @param mintModuleInitData The data to pass to the mint module for curation initialization.
+     * @param _vars The CreateProfileData struct.
      * @param _curationById The storage reference to the mapping of curations by token ID.
      * @param _isMintedByIdById The storage reference to the mapping of ownership by token Id by profile Id.
      * @param _marketModuleWhitelisted The storage reference to the mapping of whitelist status by collect module address.
      */
     function createCuration(
-        uint256 profileId,
-		uint256 curationId,
-        address tokenContractPointed,
-        uint256 tokenIdPointed,
-        string memory contentURI,
-        address marketModule,
-        bytes memory marketModuleInitData,
-        address mintModule,
-        bytes memory mintModuleInitData,
+        DataTypes.CreateCurationData memory _vars,
         mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
 		mapping(uint256 => mapping(uint256 => bool)) storage _isMintedByIdById,
         mapping(address => bool) storage _marketModuleWhitelisted
     ) external {
-        _curationById[curationId].contentURI = contentURI;
-		_curationById[curationId].tokenContractPointed = tokenContractPointed;
-		_curationById[curationId].tokenIdPointed = tokenIdPointed;
-		_isMintedByIdById[profileId][curationId] = true;
+        _curationById[_vars.curationId].contentURI = _vars.contentURI;
+		_curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
+		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
+		_isMintedByIdById[_vars.profileId][_vars.curationId] = true;
 
         bytes memory marketModuleReturnData;
-        if (marketModule != address(0)) {
-            _curationById[profileId].marketModule = marketModule;
+        if (_vars.marketModule != address(0)) {
+            _curationById[_vars.profileId].marketModule = _vars.marketModule;
             marketModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
-                curationId,
-                marketModule,
-                marketModuleInitData,
+                _vars.curationId,
+                _vars.marketModule,
+                _vars.marketModuleInitData,
                 _marketModuleWhitelisted
             );
         }
 		bytes memory mintModuleReturnData;
-        if (mintModule != address(0)) {
-            _curationById[profileId].mintModule = mintModule;
+        if (_vars.mintModule != address(0)) {
+            _curationById[_vars.profileId].mintModule = _vars.mintModule;
 			mintModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
-                curationId,
-				mintModule,
-				mintModuleInitData,
+                _vars.curationId,
+				_vars.mintModule,
+				_vars.mintModuleInitData,
                 _marketModuleWhitelisted
             );
         }
 
         emit Events.CurationCreated(
-            profileId,
-            curationId, 
-            contentURI,
-            marketModule,
-            marketModuleInitData,
-            mintModule,
-            mintModuleInitData,
+            _vars.profileId,
+            _vars.curationId, 
+            _vars.contentURI,
+            _vars.marketModule,
+            _vars.marketModuleInitData,
+            _vars.mintModule,
+            _vars.mintModuleInitData,
             block.timestamp
         );
     }
@@ -244,7 +226,7 @@ library CurationHelpers {
 
     function _emitProfileCreated(
         uint256 profileId,
-        DataTypes.CreateCurationData calldata vars,
+        DataTypes.CreateCurationData memory vars,
         bytes memory marketModuleReturnData,
 		bytes memory mintModuleReturnData
     ) internal {
@@ -262,7 +244,7 @@ library CurationHelpers {
         );
     }
 
-	function _validateHandle(string calldata handle) private pure {
+	function _validateHandle(string memory handle) private pure {
         bytes memory byteHandle = bytes(handle);
         if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
             revert Errors.HandleLengthInvalid();

@@ -309,4 +309,17 @@ library Events {
         bytes mintModuleReturnData,
         uint256 timestamp
     );
+
+    /**
+     * @dev Emitted when a profile creator is added to or removed from the whitelist.
+     *
+     * @param profileCreator The address of the profile creator.
+     * @param whitelisted Whether or not the profile creator is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event ProfileCreatorWhitelisted(
+        address indexed profileCreator,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
 }

@@ -99,14 +99,16 @@ interface IBardsHub {
 		external 
 		returns (uint256);
 
-    /**
-     * @notice Creates a profile with the specified parameterse via signature with the specified parameters.
-     *
-     * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
-     *
-     * @return uint256 An integer representing the profile's token ID.
-     */
-    function createProfileWithSig(DataTypes.CreateCurationWithSigData calldata vars) external returns (uint256);
+    // /**
+    //  * @notice Creates a profile with the specified parameterse via signature with the specified parameters.
+    //  *
+    //  * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
+    //  *
+    //  * @return uint256 An integer representing the profile's token ID.
+    //  */
+    // function createProfileWithSig(DataTypes.CreateCurationWithSigData calldata vars) 
+    // external 
+    // returns (uint256);
 
     /**
      * @notice Sets the mapping between wallet and its main profile identity.
@@ -177,14 +179,14 @@ interface IBardsHub {
      */
     function createCuration(DataTypes.CreateCurationData calldata vars) external returns (uint256);
 
-    /**
-     * @notice Creates a curation to a given profile via signature with the specified parameters.
-     *
-     * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
-     *
-     * @return uint256 An integer representing the curation's token ID.
-     */
-    function createCurationWithSig(DataTypes.CreateCurationWithSigData calldata vars) external returns (uint256);
+    // /**
+    //  * @notice Creates a curation to a given profile via signature with the specified parameters.
+    //  *
+    //  * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
+    //  *
+    //  * @return uint256 An integer representing the curation's token ID.
+    //  */
+    // function createCurationWithSig(DataTypes.CreateCurationWithSigData calldata vars) external returns (uint256);
 
     /// ************************
     /// *****VIEW FUNCTIONS*****
@@ -241,9 +243,21 @@ interface IBardsHub {
      *
      * @param curationId The token ID of the profile that published the curation to query.
      *
-     * @return address The address of the collect module associated with the queried curation.
+     * @return address The address of the market module associated with the queried curation.
      */
     function getMarketModule(uint256 curationId) 
+		external 
+		view 
+		returns (address);
+
+	/**
+     * @notice Returns the mint module associated with a given curation.
+     *
+     * @param curationId The token ID of the profile that published the curation to query.
+     *
+     * @return address The address of the mint module associated with the queried curation.
+     */
+    function getMintModule(uint256 curationId) 
 		external 
 		view 
 		returns (address);

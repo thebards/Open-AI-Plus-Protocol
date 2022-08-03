@@ -29,8 +29,8 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	/**
      * @dev See {IBardsCurationBase-createCuration}
      */
-	function initializeCuration(DataTypes.InitializeCurationData calldata _vars)
-		external
+	function initializeCuration(DataTypes.InitializeCurationData memory _vars)
+		public
 		override
 		nonReentrant {
 			// address tokenOwner = IERC721(_vars.tokenContract).ownerOf(_vars.tokenId);
@@ -53,7 +53,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				"Sellers, sellerFundsRecipients, and sellerBpses must have same length."
 			);
 			require(
-				MathUtils.sum(sellerBpses) == Constants.MAX_BPS, 
+				MathUtils.sum(MathUtils.uint16To256Array(sellerBpses)) == Constants.MAX_BPS, 
 				"Sellers fee bps must be equal to 10000."
 			);
 			require(

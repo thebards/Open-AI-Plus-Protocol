@@ -16,7 +16,7 @@ interface IBardsCurationBase {
 	/**
      * @notice Creates a curation with the specified parameters. 
      */
-	function initializeCuration(DataTypes.InitializeCurationData calldata _vars) external;
+	function initializeCuration(DataTypes.InitializeCurationData memory _vars) external;
 
 				/* GETTERs */
 
