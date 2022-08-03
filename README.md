@@ -8,9 +8,9 @@ TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter
 
 For a general overview of the protocol see:
 
-- The [Official website]()
+- The [Official website](https://thebards.xyz)
 
-- The [whitepaper]() for the original proposal
+- The [whitepaper](https://www.thebards.xyz/TheBards%20Protocol%20-%20TheDecentralizedContent%20Curation%20Economy.pdf) for the original proposal
 
 ## Features
 
