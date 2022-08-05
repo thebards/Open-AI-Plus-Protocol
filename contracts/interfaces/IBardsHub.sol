@@ -54,6 +54,13 @@ interface IBardsHub {
      *      1. The emergency admin is attempting to unpause.
      *      2. The emergency admin is calling while the protocol is already paused.
      *
+     *   ########################################################
+     *   ##                 Unpaused | Paused | CurationPaused ##
+     *   ## governance     |   yes   |   yes  |      yes       ##
+     *   ## emergency admin|   no    |   yes  |      yes       ##
+     *   ## other          |   no    |   no   |      no        ##
+     *   ########################################################
+     *
      * @param newState The state to set, as a member of the ProtocolState enum.
      */
     function setState(DataTypes.ProtocolState newState) 

@@ -39,7 +39,7 @@ library CurationHelpers {
     ) external {
         _validateHandle(_vars.handle);
         bytes32 handleHash = keccak256(bytes(_vars.handle));
-        if (_profileIdByHandleHash[handleHash] != 0) revert Errors.HandleTaken();
+        if (_profileIdByHandleHash[handleHash] != 0) revert Errors.HandleToken();
 
         _profileIdByHandleHash[handleHash] = _vars.profileId;
 

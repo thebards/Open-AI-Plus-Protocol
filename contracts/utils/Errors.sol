@@ -19,31 +19,23 @@ library Errors {
     error ProfileCreatorNotWhitelisted();
     error NotCurationOwner();
     error NotProfileOwner();
-    error NotProfileOwnerOrDispatcher();
-    error NotDispatcher();
-    error PublicationDoesNotExist();
-    error HandleTaken();
+    error CurationDoesNotExist();
+    error HandleToken();
     error HandleLengthInvalid();
     error HandleContainsInvalidCharacters();
     error HandleFirstCharInvalid();
-    error ProfileImageURILengthInvalid();
-    error CallerNotFollowNFT();
-    error CallerNotCollectNFT();
     error BlockNumberInvalid();
     error ArrayMismatch();
-    error CannotCommentOnSelf();
     error NotWhitelisted();
 
-    // Module Errors
+    // Market Errors
     error InitParamsInvalid();
     error CollectExpired();
-    error FollowInvalid();
     error ModuleDataMismatch();
-    error FollowNotApproved();
     error MintLimitExceeded();
-    error CollectNotAllowed();
+    error TradeNotAllowed();
 
-    // MultiState Errors
+    // Pausable Errors
     error Paused();
-    error PublishingPaused();
+    error CurationPaused();
 }

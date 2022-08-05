@@ -8,9 +8,16 @@ import '../interfaces/IBardsHub.sol';
 import '../utils/DataTypes.sol';
 import '../upgradeablity/VersionedInitializable.sol';
 import '../utils/CurationHelpers.sol';
+import '../utils/Errors.sol';
 import './govs/BardsPausable.sol';
 
 
+/**
+ * @title BardsHub
+ * @author TheBards Protocol
+ *
+ * @notice This is the main entrypoint of the Bards Protocol.
+ */
 contract BardsHub is
     BardsCurationBase,
     BardsHubStorage,
@@ -44,16 +51,18 @@ contract BardsHub is
     /// ***********************
 
     /// @inheritdoc IBardsHub
-    function setGovernance(address newGovernance) external override onlyGov {
-        _setGovernance(newGovernance);
+    function setGovernance(address newGovernance) 
+        external 
+        override 
+        onlyGov {
+            _setGovernance(newGovernance);
     }
 
     /// @inheritdoc IBardsHub
     function setEmergencyAdmin(address newEmergencyAdmin)
         external
         override
-        onlyGov
-    {
+        onlyGov{
         address prevEmergencyAdmin = _emergencyAdmin;
         _emergencyAdmin = newEmergencyAdmin;
         emit Events.EmergencyAdminSet(
@@ -464,6 +473,7 @@ contract BardsHub is
 
     function _validateCallerIsGovernance() internal view {
         if (msg.sender != _governance) revert Errors.NotGovernance();
+        // require(msg.sender == _governance, 'not_gov');
     }
 
     function getRevision() internal pure virtual override returns (uint256) {

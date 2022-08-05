@@ -56,7 +56,7 @@ abstract contract BardsPausable {
 
     function _validateCurationEnabled() internal view {
         if (_state != DataTypes.ProtocolState.Unpaused) {
-            revert Errors.PublishingPaused();
+            revert Errors.CurationPaused();
         }
     }
 
