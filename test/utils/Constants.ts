@@ -12,3 +12,4 @@ export const PROTOCOL_FEE = 50;
 export const BARDS_HUB_NFT_NAME = 'TheBards Protocol Profiles';
 export const BARDS_HUB_NFT_SYMBOL = 'BPP';
 export const MOCK_PROFILE_HANDLE = 'thebards.bpp';
+export const MOCK_PROFILE_CONTENT_URI = '';

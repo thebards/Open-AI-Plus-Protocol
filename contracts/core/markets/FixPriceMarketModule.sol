@@ -30,7 +30,10 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
 		(
             uint256 price,
             address currency
-        ) = abi.decode(data, (uint256, address));
+        ) = abi.decode(
+            data, 
+            (uint256, address)
+        );
 
         if (!_currencyWhitelisted(currency) || price == 0) revert Errors.InitParamsInvalid();
 		

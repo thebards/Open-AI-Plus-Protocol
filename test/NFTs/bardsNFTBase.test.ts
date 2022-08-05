@@ -46,7 +46,6 @@ makeSuiteCleanRoom('Bards NFT Base Functionality', function () {
 					]
 				)
 			);
-			console.log(expectedDomainSeparator);
 			expect(
 				await bardsHub.getDomainSeparator()
 			).to.eq(

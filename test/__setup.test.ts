@@ -31,7 +31,8 @@ import {
 	CurationHelpers__factory,
 	TransparentUpgradeableProxy__factory,
 	Errors,
-	Errors__factory
+	Errors__factory,
+	MarketModuleBase
 } from '../typechain-types';
 
 import { BardsHubLibraryAddresses } from "../typechain-types/factories/contracts/core/BardsHub__factory";
@@ -41,8 +42,6 @@ export enum ProtocolState {
 	CurationPaused,
 	Paused,
 }
-
-
 
 export let accounts: Signer[];
 export let deployer: Signer;
@@ -65,7 +64,7 @@ export let fixPriceMarketModule: FixPriceMarketModule;
 export let abiCoder: AbiCoder;
 export let eventsLib: Events;
 export let errorsLib: Errors;
-
+export let mockMarketModuleData: BytesLike;
 
 export function makeSuiteCleanRoom(name: string, tests: () => void) {
 	describe(name, () => {
@@ -95,6 +94,7 @@ before(async function () {
 	userThreeAddress = await userThree.getAddress();
 	governanceAddress = await governance.getAddress();
 	treasuryAddress = await accounts[4].getAddress();
+	mockMarketModuleData = abiCoder.encode(['uint256'], [1]);
 
 	bardsDaoData = await new BardsDaoData__factory(deployer).deploy(
 		governanceAddress, 
@@ -128,6 +128,7 @@ before(async function () {
 	bardsHub = BardsHub__factory.connect(proxy.address, user);
 
 	// market and mint module
+	fixPriceMarketModule = await new FixPriceMarketModule__factory(deployer).deploy(bardsDaoData.address);
 
 	await expect(
 		bardsHub.connect(governance).setState(ProtocolState.Unpaused)
