@@ -42,11 +42,15 @@ contract BardsDaoData is IBardsDaoData {
     constructor(
         address governance,
         address treasury,
-        uint16 protocolFee
+        uint16 protocolFee,
+        uint16 defaultCurationBps,
+        uint16 defaultStakingBps
     ) {
         _setGovernance(governance);
         _setTreasury(treasury);
         _setProtocolFee(protocolFee);
+        _setDefaultCurationBps(defaultCurationBps);
+        _setDefaultCurationBps(defaultStakingBps);
     }
 
     /// @inheritdoc IBardsDaoData
@@ -89,6 +93,16 @@ contract BardsDaoData is IBardsDaoData {
         return _protocolFeeSetting.feeBps;
     }
 
+    /// @inheritdoc IBardsDaoData
+    function getDefaultCurationBps() external view override returns (uint16) {
+        return _protocolFeeSetting.defaultCurationBps;
+    }
+
+    /// @inheritdoc IBardsDaoData
+    function getDefaultStakingBps() external view override returns (uint16) {
+        return _protocolFeeSetting.defaultStakingBps;
+    }
+
     //@inheritdoc IBardsDaoData
     function getProtocolFeePair() external view override returns (address, uint16) {
         return (_protocolFeeSetting.treasury, _protocolFeeSetting.feeBps);
@@ -97,6 +111,11 @@ contract BardsDaoData is IBardsDaoData {
     //@inheritdoc IBardsDaoData
     function getProtocolFeeSetting() external view override returns (DataTypes.ProtocolFeeSetting memory) {
         return _protocolFeeSetting;
+    }
+
+    //@inheritdoc IBardsDaoData
+    function getFeeAmount(uint256 _amount) external view override returns (uint256) {
+        return (_amount * _protocolFeeSetting.feeBps) / Constants.MAX_BPS;
     }
 
     function _setGovernance(address newGovernance) internal {
@@ -118,6 +137,20 @@ contract BardsDaoData is IBardsDaoData {
         uint16 prevProtocolFee = _protocolFeeSetting.feeBps;
         _protocolFeeSetting.feeBps = newProtocolFee;
         emit Events.ProtocolFeeSet(prevProtocolFee, newProtocolFee, block.timestamp);
+    }
+
+    function _setDefaultCurationBps(uint16 newDefaultCurationBps) internal {
+        if (newDefaultCurationBps >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
+        uint16 prevDefaultCurationBps = _protocolFeeSetting.defaultCurationBps;
+        _protocolFeeSetting.defaultCurationBps = newDefaultCurationBps;
+        emit Events.DefaultCurationFeeSet(prevDefaultCurationBps, newDefaultCurationBps, block.timestamp);
+    }
+
+    function _setDefaultStakingBps(uint16 newDefaultStakingBps) internal {
+        if (newDefaultStakingBps >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
+        uint16 prevDefaultStakingBps = _protocolFeeSetting.feeBps;
+        _protocolFeeSetting.defaultStakingBps = newDefaultStakingBps;
+        emit Events.ProtocolFeeSet(prevDefaultStakingBps, newDefaultStakingBps, block.timestamp);
     }
 
     function _whitelistCurrency(address currency, bool toWhitelist) internal {

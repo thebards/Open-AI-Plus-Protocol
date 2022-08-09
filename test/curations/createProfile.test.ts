@@ -159,6 +159,32 @@ makeSuiteCleanRoom('Profile Creation', function () {
 			// 		ERRORS.NO_REASON_ABI_DECODE
 			// 	);
 			// });
+
+			it('User should fail to create a profile when they are not a whitelisted profile creator', async function () {
+				await expect(
+					bardsHub.connect(governance).whitelistProfileCreator(userAddress, false)
+				).to.not.be.reverted;
+
+				await expect(
+					bardsHub.createProfile({
+						to: userAddress,
+						profileId: 0,
+						curationId: 0,
+						tokenContractPointed: ZERO_ADDRESS,
+						tokenIdPointed: 0,
+						handle: MOCK_PROFILE_HANDLE,
+						contentURI: MOCK_PROFILE_CONTENT_URI,
+						marketModule: userAddress,
+						marketModuleInitData: [],
+						mintModule: ZERO_ADDRESS,
+						mintModuleInitData: [],
+						curationMetaData: []
+					})
+				).to.be.revertedWithCustomError(
+					errorsLib,
+					ERRORS.PROFILE_CREATOR_NOT_WHITELISTED
+				);
+			});
 		});
 	});
 })

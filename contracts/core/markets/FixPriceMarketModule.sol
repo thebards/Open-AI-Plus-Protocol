@@ -11,13 +11,19 @@ import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
 import './MarketModuleBase.sol';
 import '../../utils/Constants.sol';
+import '../trades/FeePayout.sol';
 
-contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
+contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
     using SafeERC20 for IERC20;
 	// tokenContract address -> tokenId -> market data
 	mapping(address => mapping(uint256 => DataTypes.FixPriceMarketData)) internal _marketMetaData;
 
-    constructor(address bardsDaoData) MarketModuleBase(bardsDaoData) {}
+    constructor(
+        address _hub, 
+        address _wethAddress, 
+        address _royaltyEngine, 
+        address bardsDaoData
+    ) MarketModuleBase(bardsDaoData) FeePayout(_hub, _wethAddress, _royaltyEngine) {}
 
 	/**
      * @dev See {IMarketModule-initializeModule}
@@ -27,15 +33,17 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
         uint256 tokenId,
         bytes calldata data
     ) external override returns (bytes memory) {
-		(
+		(   
+            address seller,
             uint256 price,
-            address currency
+            address currency,
+            address treasury
         ) = abi.decode(
             data, 
-            (uint256, address)
+            (address, uint256, address, address)
         );
 
-        if (!_currencyWhitelisted(currency) || price == 0) revert Errors.InitParamsInvalid();
+        if (!isCurrencyWhitelisted(currency) || price == 0) revert Errors.InitParamsInvalid();
 		
         if (price == 0) revert Errors.InitParamsInvalid();
 
@@ -49,23 +57,95 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
      * @dev See {IMarketModule-buy}
      */
 	function buy(
+        address buyer,
         uint256 curationId,
 		address tokenContract,
         uint256 tokenId,
-        bytes calldata data
+        uint256[] curationIds
     ) external override {
+        // Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
 
         // The price and currency of NFT.
         DataTypes.FixPriceMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
 
-        // The fee split setting of curation.
-		DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
+        // Ensure ETH/ERC-20 payment from buyer is valid and take custody
+        _handleIncomingTransfer(buyer, marketData.price, marketData.currency);
+
+        // Payout respective parties, ensuring royalties are honored
+        (uint256 remainingProfit, ) = _handleRoyaltyPayout(
+            tokenContract, 
+            tokenId, 
+            marketData.price, 
+            marketData.currency, 
+            Constants.USE_ALL_GAS_FLAG
+        );
+
+        // Payout protocol fee
+        uint256 protocolFee = getFeeAmount(remainingProfit);
+        address protocolTreasury = getTreasury();
+        remainingProfit = _handleProtocolFeePayout(
+            remainingProfit,
+            marketData.currency, 
+            protocolFee, 
+            protocolTreasury
+        );
+
+        // TODO Payout staking
+
+        // Transfer remaining ETH/ERC-20 to seller
+        // 1) when the NFT if minted by TheBards HUB, distribute profits proportionally to sellers.
+        // 2) or, pay directly to the designated seller.
+        if (tokenContract == HUB){
+            // The fee split setting of curation.
+		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
+            // payout curation
+            uint256 curationFee = (remainingProfit * curationData.curationBps) / Constants.MAX_BPS;
+            remainingProfit -= curationFee;
+            _handleCurationsPayout(
+                tokenContract, 
+                tokenId,
+                curationFee,
+                marketData.currency,
+                curationId
+            );
+            // TODO payout staking
+            uint256 stakingFee = (remainingProfit * curationData.stakingBps) / Constants.MAX_BPS;
+            remainingProfit -= curationFee;
+
+            _handleSellersSplitPayout(
+                tokenContract, 
+                tokenId,
+                remainingProfit,
+                marketData.currency,
+                curationData.sellerFundsRecipients,
+                curationData.sellerBpses
+            );
+        }else{
+            // using default curation and staking bps setting.
+            // payout curation
+            uint256 curationFee = (remainingProfit * getDefaultCurationBps()) / Constants.MAX_BPS;
+            remainingProfit -= curationFee;
+            _handleCurationsPayout(
+                tokenContract, 
+                tokenId,
+                curationFee,
+                marketData.currency,
+                curationId
+            );
+            // TODO payout staking
+            uint256 stakingFee = (remainingProfit * getDefaultStakingBps();) / Constants.MAX_BPS;
+            remainingProfit -= curationFee;
+
+            _handlePayout(
+                marketData.treasury, 
+                remainingProfit, 
+                marketData.currency, 
+                Constants.USE_ALL_GAS_FLAG
+            );
+        }
         
-
-		// TODO Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
-
-        // protocol fee setting
-        DataTypes.ProtocolFeeSetting memory protocolFeeSetting = _protocolFeeSetting();
+        // Transfer NFT to buyer
+        IERC721(tokenContract).safeTransferFrom(marketData.seller, buyer, tokenId);
 
         delete _marketMetaData[tokenContract][tokenId];
 	}

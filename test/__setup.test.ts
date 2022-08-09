@@ -107,7 +107,10 @@ before(async function () {
 		'contracts/utils/CurationHelpers.sol:CurationHelpers': curationHelpers.address
 	};
 
-	bardsHubImpl = await new BardsHub__factory(hubLibs, deployer).deploy();
+	bardsHubImpl = await new BardsHub__factory(hubLibs, deployer).deploy(
+		bardsDaoData.address
+	);
+	
 	bardsHubImpl.initialize(
 		BARDS_HUB_NFT_NAME,
 		BARDS_HUB_NFT_SYMBOL,

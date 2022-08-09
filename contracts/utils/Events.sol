@@ -160,6 +160,32 @@ library Events {
     );
 
     /**
+     * @notice Emitted when the Bards protocol default curation fee is set.
+     *
+     * @param prevDefaultCurationBps The previous default curation fee in BPS.
+     * @param newDefaultCurationBps The new default curation fee in BPS.
+     * @param timestamp The current block timestamp.
+     */
+    event DefaultCurationFeeSet(
+        uint16 indexed prevDefaultCurationBps,
+        uint16 indexed newDefaultCurationBps,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when the Bards protocol default staking fee is set.
+     *
+     * @param prevDefaultStakingBps The previous default staking fee in BPS.
+     * @param newDefaultStakingBps The new default staking fee in BPS.
+     * @param timestamp The current block timestamp.
+     */
+    event DefaultStakingFeeSet(
+        uint16 indexed prevDefaultStakingBps,
+        uint16 indexed newDefaultStakingBps,
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when a currency is added to or removed from the Protocol fee whitelist.
      *
      * @param currency The currency address.
@@ -320,6 +346,54 @@ library Events {
     event ProfileCreatorWhitelisted(
         address indexed profileCreator,
         bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when royalties are paid
+     * @param tokenContract The ERC-721 token address of the royalty payout
+     * @param tokenId The ERC-721 token ID of the royalty payout
+     * @param recipient The recipient address of the royalty
+     * @param amount The amount paid to the recipient
+     * @param timestamp The current block timestamp.
+     */
+    event RoyaltyPayout(
+        address indexed tokenContract, 
+        uint256 indexed tokenId, 
+        address recipient, 
+        uint256 amount,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when sell fee are paid
+     * @param tokenContract The ERC-721 token address of the sell fee payout
+     * @param tokenId The ERC-721 token ID of the sell fee payout
+     * @param recipient The recipient address of the sell fee
+     * @param amount The amount paid to the recipient
+     * @param timestamp The current block timestamp.
+     */
+    event SellFeePayout(
+        address indexed tokenContract, 
+        uint256 indexed tokenId, 
+        address recipient, 
+        uint256 amount,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when curation fee are paid
+     * @param tokenContract The ERC-721 token address of the curation fee payout
+     * @param tokenId The ERC-721 token ID of the curation fee payout
+     * @param recipient The recipient address of the curation fee
+     * @param amount The amount paid to the recipient
+     * @param timestamp The current block timestamp.
+     */
+    event CurationFeePayout(
+        address indexed tokenContract, 
+        uint256 indexed tokenId,
+        address recipient,
+        uint256 amount,
         uint256 timestamp
     );
 }

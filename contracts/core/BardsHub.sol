@@ -27,6 +27,18 @@ contract BardsHub is
 {
     uint256 internal constant REVISION = 1;
 
+    address internal immutable _bardsDaoDataImpl;
+
+    /**
+     * @dev The constructor sets the immutable bardsDaoData implementations.
+     *
+     * @param bardsDaoDataImpl The bardsDaoData NFT implementation address.
+     */
+    constructor(address bardsDaoDataImpl) {
+        if (bardsDaoDataImpl == address(0)) revert Errors.InitParamsInvalid();
+        _bardsDaoDataImpl = bardsDaoDataImpl;
+    }
+    
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
      */
@@ -325,8 +337,20 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function getGovernance() external view override returns (address) {
-        return _governance;
+    function getGovernance() 
+        external 
+        view 
+        override 
+        returns (address) {
+            return _governance;
+    }
+
+    function getBardsDaoDataImpl()
+        external 
+        view 
+        override 
+        returns (address) {
+            return _bardsDaoDataImpl;
     }
 
     /// @inheritdoc IBardsHub
@@ -430,7 +454,7 @@ contract BardsHub is
             );
             initializeCuration(
                 DataTypes.InitializeCurationData(
-                    _vars.profileId,
+                    curationId,
                     _vars.curationMetaData
                 )
             );

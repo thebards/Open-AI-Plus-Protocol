@@ -69,11 +69,25 @@ interface IBardsDaoData {
     function getTreasury() external view returns (address);
 
     /**
-     * @notice Returns the protocol fee.
+     * @notice Returns the protocol fee bps.
      *
-     * @return uint16 The protocol fee.
+     * @return uint16 The protocol fee bps.
      */
     function getProtocolFee() external view returns (uint16);
+
+    /**
+     * @notice Returns the default curation fee bps.
+     *
+     * @return uint16 The default curation fee bps.
+     */
+    function getDefaultCurationBps() external view returns (uint16);
+
+    /**
+     * @notice Returns the default staking fee bps.
+     *
+     * @return uint16 The default staking fee bps.
+     */
+    function getDefaultStakingBps() external view returns (uint16);
 
     /**
      * @notice Returns the protocol fee setting in a single call.
@@ -88,4 +102,11 @@ interface IBardsDaoData {
      * @return tuple First, the treasury address, second, the protocol fee.
      */
     function getProtocolFeePair() external view returns (address, uint16);
+
+    /**
+     * @notice Computes the fee for a given uint256 amount
+     * @param _amount The amount to compute the fee for
+     * @return The amount to be paid out to the fee recipient
+     */
+    function getFeeAmount(uint256 _amount) external view returns (uint256);
 }

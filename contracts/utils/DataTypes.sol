@@ -113,6 +113,7 @@ library DataTypes {
 	 * @param sellerBpses The fee that is sent to the sellers.
 	 * @param curationBps The points fee of willing to share of the NFT income to curators.
 	 * @param stakingBps The points fee of willing to share of the NFT income to delegators who staking tokens.
+     * @param treasury The recipient of the fee
      */
     struct CurationData {
 		address[] sellers;
@@ -120,6 +121,7 @@ library DataTypes {
 		uint16[] sellerBpses;
 		uint16 curationBps;
 		uint16 stakingBps;
+        address treasury;
     }
 
     /**
@@ -135,23 +137,30 @@ library DataTypes {
 
     /**
      * @notice The metadata for a fix price market.
-     *
+     * @param seller The seller of nft
      * @param currency The currency to ask.
      * @param price The fix price of nft.
+     * @param treasury The recipient of the fee
      */
     struct FixPriceMarketData {
+        address seller;
         address currency;
         uint256 price;
+        address treasury;
     }
 
     /**
      * @notice The metadata of a protocol fee setting
      * @param feeBps The basis points fee
      * @param treasury The recipient of the fee
+     * @param curationBps The default points fee of willing to share of the NFT income to curators.
+	 * @param stakingBps The default points fee of willing to share of the NFT income to delegators who staking tokens.
      */
     struct ProtocolFeeSetting {
         uint16 feeBps;
         address treasury;
+        uint16 defaultCurationBps;
+		uint16 defaultStakingBps;
     }
 
     /**

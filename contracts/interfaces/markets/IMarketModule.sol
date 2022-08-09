@@ -28,16 +28,18 @@ interface IMarketModule {
 	/**
      * @notice Processes a buy action for a given NFT, this can only be called by the hub.
      *
+     * @param buyer The buyer address.
      * @param curationId The curation ID.
      * @param tokenContract The address of content NFT contract.
      * @param tokenId The token ID of content NFT contract.
-     * @param data Arbitrary data __passed from the collector!__ to be decoded, such as curators' shares.
+     * @param curationIds the list of curation id, who act curators.
      */
     function buy(
+        address buyer,
         uint256 curationId,
         address tokenContract,
         uint256 tokenId,
-        bytes calldata data
+        uint256[] curationIds
     ) external;
 	
 }

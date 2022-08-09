@@ -236,6 +236,16 @@ interface IBardsHub {
 		returns (bool);
 
 	/**
+     * @notice Returns the currently configured BardsDaoData address.
+     *
+     * @return address The address of the currently configured BardsDaoData.
+     */
+    function getBardsDaoDataImpl() 
+		external 
+		view 
+		returns (address);
+
+    /**
      * @notice Returns the currently configured governance address.
      *
      * @return address The address of the currently configured governance.
