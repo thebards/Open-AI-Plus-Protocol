@@ -7,4 +7,6 @@ library Constants{
 	uint8 constant MAX_HANDLE_LENGTH = 31;
 	/// @dev The indicator to pass all remaining gas when paying out royalties
     uint256 constant USE_ALL_GAS_FLAG = 0;
+	// Amount of signal you get with your minimum token deposit
+    uint256 constant SIGNAL_PER_MINIMUM_DEPOSIT = 1e18; // 1 signal as 18 decimal number
 }

@@ -217,10 +217,12 @@ library Events {
      * @notice Emitted when a market module inheriting from the `MarketModuleBase` is constructed.
      *
      * @param bardsDaoData The ModuleGlobals contract address used.
+     * @param minter The minter contract address used.
      * @param timestamp The current block timestamp.
      */
     event MarketModuleBaseConstructed(
         address indexed bardsDaoData, 
+        address indexed minter,
         uint256 timestamp
     );
 
@@ -382,7 +384,7 @@ library Events {
     );
 
     /**
-     * @notice Emitted when curation fee are paid
+     * @notice Emitted when curation fees are paid
      * @param tokenContract The ERC-721 token address of the curation fee payout
      * @param tokenId The ERC-721 token ID of the curation fee payout
      * @param recipient The recipient address of the curation fee
@@ -394,6 +396,22 @@ library Events {
         uint256 indexed tokenId,
         address recipient,
         uint256 amount,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when minters are added. 
+     */
+    event MinterAdded(
+        address indexed account, 
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when minters are removed.
+     */
+    event MinterRemoved(
+        address indexed account,
         uint256 timestamp
     );
 }

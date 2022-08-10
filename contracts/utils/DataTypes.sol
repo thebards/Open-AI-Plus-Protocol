@@ -247,4 +247,16 @@ library DataTypes {
         bytes curationMetaData;
         EIP712Signature sig;
     }
+
+    /**
+     * @notice A Struct containing the parameters required for the staking module.
+     * @param amount BCT Tokens stored as reserves for the curation.
+     * @param reserveRatio Ratio for the bonding curve.
+     * @param bct Curation token contract for this curation staking pool.
+     */
+    struct StakingStruct {
+        uint256 amount;
+        uint16 reserveRatio;
+        address bct;
+    }
 }

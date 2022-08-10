@@ -19,7 +19,6 @@ import '../../utils/DataTypes.sol';
  * NFT module and curation fee setting module.
  */
 abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, BardsNFTBase {
-
 	/**
      * @notice The curation for a given NFT, if one exists
      * @dev ERC-721 token id => Curation
@@ -44,8 +43,9 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				address[] memory sellerFundsRecipients,
 				uint16[] memory sellerBpses,
 				uint16 curationBps,
-				uint16 stakingBps
-			) = abi.decode(_vars.curationData, (address[], address[], uint16[], uint16, uint16));
+				uint16 stakingBps,
+				address treasury
+			) = abi.decode(_vars.curationData, (address[], address[], uint16[], uint16, uint16, address));
 
 			require(
 				sellers.length == sellerFundsRecipients.length && 
@@ -66,7 +66,8 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				sellerFundsRecipients: sellerFundsRecipients,
 				sellerBpses: sellerBpses,
 				curationBps: curationBps,
-				stakingBps: stakingBps
+				stakingBps: stakingBps,
+				treasury: treasury
 			});
 			
 			emit Events.CurationInitialized(_vars.tokenId, _vars.curationData, block.timestamp);
@@ -137,7 +138,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			uint16 stakingBps = _curationData[tokenId].stakingBps;
 			require(stakingBps <= Constants.MAX_BPS, 'stakingBps must set bps <= 100%');
 			return stakingBps;
-   		}
+   	}
 
 	    /**
      * @dev See {IBardsCurationBase-curationDataOf}

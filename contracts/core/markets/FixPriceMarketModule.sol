@@ -22,8 +22,9 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
         address _hub, 
         address _wethAddress, 
         address _royaltyEngine, 
-        address bardsDaoData
-    ) MarketModuleBase(bardsDaoData) FeePayout(_hub, _wethAddress, _royaltyEngine) {}
+        address _bardsDaoData,
+        address _minter
+    ) MarketModuleBase(_bardsDaoData, _minter) FeePayout(_hub, _wethAddress, _royaltyEngine) {}
 
 	/**
      * @dev See {IMarketModule-initializeModule}
@@ -61,7 +62,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
         uint256 curationId,
 		address tokenContract,
         uint256 tokenId,
-        uint256[] curationIds
+        uint256[] memory curationIds
     ) external override {
         // Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
 
@@ -106,7 +107,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 tokenId,
                 curationFee,
                 marketData.currency,
-                curationId
+                curationIds
             );
             // TODO payout staking
             uint256 stakingFee = (remainingProfit * curationData.stakingBps) / Constants.MAX_BPS;
@@ -130,10 +131,10 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 tokenId,
                 curationFee,
                 marketData.currency,
-                curationId
+                curationIds
             );
             // TODO payout staking
-            uint256 stakingFee = (remainingProfit * getDefaultStakingBps();) / Constants.MAX_BPS;
+            uint256 stakingFee = (remainingProfit * getDefaultStakingBps()) / Constants.MAX_BPS;
             remainingProfit -= curationFee;
 
             _handlePayout(

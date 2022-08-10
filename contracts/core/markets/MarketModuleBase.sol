@@ -10,11 +10,13 @@ import '../../utils/DataTypes.sol';
 
 abstract contract MarketModuleBase {
 	address public immutable _bardsDaoData;
+	address public _minter;
 
-    constructor(address bardsDaoData) {
-        if (bardsDaoData == address(0)) revert Errors.InitParamsInvalid();
+    constructor(address bardsDaoData, address minter) {
+        if (bardsDaoData == address(0) || minter == address(0)) revert Errors.InitParamsInvalid();
         _bardsDaoData = bardsDaoData;
-        emit Events.MarketModuleBaseConstructed(_bardsDaoData, block.timestamp);
+		_minter = minter;
+        emit Events.MarketModuleBaseConstructed(_bardsDaoData, _minter, block.timestamp);
     }
 
     function isCurrencyWhitelisted(address currency)

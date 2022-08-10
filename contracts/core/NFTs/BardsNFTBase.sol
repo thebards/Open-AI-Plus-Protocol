@@ -8,6 +8,7 @@ import {DataTypes} from '../../utils/DataTypes.sol';
 import {Events} from '../../utils/Events.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from './ERC721Enumerable.sol';
+import {TokenStorage} from '../storages/TokenStorage.sol';
 
 /**
  * @title BardsNFTBase
@@ -18,8 +19,7 @@ import {ERC721Enumerable} from './ERC721Enumerable.sol';
  * internal operator approval setter, stores the mint timestamp for each token, and replaces the
  * constructor with an initializer.
  */
-abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
-    bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
+abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage {
     bytes32 internal constant PERMIT_TYPEHASH =
         keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
     bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
@@ -28,12 +28,6 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
         );
     bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
         keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant EIP712_DOMAIN_TYPEHASH =
-        keccak256(
-            'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
-        );
-
-    mapping(address => uint256) public sigNonces;
 
     uint256 internal _counter;
 
@@ -70,7 +64,8 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
                             sigNonces[owner]++,
                             sig.deadline
                         )
-                    )
+                    ),
+                    name()
                 ),
                 owner,
                 sig
@@ -99,7 +94,8 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
                             sigNonces[owner]++,
                             sig.deadline
                         )
-                    )
+                    ),
+                    name()
                 ),
                 owner,
                 sig
@@ -110,7 +106,7 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
 
     /// @inheritdoc IBardsNFTBase
     function getDomainSeparator() external view override returns (bytes32) {
-        return _calculateDomainSeparator();
+        return _calculateDomainSeparator(name());
     }
 
     /// @inheritdoc IBardsNFTBase
@@ -136,7 +132,8 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
                             sigNonces[owner]++,
                             sig.deadline
                         )
-                    )
+                    ),
+                    name()
                 ),
                 owner,
                 sig
@@ -145,50 +142,5 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase {
         _burn(tokenId);
     }
 
-    /**
-     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
-     */
-    function _validateRecoveredAddress(
-        bytes32 digest,
-        address expectedAddress,
-        DataTypes.EIP712Signature calldata sig
-    ) internal view {
-        if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
-        address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-            revert Errors.SignatureInvalid();
-    }
 
-    /**
-     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
-     */
-    function _calculateDomainSeparator() internal view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    EIP712_DOMAIN_TYPEHASH,
-                    keccak256(bytes(name())),
-                    EIP712_REVISION_HASH,
-                    block.chainid,
-                    address(this)
-                )
-            );
-    }
-
-    /**
-     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
-     *
-     * @param hashedMessage The message hash from which the digest should be calculated.
-     *
-     * @return bytes32 A 32-byte output representing the EIP712 digest.
-     */
-    function _calculateDigest(bytes32 hashedMessage) internal view returns (bytes32) {
-        bytes32 digest;
-        unchecked {
-            digest = keccak256(
-                abi.encodePacked('\x19\x01', _calculateDomainSeparator(), hashedMessage)
-            );
-        }
-        return digest;
-    }
 }

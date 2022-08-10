@@ -151,6 +151,7 @@ contract FeePayout {
                 amountRemaining -= amount;
                 ++i;
             }
+            if (amountRemaining == 0) break;
         }
 
         return _amount - amountRemaining;

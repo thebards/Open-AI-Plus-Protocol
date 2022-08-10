@@ -6,7 +6,7 @@ pragma solidity ^0.8.9;
  * @title IMarketModule
  * @author TheBards Protocol
  *
- * @notice This is the standard interface for all TheBards-compatible NFT trade modules.
+ * @notice This is the standard interface for all TheBards-compatible NFT market modules.
  */
 interface IMarketModule {
 	/**
@@ -39,7 +39,7 @@ interface IMarketModule {
         uint256 curationId,
         address tokenContract,
         uint256 tokenId,
-        uint256[] curationIds
+        uint256[] memory curationIds
     ) external;
 	
 }
