@@ -184,7 +184,8 @@ contract BardsHub is
                             sigNonces[vars.wallet]++,
                             vars.sig.deadline
                         )
-                    )
+                    ),
+                    name()
                 ),
                 vars.wallet,
                 vars.sig
@@ -230,7 +231,8 @@ contract BardsHub is
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
-                    )
+                    ),
+                    name()
                 ),
                 owner,
                 vars.sig
@@ -284,7 +286,8 @@ contract BardsHub is
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
-                    )
+                    ),
+                    name()
                 ),
                 owner,
                 vars.sig

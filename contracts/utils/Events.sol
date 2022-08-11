@@ -69,7 +69,7 @@ library Events {
      */
     event CurationBpsUpdated(
         uint256 indexed tokenId, 
-        uint16 curationBps, 
+        uint32 curationBps, 
         uint256 timestamp
     );
 
@@ -105,7 +105,7 @@ library Events {
      */
     event CurationSellerBpsesUpdated(
         uint256 indexed tokenId, 
-        uint16[] sellerBpses, 
+        uint32[] sellerBpses, 
         uint256 timestamp
     );
    
@@ -117,7 +117,7 @@ library Events {
      */
     event StakingBpsUpdated(
         uint256 indexed tokenId, 
-        uint16 stakingBps, 
+        uint32 stakingBps, 
         uint256 timestamp
     );
 
@@ -154,8 +154,8 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event ProtocolFeeSet(
-        uint16 indexed prevProtocolFee,
-        uint16 indexed newProtocolFee,
+        uint32 indexed prevProtocolFee,
+        uint32 indexed newProtocolFee,
         uint256 timestamp
     );
 
@@ -167,8 +167,8 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event DefaultCurationFeeSet(
-        uint16 indexed prevDefaultCurationBps,
-        uint16 indexed newDefaultCurationBps,
+        uint32 indexed prevDefaultCurationBps,
+        uint32 indexed newDefaultCurationBps,
         uint256 timestamp
     );
 
@@ -180,8 +180,8 @@ library Events {
      * @param timestamp The current block timestamp.
      */
     event DefaultStakingFeeSet(
-        uint16 indexed prevDefaultStakingBps,
-        uint16 indexed newDefaultStakingBps,
+        uint32 indexed prevDefaultStakingBps,
+        uint32 indexed newDefaultStakingBps,
         uint256 timestamp
     );
 
@@ -353,6 +353,7 @@ library Events {
 
     /**
      * @notice Emitted when royalties are paid
+     * 
      * @param tokenContract The ERC-721 token address of the royalty payout
      * @param tokenId The ERC-721 token ID of the royalty payout
      * @param recipient The recipient address of the royalty
@@ -369,6 +370,7 @@ library Events {
 
     /**
      * @notice Emitted when sell fee are paid
+     * 
      * @param tokenContract The ERC-721 token address of the sell fee payout
      * @param tokenId The ERC-721 token ID of the sell fee payout
      * @param recipient The recipient address of the sell fee
@@ -385,6 +387,7 @@ library Events {
 
     /**
      * @notice Emitted when curation fees are paid
+     * 
      * @param tokenContract The ERC-721 token address of the curation fee payout
      * @param tokenId The ERC-721 token ID of the curation fee payout
      * @param recipient The recipient address of the curation fee
@@ -401,6 +404,9 @@ library Events {
 
     /**
      * @notice Emitted when minters are added. 
+     * 
+     * @param account A minter address
+     * @param timestamp The current block timestamp.
      */
     event MinterAdded(
         address indexed account, 
@@ -409,9 +415,114 @@ library Events {
 
     /**
      * @notice Emitted when minters are removed.
+     * 
+     * @param account A minter address
+     * @param timestamp The current block timestamp.
      */
     event MinterRemoved(
         address indexed account,
         uint256 timestamp
     );
+
+    /**
+     * @notice Emitted when defaultStakingReserveRatio is setted.
+     * 
+     * @param prevDefaultReserveRatio The previous defaultStakingReserveRatio.
+     * @param newDefaultReserveRatio The new defaultStakingReserveRatio.
+     * @param timestamp The current block timestamp.
+     */
+    event DefaultStakingReserveRatioSet(
+        uint32 indexed prevDefaultReserveRatio,
+        uint32 indexed newDefaultReserveRatio,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when newMinimumCurationStaking is setted.
+     * 
+     * @param prevMinimumCurationStaking The previous newMinimumCurationStaking.
+     * @param newMinimumCurationStaking The new newMinimumCurationStaking.
+     * @param timestamp The current block timestamp.
+     */
+    event MinimumCurationStakingSet(
+        uint256 indexed prevMinimumCurationStaking,
+        uint256 indexed newMinimumCurationStaking,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when stakingTaxPercentage is setted.
+     * 
+     * @param prevStakingTaxPercentage The previous stakingTaxPercentage.
+     * @param newStakingTaxPercentage The new stakingTaxPercentage.
+     * @param timestamp The current block timestamp.
+     */
+    event StakingTaxPercentageSet(
+        uint32 indexed prevStakingTaxPercentage,
+        uint32 indexed newStakingTaxPercentage,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when curationStakingTokenMaster is setted.
+     * 
+     * @param prevCurationStakingTokenMaster The previous curationStakingTokenMaster.
+     * @param newCurationStakingTokenMaster The new curationStakingTokenMaster.
+     * @param timestamp The current block timestamp.
+     */
+    event CurationStakingTokenMasterSet(
+        address indexed prevCurationStakingTokenMaster,
+        address indexed newCurationStakingTokenMaster,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when staking pool earn fees.
+     * 
+     * @param curationId Curation ID.
+     * @param amount The amount of fees earned.
+     * @param timestamp The current block timestamp.
+     */
+    event StakingPoolEarned(
+        uint256 indexed curationId,
+        uint256 amount,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when delegator deposited token on curationId as staking signal.
+     * 
+     * @param delegator Delegator who staking.
+     * @param curationId The curation Id deposited
+     * @param amount The amount of token deposited.
+     * @param signal receives `signal` amount according to the curation pool bonding curve
+     * @param stakingTax An amount of `curationTax` will be collected and burned.
+     * @param timestamp The current block timestamp.
+     */
+    event Signalled(
+        address indexed delegator,
+        uint256 indexed curationId,
+        uint256 amount,
+        uint256 signal,
+        uint256 stakingTax,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when delegator burn signal.
+     * 
+     * @param delegator Delegator who staking.
+     * @param curationId The curation Id deposited
+     * @param amount The amount of token deposited.
+     * @param signal receives `signal` amount according to the curation pool bonding curve
+     * @param timestamp The current block timestamp.
+     */
+    event Burned(
+        address indexed delegator,
+        uint256 indexed curationId,
+        uint256 amount,
+        uint256 signal,
+        uint256 timestamp
+    );
+    
 }

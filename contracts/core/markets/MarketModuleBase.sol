@@ -36,21 +36,21 @@ abstract contract MarketModuleBase {
 	function getProtocolFee()
 		internal
 		view
-		returns (uint16) {
+		returns (uint32) {
 			return IBardsDaoData(_bardsDaoData).getProtocolFee();
 	}
 
 	function getDefaultCurationBps()
 		internal
 		view
-		returns (uint16) {
+		returns (uint32) {
 			return IBardsDaoData(_bardsDaoData).getDefaultCurationBps();
 	}
 
 	function getDefaultStakingBps()
 		internal
 		view
-		returns (uint16) {
+		returns (uint32) {
 			return IBardsDaoData(_bardsDaoData).getDefaultStakingBps();
 	}
 

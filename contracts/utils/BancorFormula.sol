@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 contract BancorFormula {
     using SafeMath for uint256;
 
-    uint16 public constant version = 6;
+    uint32 public constant version = 6;
 
     uint256 private constant ONE = 1;
     uint32 private constant MAX_RATIO = 1000000;

@@ -58,9 +58,9 @@ library MathUtils {
 	}
 
     /**
-     * @dev Casting uint16[] to uint256[]
+     * @dev Casting uint32[] to uint256[]
      */
-    function uint16To256Array(uint16[] memory arr) internal pure returns (uint256[] memory) {
+    function uint32To256Array(uint32[] memory arr) internal pure returns (uint256[] memory) {
         uint256[] memory res; 
         if (arr.length == 0)
             return res;

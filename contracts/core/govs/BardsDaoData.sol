@@ -42,9 +42,9 @@ contract BardsDaoData is IBardsDaoData {
     constructor(
         address governance,
         address treasury,
-        uint16 protocolFee,
-        uint16 defaultCurationBps,
-        uint16 defaultStakingBps
+        uint32 protocolFee,
+        uint32 defaultCurationBps,
+        uint32 defaultStakingBps
     ) {
         _setGovernance(governance);
         _setTreasury(treasury);
@@ -64,7 +64,7 @@ contract BardsDaoData is IBardsDaoData {
     }
 
     /// @inheritdoc IBardsDaoData
-    function setProtocolFee(uint16 newProtocolFee) external override onlyGov {
+    function setProtocolFee(uint32 newProtocolFee) external override onlyGov {
         _setProtocolFee(newProtocolFee);
     }
 
@@ -89,22 +89,22 @@ contract BardsDaoData is IBardsDaoData {
     }
 
     /// @inheritdoc IBardsDaoData
-    function getProtocolFee() external view override returns (uint16) {
+    function getProtocolFee() external view override returns (uint32) {
         return _protocolFeeSetting.feeBps;
     }
 
     /// @inheritdoc IBardsDaoData
-    function getDefaultCurationBps() external view override returns (uint16) {
+    function getDefaultCurationBps() external view override returns (uint32) {
         return _protocolFeeSetting.defaultCurationBps;
     }
 
     /// @inheritdoc IBardsDaoData
-    function getDefaultStakingBps() external view override returns (uint16) {
+    function getDefaultStakingBps() external view override returns (uint32) {
         return _protocolFeeSetting.defaultStakingBps;
     }
 
     //@inheritdoc IBardsDaoData
-    function getProtocolFeePair() external view override returns (address, uint16) {
+    function getProtocolFeePair() external view override returns (address, uint32) {
         return (_protocolFeeSetting.treasury, _protocolFeeSetting.feeBps);
     }
 
@@ -132,23 +132,23 @@ contract BardsDaoData is IBardsDaoData {
         emit Events.ProtocolTreasurySet(prevTreasury, newTreasury, block.timestamp);
     }
 
-    function _setProtocolFee(uint16 newProtocolFee) internal {
+    function _setProtocolFee(uint32 newProtocolFee) internal {
         if (newProtocolFee >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
-        uint16 prevProtocolFee = _protocolFeeSetting.feeBps;
+        uint32 prevProtocolFee = _protocolFeeSetting.feeBps;
         _protocolFeeSetting.feeBps = newProtocolFee;
         emit Events.ProtocolFeeSet(prevProtocolFee, newProtocolFee, block.timestamp);
     }
 
-    function _setDefaultCurationBps(uint16 newDefaultCurationBps) internal {
+    function _setDefaultCurationBps(uint32 newDefaultCurationBps) internal {
         if (newDefaultCurationBps >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
-        uint16 prevDefaultCurationBps = _protocolFeeSetting.defaultCurationBps;
+        uint32 prevDefaultCurationBps = _protocolFeeSetting.defaultCurationBps;
         _protocolFeeSetting.defaultCurationBps = newDefaultCurationBps;
         emit Events.DefaultCurationFeeSet(prevDefaultCurationBps, newDefaultCurationBps, block.timestamp);
     }
 
-    function _setDefaultStakingBps(uint16 newDefaultStakingBps) internal {
+    function _setDefaultStakingBps(uint32 newDefaultStakingBps) internal {
         if (newDefaultStakingBps >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
-        uint16 prevDefaultStakingBps = _protocolFeeSetting.feeBps;
+        uint32 prevDefaultStakingBps = _protocolFeeSetting.feeBps;
         _protocolFeeSetting.defaultStakingBps = newDefaultStakingBps;
         emit Events.ProtocolFeeSet(prevDefaultStakingBps, newDefaultStakingBps, block.timestamp);
     }

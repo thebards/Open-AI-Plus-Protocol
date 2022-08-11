@@ -5,6 +5,14 @@ pragma solidity ^0.8.9;
 import {DataTypes} from '../../utils/DataTypes.sol';
 import {Errors} from '../../utils/Errors.sol';
 
+
+/**
+ * @title TokenStorage
+ * 
+ * @author TheBards Protocol
+ * 
+ * @notice Storages and functions for ERC20 and ERC721 token contract.
+ */
 abstract contract TokenStorage {
 	bytes32 internal constant EIP712_REVISION_HASH = keccak256('1');
     bytes32 internal constant DOMAIN_SALT =

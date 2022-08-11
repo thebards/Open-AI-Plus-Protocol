@@ -5,6 +5,7 @@ pragma solidity ^0.8.9;
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../interfaces/markets/IMarketModule.sol';
 import '../../interfaces/curations/IBardsCurationBase.sol';
 import '../../utils/DataTypes.sol';
@@ -13,7 +14,16 @@ import './MarketModuleBase.sol';
 import '../../utils/Constants.sol';
 import '../trades/FeePayout.sol';
 
+/**
+ * @title FixPriceMarketModule
+ * 
+ * @author Thebards Protocol
+ * 
+ * @notice This module allows sellers to list an owned ERC-721 token for sale for a given price in a given currency, 
+ * and allows buyers to purchase from those asks.
+ */
 contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 	// tokenContract address -> tokenId -> market data
 	mapping(address => mapping(uint256 => DataTypes.FixPriceMarketData)) internal _marketMetaData;
@@ -100,7 +110,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
             // The fee split setting of curation.
 		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
             // payout curation
-            uint256 curationFee = (remainingProfit * curationData.curationBps) / Constants.MAX_BPS;
+            uint256 curationFee = remainingProfit.mul(uint256(curationData.curationBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
                 tokenContract, 
@@ -110,7 +120,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 curationIds
             );
             // TODO payout staking
-            uint256 stakingFee = (remainingProfit * curationData.stakingBps) / Constants.MAX_BPS;
+            uint256 stakingFee = remainingProfit.mul(uint256(curationData.stakingBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
 
             _handleSellersSplitPayout(
@@ -124,7 +134,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
         }else{
             // using default curation and staking bps setting.
             // payout curation
-            uint256 curationFee = (remainingProfit * getDefaultCurationBps()) / Constants.MAX_BPS;
+            uint256 curationFee = remainingProfit.mul(uint256(getDefaultCurationBps())).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
                 tokenContract, 
@@ -134,7 +144,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 curationIds
             );
             // TODO payout staking
-            uint256 stakingFee = (remainingProfit * getDefaultStakingBps()) / Constants.MAX_BPS;
+            uint256 stakingFee = remainingProfit.mul(uint256(getDefaultStakingBps())).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
 
             _handlePayout(

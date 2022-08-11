@@ -118,9 +118,9 @@ library DataTypes {
     struct CurationData {
 		address[] sellers;
         address[] sellerFundsRecipients;
-		uint16[] sellerBpses;
-		uint16 curationBps;
-		uint16 stakingBps;
+		uint32[] sellerBpses;
+		uint32 curationBps;
+		uint32 stakingBps;
         address treasury;
     }
 
@@ -157,10 +157,10 @@ library DataTypes {
 	 * @param stakingBps The default points fee of willing to share of the NFT income to delegators who staking tokens.
      */
     struct ProtocolFeeSetting {
-        uint16 feeBps;
+        uint32 feeBps;
         address treasury;
-        uint16 defaultCurationBps;
-		uint16 defaultStakingBps;
+        uint32 defaultCurationBps;
+		uint32 defaultStakingBps;
     }
 
     /**
@@ -256,7 +256,7 @@ library DataTypes {
      */
     struct StakingStruct {
         uint256 amount;
-        uint16 reserveRatio;
-        address bct;
+        uint32 reserveRatio;
+        address bst;
     }
 }

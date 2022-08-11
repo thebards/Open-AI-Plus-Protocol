@@ -31,7 +31,7 @@ interface IBardsDaoData {
      *
      * @param newProtocolFee The new treasury fee to set.
      */
-    function setProtocolFee(uint16 newProtocolFee) external;
+    function setProtocolFee(uint32 newProtocolFee) external;
 
     /**
      * @notice Adds or removes a currency from the whitelist. This function can only be called by governance.
@@ -71,23 +71,23 @@ interface IBardsDaoData {
     /**
      * @notice Returns the protocol fee bps.
      *
-     * @return uint16 The protocol fee bps.
+     * @return uint32 The protocol fee bps.
      */
-    function getProtocolFee() external view returns (uint16);
+    function getProtocolFee() external view returns (uint32);
 
     /**
      * @notice Returns the default curation fee bps.
      *
-     * @return uint16 The default curation fee bps.
+     * @return uint32 The default curation fee bps.
      */
-    function getDefaultCurationBps() external view returns (uint16);
+    function getDefaultCurationBps() external view returns (uint32);
 
     /**
      * @notice Returns the default staking fee bps.
      *
-     * @return uint16 The default staking fee bps.
+     * @return uint32 The default staking fee bps.
      */
-    function getDefaultStakingBps() external view returns (uint16);
+    function getDefaultStakingBps() external view returns (uint32);
 
     /**
      * @notice Returns the protocol fee setting in a single call.
@@ -101,7 +101,7 @@ interface IBardsDaoData {
      *
      * @return tuple First, the treasury address, second, the protocol fee.
      */
-    function getProtocolFeePair() external view returns (address, uint16);
+    function getProtocolFeePair() external view returns (address, uint32);
 
     /**
      * @notice Computes the fee for a given uint256 amount

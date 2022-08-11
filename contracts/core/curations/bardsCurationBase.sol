@@ -41,11 +41,11 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			(
 				address[] memory sellers,
 				address[] memory sellerFundsRecipients,
-				uint16[] memory sellerBpses,
-				uint16 curationBps,
-				uint16 stakingBps,
+				uint32[] memory sellerBpses,
+				uint32 curationBps,
+				uint32 stakingBps,
 				address treasury
-			) = abi.decode(_vars.curationData, (address[], address[], uint16[], uint16, uint16, address));
+			) = abi.decode(_vars.curationData, (address[], address[], uint32[], uint32, uint32, address));
 
 			require(
 				sellers.length == sellerFundsRecipients.length && 
@@ -53,7 +53,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				"Sellers, sellerFundsRecipients, and sellerBpses must have same length."
 			);
 			require(
-				MathUtils.sum(MathUtils.uint16To256Array(sellerBpses)) == Constants.MAX_BPS, 
+				MathUtils.sum(MathUtils.uint32To256Array(sellerBpses)) == Constants.MAX_BPS, 
 				"Sellers fee bps must be equal to 10000."
 			);
 			require(
@@ -107,8 +107,8 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		view
 		virtual
 		override
-		returns (uint16[] memory) {
-			uint16[] memory sellerBpses = _curationData[tokenId].sellerBpses;
+		returns (uint32[] memory) {
+			uint32[] memory sellerBpses = _curationData[tokenId].sellerBpses;
 			return sellerBpses;
 		}
 
@@ -120,8 +120,8 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		view 
 		virtual 
 		override 
-		returns (uint16) {
-			uint16 curationBps = _curationData[tokenId].curationBps;
+		returns (uint32) {
+			uint32 curationBps = _curationData[tokenId].curationBps;
 			require(curationBps <= Constants.MAX_BPS, 'curationBpsOf must set bps <= 100%');
 			return curationBps;
     	}
@@ -134,8 +134,8 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		view 
 		virtual 
 		override 
-		returns (uint16) {
-			uint16 stakingBps = _curationData[tokenId].stakingBps;
+		returns (uint32) {
+			uint32 stakingBps = _curationData[tokenId].stakingBps;
 			require(stakingBps <= Constants.MAX_BPS, 'stakingBps must set bps <= 100%');
 			return stakingBps;
    	}
@@ -182,7 +182,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	/**
      * @dev See {IBardsCurationBase-setSellerBpsesParams}.
      */
-	function setSellerBpsesParams(uint256 tokenId, uint16[] calldata sellerBpses) 
+	function setSellerBpsesParams(uint256 tokenId, uint32[] calldata sellerBpses) 
 		external 
 		virtual 
 		override {
@@ -194,7 +194,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	/**
      * @dev See {IBardsCurationBase-setCurationFeeParams}.
      */
-	function setCurationBpsParams(uint256 tokenId, uint16 curationBps) 
+	function setCurationBpsParams(uint256 tokenId, uint32 curationBps) 
 		external 
 		virtual 
 		override {
@@ -208,7 +208,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	/**
      * @dev See {IBardsCurationBase-setStakingBpsParams}.
      */
-	function setStakingBpsParams(uint256 tokenId, uint16 stakingBps) 
+	function setStakingBpsParams(uint256 tokenId, uint32 stakingBps) 
 		external 
 		virtual 
 		override {
@@ -222,7 +222,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	/**
      * @dev See {IBardsCurationBase-setBpsParams}.
      */
-	function setBpsParams(uint256 tokenId, uint16 curationBps, uint16 stakingBps) 
+	function setBpsParams(uint256 tokenId, uint32 curationBps, uint32 stakingBps) 
 		external 
 		virtual 
 		override {

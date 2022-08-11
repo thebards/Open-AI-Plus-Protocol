@@ -128,7 +128,7 @@ contract FeePayout {
         // Store the variables that cache each recipient, amount, and curationBps.
         address recipient;
         uint256 amount;
-        uint16 curationBps;
+        uint32 curationBps;
 
         // Payout each royalty
         for (uint256 i = 0; i < numCurations; ) {
@@ -172,7 +172,7 @@ contract FeePayout {
         uint256 _amount,
         address _payoutCurrency,
         address[] memory _sellerFundsRecipients,
-        uint16[] memory _sellerBpses
+        uint32[] memory _sellerBpses
     ) internal returns (uint256){
         if (_amount == 0) return _amount;
 

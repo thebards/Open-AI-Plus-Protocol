@@ -30,7 +30,7 @@ contract BardsCurationToken is ERC20Burnable, IBardsCurationToken, TokenStorage 
             "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
     );
     mapping(address => bool) private _minters;
-    address HUB;
+    address private HUB;
 
     modifier onlyMinter() {
         require(isMinter(msg.sender), "Only minter can call");

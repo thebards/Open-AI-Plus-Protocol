@@ -7,15 +7,15 @@ import '../../utils/DataTypes.sol';
 abstract contract BardsStakingStorage {
 	// Tax charged when delegator deposit funds
     // Parts per million. (Allows for 4 decimal points, 999,999 = 99.9999%)
-    uint16 public stakingTaxPercentage;
+    uint32 public stakingTaxPercentage;
 
-    // Default reserve ratio to configure delegator shares bonding curve
+    // Default staking reserve ratio to configure delegator shares bonding curve
     // Parts per million. (Allows for 4 decimal points, 999,999 = 99.9999%)
-    uint16 public defaultReserveRatio;
+    uint32 public defaultStakingReserveRatio;
 
     // Master copy address that holds implementation of curation staking token
     // This is used as the target for BardsCurationToken clones
-    address public curationTokenMaster;
+    address public curationStakingTokenMaster;
 
     // Minimum amount allowed to be deposited by curators to initialize a pool
     // This is the `startPoolBalance` for the bonding curve
