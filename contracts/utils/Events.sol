@@ -576,10 +576,10 @@ library Events {
     );
 
     /**
-     * @notice 
+     * @notice Emitted when epoch run
      * 
-     * @param epoch
-     * @param caller,
+     * @param epoch epoch 
+     * @param caller epoch
      * @param timestamp The current block timestamp.
      */
     event EpochRun(
@@ -589,10 +589,10 @@ library Events {
     );
 
     /**
-     * @notice
+     * @notice Emitted when epoch length updated
      * 
-     * @param epoch
-     * @param epochLength
+     * @param epoch epoch
+     * @param epochLength epoch length
      * @param timestamp The current block timestamp.
      */
     event EpochLengthUpdate(

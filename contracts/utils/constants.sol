@@ -9,4 +9,6 @@ library Constants{
     uint256 constant USE_ALL_GAS_FLAG = 0;
 	// Amount of signal you get with your minimum token deposit
     uint256 constant SIGNAL_PER_MINIMUM_DEPOSIT = 1e18; // 1 signal as 18 decimal number
+	uint256 constant MIN_ISSUANCE_RATE = 1e18;
+	uint256 constant TOKEN_DECIMALS = 1e18;
 }

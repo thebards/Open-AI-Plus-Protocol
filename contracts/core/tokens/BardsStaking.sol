@@ -10,6 +10,7 @@ import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
 import '../../utils/Events.sol';
 import '../../utils/Constants.sol';
+import '../../utils/BancorFormula.sol';
 import '../../interfaces/tokens/IBardsShareToken.sol';
 import '../../interfaces/tokens/IBardsCurationToken.sol';
 import '../govs/ContractRegistrar.sol';
@@ -33,13 +34,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
  */
 contract BardsStaking is IBardsStaking, BardsStakingStorage, ContractRegistrar {
 	using SafeMath for uint256;
-
-	address private HUB;
-
-	modifier onlyHub() {
-        require(msg.sender == HUB, "Only HUB can call");
-        _;
-    }
 	
 	/**
      * @dev Initialize this contract.

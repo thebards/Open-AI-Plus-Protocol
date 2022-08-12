@@ -1,5 +1,6 @@
 # TheBards Protocol
 
+![logo](resources/imgs/thebards_logo.png)
 TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
 
 ![TheBards protocol](resources/imgs/thebards_arch.png)
