@@ -13,9 +13,13 @@ abstract contract BardsStakingStorage {
     // Parts per million. (Allows for 4 decimal points, 999,999 = 99.9999%)
     uint32 public defaultStakingReserveRatio;
 
-    // Master copy address that holds implementation of curation staking token
+    // Master copy address that holds implementation of bards share token
+    // This is used as the target for BardsShareToken clones
+    address public bardsShareTokenImpl;
+
+    // Master copy address that holds implementation of bards curation token
     // This is used as the target for BardsCurationToken clones
-    address public curationStakingTokenMaster;
+    address public bardsCurationTokenImpl;
 
     // Minimum amount allowed to be deposited by curators to initialize a pool
     // This is the `startPoolBalance` for the bonding curve

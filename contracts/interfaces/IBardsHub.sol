@@ -88,6 +88,25 @@ interface IBardsHub {
 
 	// -- Registry --
 
+    /**
+     * @notice Register contract id and mapped address
+     * @param _id Contract id (keccak256 hash of contract name)
+     * @param _contractAddress Contract address
+     */
+    function registerContract(bytes32 _id, address _contractAddress) external;
+
+    /**
+     * @notice Unregister a contract address
+     * @param _id Contract id (keccak256 hash of contract name)
+     */
+    function unsetContract(bytes32 _id) external;
+
+    /**
+     * @notice Get contract registered address by its id
+     * @param _id Contract id
+     */
+    function getContractAddressRegistered(bytes32 _id) external view returns (address);
+
 	// -- Pausing --
 
 	// -- Epoch Manage --
@@ -235,16 +254,6 @@ interface IBardsHub {
 		view 
 		returns (bool);
 
-	/**
-     * @notice Returns the currently configured BardsDaoData address.
-     *
-     * @return address The address of the currently configured BardsDaoData.
-     */
-    function getBardsDaoDataImpl() 
-		external 
-		view 
-		returns (address);
-
     /**
      * @notice Returns the currently configured governance address.
      *
@@ -338,5 +347,7 @@ interface IBardsHub {
         external
         view
         returns (DataTypes.CurationStruct memory);
+
+
 
 }

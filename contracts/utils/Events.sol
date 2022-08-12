@@ -464,15 +464,28 @@ library Events {
     );
 
     /**
-     * @notice Emitted when curationStakingTokenMaster is setted.
+     * @notice Emitted when bardsShareTokenImpl is setted.
      * 
-     * @param prevCurationStakingTokenMaster The previous curationStakingTokenMaster.
-     * @param newCurationStakingTokenMaster The new curationStakingTokenMaster.
+     * @param prevBardsShareTokenImpl The previous bardsShareTokenImpl.
+     * @param newBardsShareTokenImpl The new bardsShareTokenImpl.
      * @param timestamp The current block timestamp.
      */
-    event CurationStakingTokenMasterSet(
-        address indexed prevCurationStakingTokenMaster,
-        address indexed newCurationStakingTokenMaster,
+    event BardsShareTokenImplSet(
+        address indexed prevBardsShareTokenImpl,
+        address indexed newBardsShareTokenImpl,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when bardsCurationTokenImpl is setted.
+     * 
+     * @param prevBardsCurationTokenImpl The previous bardsCurationTokenImpl.
+     * @param newBardsCurationTokenImpl The new bardsCurationTokenImpl.
+     * @param timestamp The current block timestamp.
+     */
+    event BardsCurationTokenImplSet(
+        address indexed prevBardsCurationTokenImpl,
+        address indexed newBardsCurationTokenImpl,
         uint256 timestamp
     );
 
@@ -524,5 +537,68 @@ library Events {
         uint256 signal,
         uint256 timestamp
     );
-    
+
+    /**
+     * @notice Emitted when contract address update
+     * 
+     * @param id contract id
+     * @param contractAddress contract Address
+     * @param timestamp The current block timestamp.
+     */
+    event ContractRegistered(
+        bytes32 indexed id, 
+        address contractAddress,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when contract with `nameHash` is synced to `contractAddress`.
+     * 
+     * @param nameHash name Hash
+     * @param contractAddress contract Address
+     * @param timestamp The current block timestamp.
+     */
+    event ContractSynced(
+        bytes32 indexed nameHash, 
+        address contractAddress,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when hub setted
+     * 
+     * @param hub the hub address.
+     * @param timestamp The current block timestamp.
+     */
+    event HUBSet(
+        address indexed hub,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice 
+     * 
+     * @param epoch
+     * @param caller,
+     * @param timestamp The current block timestamp.
+     */
+    event EpochRun(
+        uint256 indexed epoch, 
+        address caller,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice
+     * 
+     * @param epoch
+     * @param epochLength
+     * @param timestamp The current block timestamp.
+     */
+    event EpochLengthUpdate(
+        uint256 indexed epoch, 
+        uint256 epochLength,
+        uint256 timestamp
+    );
+
 }

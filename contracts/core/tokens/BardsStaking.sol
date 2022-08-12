@@ -4,14 +4,15 @@ pragma solidity ^0.8.9;
 
 import '../../interfaces/tokens/IBardsStaking.sol';
 import '../storages/BardsStakingStorage.sol';
-import '../tokens/BardsShareToken.sol';
-import '../tokens/BardsCurationToken.sol';
+import './BardsShareToken.sol';
+import './BardsCurationToken.sol';
 import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
 import '../../utils/Events.sol';
 import '../../utils/Constants.sol';
 import '../../interfaces/tokens/IBardsShareToken.sol';
 import '../../interfaces/tokens/IBardsCurationToken.sol';
+import '../govs/ContractRegistrar.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -30,7 +31,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
  * Holders can burn BCS using this contract to get BCT tokens back according to the
  * bonding curve.
  */
-contract BardsStaking is IBardsStaking, BardsStakingStorage {
+contract BardsStaking is IBardsStaking, BardsStakingStorage, ContractRegistrar {
 	using SafeMath for uint256;
 
 	address private HUB;
@@ -46,7 +47,7 @@ contract BardsStaking is IBardsStaking, BardsStakingStorage {
     function initialize(
 		address _HUB,
         address _bondingCurve,
-        address _curationStakingTokenMaster,
+        address _bardsShareTokenImpl,
         uint32 _defaultStakingReserveRatio,
         uint32 _stakingTaxPercentage,
         uint256 _minimumCurationStaking
@@ -54,9 +55,9 @@ contract BardsStaking is IBardsStaking, BardsStakingStorage {
 		if (_HUB == address(0)) revert Errors.InitParamsInvalid();
         require(_bondingCurve != address(0), "Bonding curve must be set");
         bondingCurve = _bondingCurve;
-
+		ContractRegistrar.initialize(_HUB);
         // Settings
-		_setCurationStakingTokenMaster(_curationStakingTokenMaster);
+		_setBardsShareTokenImpl(_bardsShareTokenImpl);
         _setDefaultStakingReserveRatio(_defaultStakingReserveRatio);
         _setStakingTaxPercentage(_stakingTaxPercentage);
         _setMinimumCurationStaking(_minimumCurationStaking);
@@ -87,11 +88,11 @@ contract BardsStaking is IBardsStaking, BardsStakingStorage {
     }
 
     /// @inheritdoc IBardsStaking
-    function setCurationStakingTokenMaster(address _curationStakingTokenMaster) 
+    function setBardsShareTokenImpl(address _bardsShareTokenImpl) 
 		external 
 		override 
 	onlyHub {
-        _setCurationStakingTokenMaster(_curationStakingTokenMaster);
+        _setBardsShareTokenImpl(_bardsShareTokenImpl);
     }
 
     /// @inheritdoc IBardsStaking
@@ -136,7 +137,7 @@ contract BardsStaking is IBardsStaking, BardsStakingStorage {
             // If no signal token for the pool - create one
             if (stakingPool.bst == address(0)) {
                 // Use a minimal proxy to reduce gas cost
-                IBardsShareToken bst = IBardsShareToken(Clones.clone(curationStakingTokenMaster));
+                IBardsShareToken bst = IBardsShareToken(Clones.clone(bardsShareTokenImpl));
                 bst.initialize(address(this));
                 stakingPool.bst = bst;
             }
@@ -204,7 +205,7 @@ contract BardsStaking is IBardsStaking, BardsStakingStorage {
 
         // Return the tokens to the delegator
 		if (tokensOut > 0) {
-            require(BardsCurationToken().transfer(delegator, tokensOut), "!transfer");
+            require(bardsCurationToken().transfer(delegator, tokensOut), "!transfer");
         }
 
         emit Events.Burned(delegator, _curationId, tokensOut, _signalIn, block.timestamp);
@@ -396,17 +397,17 @@ contract BardsStaking is IBardsStaking, BardsStakingStorage {
 
     /**
      * @dev Internal: Set the master copy to use as clones for the curation token.
-     * @param _newCurationStakingTokenMaster Address of implementation contract to use for curation staking tokens
+     * @param _newBardsShareTokenImpl Address of implementation contract to use for curation staking tokens
      */
-    function _setCurationStakingTokenMaster(address _newCurationStakingTokenMaster) private {
-        require(_newCurationStakingTokenMaster != address(0), "Token master must be non-empty");
-        require(Address.isContract(_newCurationStakingTokenMaster), "Token master must be a contract");
+    function _setBardsShareTokenImpl(address _newBardsShareTokenImpl) private {
+        require(_newBardsShareTokenImpl != address(0), "Token master must be non-empty");
+        require(Address.isContract(_newBardsShareTokenImpl), "Token master must be a contract");
 
-		address prevCurationStakingTokenMaster = curationStakingTokenMaster;
-        curationStakingTokenMaster = _newCurationStakingTokenMaster;
+		address prevBardsShareTokenImpl = bardsShareTokenImpl;
+        bardsShareTokenImpl = _newBardsShareTokenImpl;
         emit Events.CurationStakingTokenMasterSet(
-			prevCurationStakingTokenMaster,
-			_newCurationStakingTokenMaster,
+			prevBardsShareTokenImpl,
+			_newBardsShareTokenImpl,
 			block.timestamp
 		);
     }

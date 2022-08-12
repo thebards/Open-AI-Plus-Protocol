@@ -27,8 +27,6 @@ contract BardsHub is
 {
     uint256 internal constant REVISION = 1;
 
-    address internal immutable _bardsDaoDataImpl;
-
     /**
      * @dev The constructor sets the immutable bardsDaoData implementations.
      *
@@ -36,7 +34,6 @@ contract BardsHub is
      */
     constructor(address bardsDaoDataImpl) {
         if (bardsDaoDataImpl == address(0)) revert Errors.InitParamsInvalid();
-        _bardsDaoDataImpl = bardsDaoDataImpl;
     }
     
     /**
@@ -123,6 +120,37 @@ contract BardsHub is
             whitelist,
             block.timestamp
         );
+    }
+
+    /// @inheritdoc IBardsHub
+    function registerContract(
+        bytes32 _id, 
+        address _contractAddress
+    )
+        external
+        override
+    onlyGov{
+        require(_contractAddress != address(0), "Contract address must be set");
+        _registry[_id] = _contractAddress;
+        emit Events.ContractRegistered(_id, _contractAddress);
+    }
+
+    /// @inheritdoc IBardsHub
+    function unsetContract(bytes32 _id) 
+        external 
+        override 
+    onlyGov {
+        _registry[_id] = address(0);
+        emit Events.ContractRegistered(_id, address(0));
+    }
+
+    /// @inheritdoc IBardsHub
+    function getContractAddressRegistered(bytes32 _id) 
+        public 
+        view 
+        override 
+    returns (address) {
+        return _registry[_id];
     }
 
     /// *********************************
@@ -346,14 +374,6 @@ contract BardsHub is
         override 
         returns (address) {
             return _governance;
-    }
-
-    function getBardsDaoDataImpl()
-        external 
-        view 
-        override 
-        returns (address) {
-            return _bardsDaoDataImpl;
     }
 
     /// @inheritdoc IBardsHub

@@ -38,11 +38,11 @@ interface IBardsStaking {
     ) external;
 
     /**
-     * @notice Set the master copy to use as clones for the curation staking token.
-     * @param _curationStakingTokenMaster Address of implementation contract to use for curation staking tokens
+     * @notice Set the master copy to use as clones for the bards share token.
+     * @param _bardsShareTokenImpl Address of implementation contract to use for bards share tokens
      */
-    function setCurationStakingTokenMaster(
-        address _curationStakingTokenMaster
+    function setBardsShareTokenImpl(
+        address _bardsShareTokenImpl
     ) external;
 
     /**
