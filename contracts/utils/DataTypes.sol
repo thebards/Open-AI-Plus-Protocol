@@ -249,14 +249,134 @@ library DataTypes {
     }
 
     /**
-     * @notice A Struct containing the parameters required for the staking module.
-     * @param amount BCT Tokens stored as reserves for the curation.
-     * @param reserveRatio Ratio for the bonding curve.
-     * @param bct Curation token contract for this curation staking pool.
+     * @notice Possible states an allocation can be
+     * States:
+     * - Null = indexer == address(0)
+     * - Active = not Null && tokens > 0
+     * - Closed = Active && closedAtEpoch != 0
+     * - Finalized = Closed && closedAtEpoch + channelDisputeEpochs > now()
+     * - Claimed = not Null && tokens == 0
      */
-    struct StakingStruct {
-        uint256 amount;
+    enum AllocationState {
+        Null,
+        Active,
+        Closed,
+        Finalized,
+        Claimed
+    }
+
+    /**
+     * @notice A Struct containing the parameters required for the staking module.
+     * 
+     * @param currencies The currencies of tokens.
+     * @param tokens BCT Tokens stored as reserves for the curation.
+     * @param tokensAllocated Tokens used in allocations, considing multi-currencies.
+     * @param reserveRatio Ratio for the bonding curve.
+     * @param bst Curation token contract for this curation staking pool.
+     * @param shares Shares minted totally.
+     * @param delegators All delegators.
+     */
+    struct CurationStakingPool {
+        address[] currencies;
+        mapping(address => uint256) tokens;
+        uint256 tokensAllocated;
         uint32 reserveRatio;
         address bst;
+        uint256 shares;
+        mapping(address => Delegation) delegators;
+    }
+
+    /**
+     * @notice Individual delegation data of a delegator in a pool.
+     * 
+     * @param tokens tokens be staked in curation by delegator.
+     * @param shares Shares owned by a delegator in the pool
+     * @param tokensLocked Tokens locked for undelegation
+     * @param tokensLockedUntil Block when locked tokens can be withdrawn
+     */
+    struct Delegation {
+        uint256 shares;
+        mapping(address => uint256) tokensLocked;
+        uint256 tokensLockedUntil;
+    }
+
+    /**
+     * @notice Stores accumulated rewards and snapshots related to a particular Curation.
+     * 
+     * @param accRewardsForCuration Accumulated rewards for curation 
+     * @param accRewardsForCurationSnapshot Accumulated rewards for curation snapshot
+     * @param accRewardsPerShareSnapshot Accumulated rewards per share for curation snapshot
+     * @param accRewardsPerAllocatedToken Accumulated rewards per allocated token.
+     */
+    struct CurationReward {
+        uint256 accRewardsForCuration;
+        uint256 accRewardsForCurationSnapshot;
+        uint256 accRewardsPerShareSnapshot;
+        uint256 accRewardsPerAllocatedToken;
+    }
+
+    /**
+     * @notice Allocate tokens for the purpose of curation fees and rewards.
+     * An allocation is created in the allocate() function and consumed in claim()
+     * 
+     * @param curationId curation Id
+     * @param recipientsMeta The snapshot of recipients from curationData.
+     * @param tokens Tokens allocated to a curation, currency => tokens
+     * @param createdAtEpoch Epoch when it was created
+     * @param closedAtEpoch Epoch when it was closed
+     * @param currencies The currencies of tokens.
+     * @param collectedFees Collected fees for the allocation
+     * @param effectiveAllocationStake Effective allocation when closed
+     * @param accRewardsPerAllocatedToken Snapshot used for reward calc
+     */
+    struct Allocation {
+        uint256 curationId;
+        bytes recipientsMeta;
+        uint256 tokens;
+        uint256 createdAtEpoch;
+        uint256 closedAtEpoch;
+        address[] currencies;
+        mapping(address => uint256) collectedFees;
+        uint256 effectiveAllocationStake;
+        uint256 accRewardsPerAllocatedToken;
+    }
+
+    /**
+     * @notice Tracks stats for allocations closed on a particular epoch for claiming.
+     * The pool also keeps tracks of total fees collected and stake used.
+     * Only one rebate pool exists per epoch
+     * 
+     * @param currencies The currencies of tokens.
+     * @param fees total query fees in the rebate pool
+     * @param effectiveAllocatedStake total effective allocation of stake
+     * @param claimedRewards total claimed rewards from the rebate pool
+     * @param unclaimedAllocationsCount amount of unclaimed allocations
+     * @param alphaNumerator numerator of `alpha` in the cobb-douglas function
+     * @param alphaDenominator denominator of `alpha` in the cobb-douglas function
+     */
+    struct RebatePool {
+        address[] currencies;
+        mapping(address => uint256) fees;
+        uint256 effectiveAllocatedStake;
+        mapping(address => uint256) claimedRewards;
+        uint32 unclaimedAllocationsCount;
+        uint32 alphaNumerator;
+        uint32 alphaDenominator;
+    }
+
+    /**
+     * @notice The struct for creating allocate
+     * 
+     * @param curationId
+     * @param tokens
+     * @param allocationId
+     * @param metadata
+     * @
+     */
+    struct CreateAllocateData {
+        uint256 curationId;
+        uint256 tokens;
+        address allocationID;
+        bytes32 metadata;
     }
 }

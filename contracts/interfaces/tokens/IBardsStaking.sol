@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.9;
 
+import '../../utils/DataTypes.sol';
+
 /**
  * @title IBardsStaking
  * 
@@ -11,140 +13,284 @@ pragma solidity ^0.8.9;
  * 
  */
 interface IBardsStaking {
+
     /**
-     * @notice Set the default staking reserve ratio percentage for a curation staking pool.
-     * @notice Update the default reserver ratio to `_defaultReserveRatio`
-     * @param _defaultStakingReserveRatio Reserve ratio (in PPM)
+     * @notice Set the default reserve ratio percentage for a curation pool.
+     * 
+     * Update the default reserver ratio to `_defaultReserveRatio`
+     * @param _defaultReserveRatio Reserve ratio (in PPM)
      */
-    function setDefaultStakingReserveRatio(
-        uint32 _defaultStakingReserveRatio
+    function setDefaultReserveRatio(uint32 _defaultReserveRatio) external;
+
+    /**
+     * @notice Set the minimum stake required to.
+     * 
+     * @param _minimumStake Minimum stake
+     */
+    function setMinimumStake(uint256 _minimumStake) external;
+
+    /**
+     * @notice Set the thawing period for unstaking.
+     * 
+     * @param _thawingPeriod Period in blocks to wait for token withdrawals after unstaking
+     */
+    function setThawingPeriod(uint32 _thawingPeriod) external;
+
+    /**
+     * @notice Set the period in epochs that need to pass before fees in rebate pool can be claimed.
+     * 
+     * @param _channelDisputeEpochs Period in epochs
+     */
+    function setChannelDisputeEpochs(uint32 _channelDisputeEpochs) external;
+
+    /**
+     * @notice Set the max time allowed for stake on allocations.
+     * 
+     * @param _maxAllocationEpochs Allocation duration limit in epochs
+     */
+    function setMaxAllocationEpochs(uint32 _maxAllocationEpochs) external;
+
+    /**
+     * @notice Set the rebate ratio (fees to allocated stake).
+     * 
+     * @param _alphaNumerator Numerator of `alpha` in the cobb-douglas function
+     * @param _alphaDenominator Denominator of `alpha` in the cobb-douglas function
+     */
+    function setRebateRatio(uint32 _alphaNumerator, uint32 _alphaDenominator) external;
+
+    /**
+     * @notice Set a staking tax percentage to burn when staked funds are deposited.
+     * @param _percentage Percentage of staked tokens to burn as staking tax
+     */
+    function setStakingTaxPercentage(uint32 _percentage) external;
+
+    /**
+     * @dev Set the master copy to use as clones for the Bards Share Tokens.
+     * @param _bardsShareTokenImpl Address of implementation contract to use for Bards Share Tokens.
+     */
+    function setBardsShareTokenImpl(address _bardsShareTokenImpl) external;
+
+    // -- Operation --
+
+    /**
+     * @notice Authorize or unauthorize an address to be an operator.
+     * @param _operator Address to authorize
+     * @param _allowed Whether authorized or not
+     */
+    function setOperator(address _operator, bool _allowed) external;
+
+    /**
+     * @notice Return true if operator is allowed for the bards.
+     * 
+     * @param _operator Address of the operator
+     * @param _theBards Address of the bards
+     */
+    function isOperator(address _operator, address _theBards) external view returns (bool);
+
+    // -- Staking --
+
+    /**
+     * @notice Deposit tokens on the curation.
+     * 
+     * @param _curationId curation Id
+     * @param _tokens Amount of tokens to stake
+     */
+    function stake(uint256 _curationId, uint256 _tokens) external returns(uint256, uint256);
+
+    /**
+     * @notice Unstake shares from the curation stake, lock them until thawing period expires.
+     * 
+     * @param _curationId Curation Id to unstake
+     * @param _shares Amount of shares to unstake
+     */
+    function unstake(uint256 _curationId, uint256 _shares) external;
+
+    /**
+     * @notice Withdraw tokens once the thawing period has passed.
+     */
+    function withdraw() external;
+
+    /**
+     * @notice Withdraw staked tokens once the thawing period has passed.
+     * 
+     * @param _curationId curation Id
+     * @param _stakeToCuration Re-delegate to new curation if non-zero, withdraw if zero address
+     */ 
+    function withdrawStaked(uint256 _curationId, uint256 _stakeToCuration) external returns (uint256);
+
+    // -- Channel management and allocations --
+
+    /**
+     * @notice Allocate available tokens to a curation.
+     * 
+     * @param _createAllocationData Data of struct CreateAllocationData
+     */
+    function allocate(
+        DataTypes.CreateAllocateData calldata _createAllocationData
     ) external;
 
     /**
-     * @notice Set the minimum staking amount for delegators.
-     * @notice Update the minimum staking amount to `_minimumCurationStaking`
-     * @param _minimumCurationStaking Minimum amount of tokens required deposit
+     * @notice Close an allocation and free the staked tokens.
+     * 
+     * @param _allocationID The allocation identifier
      */
-    function setMinimumCurationStaking(
-        uint256 _minimumCurationStaking
+    function closeAllocation(address _allocationID) external;
+
+    /**
+     * @notice Close multiple allocations and free the staked tokens.
+     * 
+     * @param _allocationIDs An array of allocationID
+     */
+    function closeAllocationMany(address[] calldata _allocationIDs) external;
+
+    /**
+     * @notice Close and allocate. This will perform a close and then create a new Allocation
+     * atomically on the same transaction.
+     * 
+     * @param _closingAllocationID The identifier of the allocation to be closed
+     * @param _createAllocationData Data of struct CreateAllocationData
+     */
+    function closeAndAllocate(
+        address _closingAllocationID,
+        DataTypes.CreateAllocateData calldata _createAllocationData
     ) external;
 
     /**
-     * @notice Set the staking tax percentage to charge when a delegator deposits BCT tokens.
-     * @param _percentage Staking tax percentage charged when depositing BCT tokens
+     * @notice Collect fees from market and assign them to an allocation.
+     * Funds received are only accepted from a valid sender.
+     * To avoid reverting on the withdrawal from channel flow this function will:
+     * 1) Accept calls with zero tokens.
+     * 2) Accept calls after an allocation passed the dispute period, in that case, all
+     *    the received tokens are burned.
+     * @param _currency Currency of token to collect.
+     * @param _tokens Amount of tokens to collect
+     * @param _allocationID Allocation where the tokens will be assigned
      */
-    function setStakingTaxPercentage(
-        uint32 _percentage
-    ) external;
+    function collect(address _currency, uint256 _tokens, address _allocationID) external;
 
     /**
-     * @notice Set the master copy to use as clones for the bards share token.
-     * @param _bardsShareTokenImpl Address of implementation contract to use for bards share tokens
+     * @notice Claim tokens from the rebate pool.
+     * 
+     * @param _allocationID Allocation from where we are claiming tokens
+     * @param _restake True if restake fees instead of transfer to curation
      */
-    function setBardsShareTokenImpl(
-        address _bardsShareTokenImpl
-    ) external;
+    function claim(address _allocationID, bool _restake) external;
 
     /**
-     * @notice Check if any BCT tokens are deposited for a curation.
-     * @param _curationId curation ID to check if curated
-     * @return True if staked
+     * @notice Claim tokens from the rebate pool for many allocations.
+     * 
+     * @param _allocationIDs Array of allocations from where we are claiming tokens
+     * @param _restake True if restake fees instead of transfer to curation
      */
-    function isStaked(uint256 _curationId) external view returns (bool);
+    function claimMany(address[] calldata _allocationIDs, bool _restake) external;
+
+    // -- Getters and calculations --
 
     /**
-     * @notice Get the amount of signal a delegator has in a curation staking pool.
-     * @param _delegator Delegator owning the signal tokens
-     * @param _curationId Curation Id of curation staking pool
-     * @return Amount of signal owned by a delegator for the curation.
+     * @notice Getter that returns if a curation has any stake.
+     * @param _curationId Address of the indexer
+     * @return True if curation has staked tokens
      */
-    function getDelegatorSignal(uint256 _delegator, uint256 _curationId)
+    function hasStake(uint256 _curationId) external view returns (bool);
+
+    /**
+     * @dev Return the current state of an allocation.
+     * @param _allocationID Address used as the allocation identifier
+     * @return AllocationState
+     */
+    function getAllocationState(address _allocationID) external view returns (DataTypes.AllocationState);
+
+    /**
+     * @notice Return if allocationID is used.
+     * 
+     * @param _allocationID Address used as signer for an allocation
+     * @return True if allocationID already used
+     */
+    function isAllocation(address _allocationID) external view returns (bool);
+
+    /**
+     * @notice Return the total amount of tokens allocated to curation.
+     * 
+     * @param _curationId curationId
+     * @return Total tokens allocated to curation
+     */
+    function getCurationAllocatedTokens(uint256 _curationId)
         external
         view
         returns (uint256);
 
     /**
-     * @dev Get the amount of signal in a curation staking pool.
-     * @param _curationId Curation Id of curation staking pool
-     * @return Amount of signal minted for the curation
+     * @notice Get the amount of share a delegator has in a curation staking pool.
+     * 
+     * @param _delegator Delegator owning the share tokens
+     * @param _curationId curation Id.
+     * 
+     * @return Amount of share owned by a delegator for the curation
      */
-    function getCurationStakingPoolSignal(
+    function getDelegatorShare(
+        address _delegator, 
         uint256 _curationId
-    ) external view returns (uint256);
+    )
+        external
+        view
+        returns (uint256);
 
     /**
-     * @dev Get the amount of token reserves in a curation staking pool.
-     * @param _curationId Curation Id of curation staking pool
-     * @return Amount of token reserves in the curation staking pool
+     * @notice Get the amount of share in a curation staking pool.
+     * 
+     * @param _curationId curation Id.
+     * 
+     * @return Amount of share minted for the curation
      */
-    function getCurationStakingPoolTokens(
-        uint256 _curationId
-    ) external view returns (uint256);
+    function getStakingPoolShare(uint256 _curationId) 
+        external 
+        view 
+        returns (uint256);
 
     /**
-     * @notice Assign Bards Curation Tokens earned as fees to the curation staking pool reserve.
-     * This function can only be called by the Hub contract and will do the bookeeping of
-     * transferred tokens into this contract.
-     * @param _curationId CurationId where funds should be allocated as reserves
-     * @param _amount Amount of Bards Curation Tokens to add to reserves
+     * @notice Get the amount of share in a curation staking pool.
+     * 
+     * @param _curationId curation Id.
+     * @param _currency The currency of token.
+     * 
+     * @return Amount of share minted for the curation
      */
-    function earn(
-        uint256 _curationId, 
-        uint256 _amount
-    ) external;
-
-	/**
-     * @notice Deposit Curation Tokens in exchange for signal of a curation staking pool.
-     * @param _curationId The curation ID from where to mint signal
-     * @param _tokensIn Amount of Graph Tokens to deposit
-     * @param _signalOutMin Expected minimum amount of signal to receive
-     * @return Signal minted and deposit tax
-     */
-    function mint(
-        uint256 _curationId,
-        uint256 _tokensIn,
-        uint256 _signalOutMin
-    ) external returns (uint256, uint256);
-	
-    /**
-     * @notice Return an amount of signal to get tokens back.
-     * @notice Burn _signal from the SubgraphDeployment curation pool
-     * @param _curationId Curation the curator is returning signal
-     * @param _signalIn Amount of signal to return
-     * @param _tokensOutMin Expected minimum amount of tokens to receive
-     * @return Tokens returned
-     */
-	function burn(
-        uint256 _curationId,
-        uint256 _signalIn,
-        uint256 _tokensOutMin
-    ) external returns (uint256);
+    function getStakingPoolToken(uint256 _curationId, address _currency) 
+        external 
+        view 
+        returns (uint256);
 
     /**
-     * @notice Calculate amount of signal that can be bought with tokens in a curation staking pool.
-     * This function considers and excludes the deposit tax.
-     * @param _curationId A curation to mint signal
-     * @param _tokensIn Amount of tokens used to mint signal
-     * @return Amount of signal that can be bought and tokens subtracted for the tax
+     * @notice Return whether the delegator has staked to the curation.
+     * 
+     * @param _curationId  Curation Id where funds have been staked
+     * @param _delegator Address of the delegator
+     * @return True if delegator of curation
      */
-	function tokensToSignal(
-		uint256 _curationId, 
-		uint256 _tokensIn
-	)
+    function isDelegator(uint256 _curationId, address _delegator) external view returns (bool);
+
+    /**
+     * @notice Calculate amount of share that can be bought with tokens in a staking pool.
+     * 
+     * @param _curationId Curation to mint share
+     * @param _tokens Amount of tokens used to mint share
+     * @return Amount of share that can be bought with tokens
+     */
+    function tokensToShare(uint256 _curationId, uint256 _tokens)
         external
         view
         returns (uint256, uint256);
 
     /**
-     * @notice Calculate number of tokens to get when burning signal from a curation staking pool.
-     * @param _curationId A curation to burn signal
-     * @param _signalIn Amount of signal to burn
-     * @return Amount of tokens to get for an amount of signal
+     * @notice Calculate number of tokens to get when burning shares from a staking pool.
+     * 
+     * @param _curationId Curation to burn share
+     * @param _shares Amount of share to burn
+     * @param _currency The currency of token return
+     * 
+     * @return Amount of tokens to get for an amount of shares
      */
-    function signalToTokens(
-		uint256 _curationId, 
-		uint256 _signalIn
-	)
+    function shareToTokens(uint256 _curationId, uint256 _shares, address _currency)
         external
         view
         returns (uint256);

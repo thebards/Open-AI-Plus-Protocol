@@ -34,7 +34,7 @@ contract ContractRegistrar is IContractRegistrar {
     /**
      * @notice Initialize the controller.
      */
-    function initialize(address _HUB) external {
+    function _initialize(address _HUB) external {
         _setHub(_HUB);
     }
 

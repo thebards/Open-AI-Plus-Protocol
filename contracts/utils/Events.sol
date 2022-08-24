@@ -425,28 +425,28 @@ library Events {
     );
 
     /**
-     * @notice Emitted when defaultStakingReserveRatio is setted.
+     * @notice Emitted when defaultReserveRatio is setted.
      * 
-     * @param prevDefaultReserveRatio The previous defaultStakingReserveRatio.
-     * @param newDefaultReserveRatio The new defaultStakingReserveRatio.
+     * @param prevDefaultReserveRatio The previous defaultReserveRatio.
+     * @param newDefaultReserveRatio The new defaultReserveRatio.
      * @param timestamp The current block timestamp.
      */
-    event DefaultStakingReserveRatioSet(
+    event DefaultReserveRatioSet(
         uint32 indexed prevDefaultReserveRatio,
         uint32 indexed newDefaultReserveRatio,
         uint256 timestamp
     );
 
     /**
-     * @notice Emitted when newMinimumCurationStaking is setted.
+     * @notice Emitted when newMinimumStaking is setted.
      * 
-     * @param prevMinimumCurationStaking The previous newMinimumCurationStaking.
-     * @param newMinimumCurationStaking The new newMinimumCurationStaking.
+     * @param prevMinimumStaking The previous newMinimumStaking.
+     * @param newMinimumStaking The new newMinimumStaking.
      * @param timestamp The current block timestamp.
      */
-    event MinimumCurationStakingSet(
-        uint256 indexed prevMinimumCurationStaking,
-        uint256 indexed newMinimumCurationStaking,
+    event MinimumStakingSet(
+        uint256 indexed prevMinimumStaking,
+        uint256 indexed newMinimumStaking,
         uint256 timestamp
     );
 
@@ -486,55 +486,6 @@ library Events {
     event BardsCurationTokenImplSet(
         address indexed prevBardsCurationTokenImpl,
         address indexed newBardsCurationTokenImpl,
-        uint256 timestamp
-    );
-
-    /**
-     * @notice Emitted when staking pool earn fees.
-     * 
-     * @param curationId Curation ID.
-     * @param amount The amount of fees earned.
-     * @param timestamp The current block timestamp.
-     */
-    event StakingPoolEarned(
-        uint256 indexed curationId,
-        uint256 amount,
-        uint256 timestamp
-    );
-
-    /**
-     * @notice Emitted when delegator deposited token on curationId as staking signal.
-     * 
-     * @param delegator Delegator who staking.
-     * @param curationId The curation Id deposited
-     * @param amount The amount of token deposited.
-     * @param signal receives `signal` amount according to the curation pool bonding curve
-     * @param stakingTax An amount of `curationTax` will be collected and burned.
-     * @param timestamp The current block timestamp.
-     */
-    event Signalled(
-        address indexed delegator,
-        uint256 indexed curationId,
-        uint256 amount,
-        uint256 signal,
-        uint256 stakingTax,
-        uint256 timestamp
-    );
-
-    /**
-     * @notice Emitted when delegator burn signal.
-     * 
-     * @param delegator Delegator who staking.
-     * @param curationId The curation Id deposited
-     * @param amount The amount of token deposited.
-     * @param signal receives `signal` amount according to the curation pool bonding curve
-     * @param timestamp The current block timestamp.
-     */
-    event Burned(
-        address indexed delegator,
-        uint256 indexed curationId,
-        uint256 amount,
-        uint256 signal,
         uint256 timestamp
     );
 
@@ -601,4 +552,145 @@ library Events {
         uint256 timestamp
     );
 
+    /**
+     * @notice Emitted when rewards are assigned to a curation.
+     */
+    event RewardsAssigned(
+        uint256 indexed curationId,
+        address indexed allocationID,
+        uint256 epoch,
+        uint256 amount,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when rewards are denied to a curation.
+     */
+    event RewardsDenied(
+        uint256 indexed curationId, 
+        address indexed allocationID, 
+        uint256 epoch,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when a curation is denied for claiming rewards.
+     */
+    event RewardsDenylistUpdated(
+        uint256 indexed curationId, 
+        uint256 sinceBlock,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when IssuanceRate update
+     * 
+     * @param prevIssuanceRate The preivous issuance rate of BCT token.
+     * @param newIssuanceRate The new issuance rate of BCT token.
+     * @param timestamp The current block timestamp.
+     */
+    event IssuanceRateSet(
+        uint256 prevIssuanceRate,
+        uint256 newIssuanceRate,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when MinimumStakeingToken update
+     * 
+     * @param prevMinimumStakeingToken The previous Minimum amount of tokens on a curation required to accrue rewards.
+     * @param newMinimumStakeingToken The New minimum amount of tokens on a curation required to accrue rewards.
+     * @param timestamp The current block timestamp.
+     */
+    event MinimumStakeingTokenSet(
+        uint256 prevMinimumStakeingToken,
+        uint256 newMinimumStakeingToken,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when ThawingPeriod update
+     * 
+     * @param prevThawingPeriod The previous Period in blocks to wait for token withdrawals after unstaking
+     * @param newThawingPeriod The new Period in blocks to wait for token withdrawals after unstaking
+     * @param timestamp The current block timestamp.
+     */
+    event ThawingPeriodSet(
+        uint32 prevThawingPeriod,
+        uint32 newThawingPeriod,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when ThawingPeriod update
+     * 
+     * @param prevChannelDisputeEpochs The previous Period in blocks to wait for token withdrawals after unstaking
+     * @param newChannelDisputeEpochs The new Period in blocks to wait for token withdrawals after unstaking
+     * @param timestamp The current block timestamp.
+     */
+    event ChannelDisputeEpochsSet(
+        uint32 prevChannelDisputeEpochs,
+        uint32 newChannelDisputeEpochs,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when RebateRatio update
+     * 
+     * @param alphaNumerator Numerator of `alpha` in the cobb-douglas function
+     * @param alphaDenominator Denominator of `alpha` in the cobb-douglas function
+     * @param timestamp The current block timestamp.
+     */
+    event RebateRatioSet(
+        uint32 alphaNumerator,
+        uint32 alphaDenominator,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when `delegator` deposited `tokens` on `curationId` as share.
+     * The `delegator` receives `share` amount according to the pool bonding curve.
+     * An amount of `stakingTax` will be collected and burned.
+     */
+    event CurationPoolStaked(
+        address indexed delegator,
+        uint256 indexed curationId,
+        uint256 tokens,
+        uint256 shares,
+        uint256 stakingTax,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when `delegator` undelegated `tokens` from `curationId`.
+     * Tokens get locked for withdrawal after a period of time.
+     * 
+     * @param curationId Curation Id
+     * @param delegator delegator
+     * @param shares shares to be burnt
+     * @param until A time tokens unlock for withdrawal.
+     * @param timestamp The current block timestamp.
+     */
+    event StakeDelegatedLocked(
+        uint256 indexed curationId,
+        address indexed delegator,
+        uint256 shares,
+        uint256 until,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when `delegator` withdrew delegated `tokens` from `curationId`.
+     * 
+     * @param curationId Curation Id
+     * @param delegator delegator
+     * @param tokens Amount of tokens withdrawn.
+     * @param timestamp The current block timestamp.
+     */
+    event StakeDelegatedWithdrawn(
+        uint256 indexed curationId,
+        address indexed delegator,
+        uint256 tokens,
+        uint256 timestamp
+    );
 }

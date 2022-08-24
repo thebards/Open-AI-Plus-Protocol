@@ -17,18 +17,39 @@ abstract contract BardsStakingStorage {
     // This is used as the target for BardsShareToken clones
     address public bardsShareTokenImpl;
 
-    // Master copy address that holds implementation of bards curation token
-    // This is used as the target for BardsCurationToken clones
-    address public bardsCurationTokenImpl;
-
     // Minimum amount allowed to be deposited by curators to initialize a pool
     // This is the `startPoolBalance` for the bonding curve
-    uint256 public minimumCurationStaking;
+    uint256 public minimumStaking;
 
     // Bonding curve library
     address public bondingCurve;
 
+    // Time in blocks to unstake
+    uint32 public thawingPeriod; // in blocks
+
+    // Period for allocation to be finalized
+    uint32 public channelDisputeEpochs;
+
+    // Maximum allocation time
+    uint32 public maxAllocationEpochs;
+
+    // Rebate ratio
+    uint32 public alphaNumerator;
+    uint32 public alphaDenominator;
+
+    // Operator auth : sender => operator
+    mapping(address => mapping(address => bool)) public operatorAuth;
+
     // Mapping of curationId => CurationStakingPool
     // There is only one CurationStakingPool per curationId
-	mapping (uint256 => DataTypes.StakingStruct) _stakingPools;
+	mapping (uint256 => DataTypes.CurationStakingPool) _stakingPools;
+
+    // Allocations : allocationID => Allocation
+    mapping(address => DataTypes.Allocation) public allocations;
+
+    // Subgraph Allocations: curationId => tokens
+    mapping(uint256 => uint256) public curationAllocations;
+
+    // Rebate pools : epoch => Pool
+    mapping(uint256 => DataTypes.RebatePool) public rebates;
 }

@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.9;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import '../../utils/DataTypes.sol';
 
 /**
@@ -10,7 +11,7 @@ import '../../utils/DataTypes.sol';
  *
  * @notice This is the standard interface for the BardsCurationToken contract.
  */
-interface IBardsCurationToken {
+interface IBardsCurationToken is IERC20 {
      // -- Mint and Burn --
     function burn(uint256 amount) external;
 

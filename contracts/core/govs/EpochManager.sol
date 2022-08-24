@@ -3,25 +3,25 @@
 pragma solidity ^0.8.9;
 
 import '../storages/EpochManagerStorage.sol';
-import './ContractRegistrar.sol';
+import {ContractRegistrar} from './ContractRegistrar.sol';
 import '../../interfaces/govs/IEpochManager.sol';
 import '../../utils/Events.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title EpochManager
- * @dev Produce epochs based on a number of blocks to coordinate contracts in the protocol.
+ * @notice Produce epochs based on a number of blocks to coordinate contracts in the protocol.
  */
 contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
 	using SafeMath for uint256;
 
 	/**
-     * @dev Initialize this contract.
+     * @notice Initialize this contract.
      */
     function initialize(address _HUB, uint256 _epochLength) external {
         require(_epochLength > 0, "Epoch length cannot be 0");
 
-        ContractRegistrar.initialize(_HUB);
+        ContractRegistrar._initialize(_HUB);
 
         // NOTE: We make the first epoch to be one instead of zero to avoid any issue
         // with composing contracts that may use zero as an empty value
@@ -33,7 +33,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Set the epoch length.
+     * @notice Set the epoch length.
      * @notice Set epoch length to `_epochLength` blocks
      * @param _epochLength Epoch length in blocks
      */
@@ -49,7 +49,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Run a new epoch, should be called once at the start of any epoch.
+     * @notice Run a new epoch, should be called once at the start of any epoch.
      * @notice Perform state changes for the current epoch
      */
     function runEpoch() external override {
@@ -64,7 +64,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return true if the current epoch has already run.
+     * @notice Return true if the current epoch has already run.
      * @return Return true if current epoch is the last epoch that has run
      */
     function isCurrentEpochRun() public view override returns (bool) {
@@ -72,7 +72,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return current block number.
+     * @notice Return current block number.
      * @return Block number
      */
     function blockNum() public view override returns (uint256) {
@@ -80,7 +80,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return blockhash for a block.
+     * @notice Return blockhash for a block.
      * @return BlockHash for `_block` number
      */
     function blockHash(uint256 _block) external view override returns (bytes32) {
@@ -96,7 +96,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return the current epoch, it may have not been run yet.
+     * @notice Return the current epoch, it may have not been run yet.
      * @return The current epoch based on epoch length
      */
     function currentEpoch() public view override returns (uint256) {
@@ -104,7 +104,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return block where the current epoch started.
+     * @notice Return block where the current epoch started.
      * @return The block number when the current epoch started
      */
     function currentEpochBlock() public view override returns (uint256) {
@@ -112,7 +112,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return the number of blocks that passed since current epoch started.
+     * @notice Return the number of blocks that passed since current epoch started.
      * @return Blocks that passed since start of epoch
      */
     function currentEpochBlockSinceStart() external view override returns (uint256) {
@@ -120,7 +120,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return the number of epoch that passed since another epoch.
+     * @notice Return the number of epoch that passed since another epoch.
      * @param _epoch Epoch to use as since epoch value
      * @return Number of epochs and current epoch
      */
@@ -130,7 +130,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
     }
 
     /**
-     * @dev Return number of epochs passed since last epoch length update.
+     * @notice Return number of epochs passed since last epoch length update.
      * @return The number of epoch that passed since last epoch length update
      */
     function epochsSinceUpdate() public view override returns (uint256) {
