@@ -368,6 +368,8 @@ library DataTypes {
      * @notice The struct for creating allocate
      * 
      * @param curationId
+     * @param recipientsMeta The snapshot of recipients from curationData.
+     * @param currency The currency of tokens.
      * @param tokens
      * @param allocationId
      * @param metadata
@@ -375,6 +377,8 @@ library DataTypes {
      */
     struct CreateAllocateData {
         uint256 curationId;
+        bytes recipientsMeta;
+        address currency;
         uint256 tokens;
         address allocationID;
         bytes32 metadata;

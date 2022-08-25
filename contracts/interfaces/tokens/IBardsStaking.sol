@@ -220,6 +220,17 @@ interface IBardsStaking {
         returns (uint256);
 
     /**
+     * @notice Returns amount of staked BCT tokens ready to be withdrawn after thawing period.
+     * @param _curationId curation Id.
+     * @param _delegator Delegator owning the share tokens
+     * @return Are there any withdrawable tokens.
+     */
+    function getWithdraweableBCTTokens(uint256 _curationId, address _delegator)
+        external
+        view
+        returns (uint256);
+
+    /**
      * @notice Get the amount of share a delegator has in a curation staking pool.
      * 
      * @param _delegator Delegator owning the share tokens

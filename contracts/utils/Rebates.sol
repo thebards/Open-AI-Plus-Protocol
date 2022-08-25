@@ -62,7 +62,7 @@ library Rebates {
         uint256 _effectiveAllocatedStake
     ) internal {
         pool.fees[_currency] = pool.fees[_currency].add(_fees);
-        pool.effectiveAllocatedStake[_currency] = pool.effectiveAllocatedStake[_currency].add(
+        pool.effectiveAllocatedStake = pool.effectiveAllocatedStake.add(
             _effectiveAllocatedStake
         );
         pool.unclaimedAllocationsCount += 1;
@@ -85,13 +85,13 @@ library Rebates {
         uint256 rebateReward = 0;
 
         // Calculate the rebate rewards for the delegator
-        if (pool.fees[_currency] > 0 && pool.effectiveAllocatedStake[_currency] > 0) {
+        if (pool.fees[_currency] > 0 && pool.effectiveAllocatedStake > 0) {
             rebateReward = LibCobbDouglas.cobbDouglas(
                 pool.fees[_currency], // totalRewards
                 _fees,
                 pool.fees[_currency],
                 _effectiveAllocatedStake,
-                pool.effectiveAllocatedStake[_currency],
+                pool.effectiveAllocatedStake,
                 pool.alphaNumerator,
                 pool.alphaDenominator
             );

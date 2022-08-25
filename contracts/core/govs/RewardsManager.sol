@@ -298,7 +298,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         IBardsStaking bardStaking = bardsStaking();
         require(msg.sender == address(bardStaking), "Caller must be the bardStaking contract");
 
-        DataTypes.Allocation memory alloc = bardStaking.getAllocation(_allocationID);
+        DataTypes.Allocation memory alloc = bardStaking.allocations[_allocationID];
         uint256 accRewardsPerAllocatedToken = onCurationAllocationUpdate(
             alloc.curationId
         );
@@ -322,7 +322,13 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
             bardsCurationToken().mint(address(bardStaking), rewards);
         }
 
-        emit Events.RewardsAssigned(alloc.curationId, _allocationID, alloc.closedAtEpoch, rewards, block.timestamp);
+        emit Events.RewardsAssigned(
+            alloc.curationId, 
+            _allocationID, 
+            alloc.closedAtEpoch, 
+            rewards, 
+            block.timestamp
+        );
 
         return rewards;
     }

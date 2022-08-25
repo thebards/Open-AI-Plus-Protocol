@@ -46,6 +46,16 @@ library Events {
     );
 
     /**
+     * @dev Emitted when `theBards` set `operator` access.
+     */
+    event OperatorSet(
+        address indexed theBards, 
+        address indexed operator, 
+        bool allowed, 
+        uint256 timestamp
+    );
+
+    /**
      * @dev Emitted when the emergency admin is changed. We emit the caller even though it should be the previous
      * governance address, as we cannot guarantee this will always be the case due to upgradeability.
      *
@@ -691,6 +701,67 @@ library Events {
         uint256 indexed curationId,
         address indexed delegator,
         uint256 tokens,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when hub allocated `tokens` amount to `curationId`
+     * during `epoch`.
+     * `allocationID` indexer derived address used to identify the allocation.
+     * `metadata` additional information related to the allocation.
+     */
+    event AllocationCreated(
+        address indexed curationId,
+        uint256 epoch,
+        uint256 tokens,
+        address indexed allocationID,
+        bytes32 metadata,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when hub close an allocation in `epoch` for `curationId`.
+     * An amount of `tokens` get unallocated from `curationId`.
+     * The `effectiveAllocation` are the tokens allocated from creation to closing.
+     */
+    event AllocationClosed(
+        uint256 indexed curationId,
+        uint256 epoch,
+        uint256 tokens,
+        address indexed allocationID,
+        uint256 effectiveAllocationStake,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when `indexer` claimed a rebate on `subgraphDeploymentID` during `epoch`
+     * related to the `forEpoch` rebate pool.
+     * The rebate is for `tokens` amount and `unclaimedAllocationsCount` are left for claim
+     * in the rebate pool. `delegationFees` collected and sent to delegation pool.
+     */
+    event RebateClaimed(
+        uint256 indexed curationId,
+        address indexed allocationID,
+        address currency,
+        uint256 epoch,
+        uint256 forEpoch,
+        uint256 tokens,
+        uint256 unclaimedAllocationsCount,
+        uint256 delegationFees,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when `indexer` collected `tokens` amount in `epoch` for `allocationID`.
+     * These funds are related to `subgraphDeploymentID`.
+     * The `from` value is the sender of the collected funds.
+     */
+    event AllocationCollected(
+        uint256 indexed curationId,
+        uint256 epoch,
+        uint256 tokens,
+        address indexed allocationID,
+        address from,
         uint256 timestamp
     );
 }
