@@ -33,13 +33,15 @@ interface IMarketModule {
      * @param tokenContract The address of content NFT contract.
      * @param tokenId The token ID of content NFT contract.
      * @param curationIds the list of curation id, who act curators.
+     * @param allocationIds The list of allocation id.
      */
     function buy(
         address buyer,
         uint256 curationId,
         address tokenContract,
         uint256 tokenId,
-        uint256[] memory curationIds
+        uint256[] memory curationIds,
+        address[] memory allocationIds
     ) external;
 	
 }

@@ -72,7 +72,8 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
         uint256 curationId,
 		address tokenContract,
         uint256 tokenId,
-        uint256[] memory curationIds
+        uint256[] memory curationIds,
+        address[] memory allocationIds
     ) external override {
         // Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
 
@@ -101,15 +102,13 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
             protocolTreasury
         );
 
-        // TODO Payout staking
-
         // Transfer remaining ETH/ERC-20 to seller
         // 1) when the NFT if minted by TheBards HUB, distribute profits proportionally to sellers.
         // 2) or, pay directly to the designated seller.
         if (tokenContract == HUB){
             // The fee split setting of curation.
 		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
-            // payout curation
+            // collect curation
             uint256 curationFee = remainingProfit.mul(uint256(curationData.curationBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
@@ -117,13 +116,19 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 tokenId,
                 curationFee,
                 marketData.currency,
-                curationIds
+                curationIds,
+                allocationIds
             );
-            // TODO payout staking
+            // collect staking
             uint256 stakingFee = remainingProfit.mul(uint256(curationData.stakingBps)).div(Constants.MAX_BPS);
-            remainingProfit -= curationFee;
-            
+            remainingProfit -= stakingFee;
+            _handleStakingPayout(
+                curationId,
+                marketData.currency,
+                stakingFee
+            );
 
+            // payout for sellers
             _handleSellersSplitPayout(
                 tokenContract, 
                 tokenId,
@@ -144,9 +149,6 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 marketData.currency,
                 curationIds
             );
-            // TODO payout staking
-            uint256 stakingFee = remainingProfit.mul(uint256(getDefaultStakingBps())).div(Constants.MAX_BPS);
-            remainingProfit -= curationFee;
 
             _handlePayout(
                 marketData.treasury, 

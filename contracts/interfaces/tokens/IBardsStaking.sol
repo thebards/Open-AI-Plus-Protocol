@@ -178,6 +178,19 @@ interface IBardsStaking {
     function collect(address _currency, uint256 _tokens, address _allocationID) external;
 
     /**
+     * @notice Collect the delegation rewards.
+     * This function will assign the collected fees to the delegation pool.
+     * @param _curationId Curation to which the tokens to distribute are related
+     * @param _currency The currency of token.
+     * @param _tokens Total tokens received used to calculate the amount of fees to collect
+     */
+    function collectStakingFees(
+        uint256 _curationId, 
+        address _currency, 
+        uint256 _tokens
+    ) external;
+
+    /**
      * @notice Claim tokens from the rebate pool.
      * 
      * @param _allocationID Allocation from where we are claiming tokens

@@ -306,6 +306,9 @@ contract BardsStaking is
         DataTypes.Delegation storage delegation = stakingPool.delegators[_delegator];
         delegation.shares = delegation.shares.add(shareOut);
 
+        // reset the current epoch totalShare of MultiCurrencyFees.
+        stakingPool.fees[epochManager().currentEpoch()].totalShare = getStakingPoolShare(_curationId);
+
         emit Events.CurationPoolStaked(
             _delegator, 
             _curationId, 
@@ -527,6 +530,25 @@ contract BardsStaking is
             _currency,
             block.timestamp
         );
+    }
+
+    /// @inheritdoc IBardsStaking
+    function collectStakingFees(
+        uint256 _curationId, 
+        address _currency, 
+        uint256 _tokens
+    )
+        external 
+        override
+    {
+        DataTypes.CurationStakingPool storage stakingPool = _stakingPools[_curationId];
+        
+        if (_currency == address(bardsCurationToken())){
+            stakingPool.tokens = stakingPool.tokens.add(_tokens);
+        }else{
+            uint256 _currentEpoch = epochManager().currentEpoch();
+            stakingPool.fees[_currentEpoch].fees[_currency] = stakingPool.fees[_currentEpoch].fees[_currency].add(_tokens);
+        }
     }
 
     /// @inheritdoc IBardsStaking
@@ -1433,13 +1455,21 @@ contract BardsStaking is
         IBardsCurationToken bct = bardsCurationToken();
 
         // Calculate delegation rewards and add them to the delegation pool
-        uint256 delegationRewards = _collectDelegationRewardsAndFees(allocations[_allocationID].curationId, address(bct), totalRewards, stakingBps);
+        uint256 delegationRewards = _collectDelegationRewardsAndFees(
+            allocations[_allocationID].curationId, 
+            address(bct), 
+            totalRewards, 
+            stakingBps
+        );
         uint256 remainingRewards = totalRewards.sub(delegationRewards);
 
         // Send the split rewards
         uint256 _reward;
         for(uint256 i = 0; i < sellers.length; i++){
             _reward = uint256(sellerBpses[i]).mul(remainingRewards).div(Constants.MAX_BPS);
+            if(_reward <= 0){
+                continue;
+            }
             if (sellers[i] == allocations[_allocationID].curator && _stakeToCuration != 0){
                 _stake(_stakeToCuration, _reward, allocations[_allocationID].curator);
                 continue;
@@ -1480,7 +1510,8 @@ contract BardsStaking is
             if (_currency == address(bardsCurationToken())){
                 stakingPool.tokens = stakingPool.tokens.add(delegationRewards);
             }else{
-                stakingPool.fees[_currency] = stakingPool.fees[_currency].add(delegationRewards);
+                uint256 _currentEpoch = epochManager().currentEpoch();
+                stakingPool.fees[_currentEpoch].fees[_currency] = stakingPool.fees[_currentEpoch].fees[_currency].add(_tokens);
             }
         }
         return delegationRewards;

@@ -125,7 +125,8 @@ contract FeePayout is ContractRegistrar {
         uint256 _tokenId,
         uint256 _amount,
         address _payoutCurrency,
-        uint256[] memory _curationIds
+        uint256[] memory _curationIds,
+        address[] memory _allocationIds
     ) internal returns (uint256){
         if (_amount == 0) return _amount;
 
@@ -143,7 +144,7 @@ contract FeePayout is ContractRegistrar {
         // Payout each royalty
         for (uint256 i = 0; i < numCurations; ) {
             // Cache the recipient and amount
-            recipient = BardsHub(HUB).curationDataOf(_curationIds[i]).treasury;
+            // recipient = BardsHub(HUB).curationDataOf(_curationIds[i]).treasury;
             curationBps = BardsHub(HUB).curationDataOf(_curationIds[i]).curationBps;
 
             amount = (amountRemaining * (1 - curationBps)) / Constants.MAX_BPS;
@@ -152,7 +153,12 @@ contract FeePayout is ContractRegistrar {
             require(amountRemaining >= amount, "insolvent");
 
             // Transfer to the recipient
-            _handlePayout(recipient, amount, _payoutCurrency, 50000);
+            // _handlePayout(recipient, amount, _payoutCurrency, 50000);
+            bardsStaking().collect(
+                _payoutCurrency, 
+                amount, 
+                allocationIds[i]
+            );
 
             emit Events.CurationFeePayout(_tokenContract, _tokenId, recipient, amount, block.timestamp);
 
@@ -165,6 +171,25 @@ contract FeePayout is ContractRegistrar {
         }
 
         return _amount - amountRemaining;
+    }
+
+    /**
+     * @notice Collect the delegation rewards.
+     * This function will assign the collected fees to the delegation pool.
+     * @param _curationId Curation to which the tokens to distribute are related
+     * @param _currency The currency of token.
+     * @param _tokens Total tokens received used to calculate the amount of fees to collect
+     */
+    function _handleStakingPayout(
+        uint256 _curationId, 
+        address _currency, 
+        uint256 _tokens
+    ) internal {
+        bardsStaking().collectStakingFees(
+            _curationId,
+            _currency,
+            _tokens
+        );
     }
 
     /**
@@ -340,7 +365,7 @@ contract FeePayout is ContractRegistrar {
             if (!success) {
                 weth.deposit{value: _amount}();
                 // IERC20(address(weth)).safeTransferFrom(stakingAddress, _dest, _amount);
-                TokenUtils.transfer(IERC20(weth), stakingAddress, _amount, _dest);
+                TokenUtils.transfer(IERC20(address(weth)), stakingAddress, _amount, _dest);
             }
         } else {
             // IERC20(_currency).safeTransferFrom(stakingAddress, _dest, _amount);

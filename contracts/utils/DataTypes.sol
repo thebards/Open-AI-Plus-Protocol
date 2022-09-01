@@ -121,7 +121,6 @@ library DataTypes {
 		uint32[] sellerBpses;
 		uint32 curationBps;
 		uint32 stakingBps;
-        address treasury;
     }
 
     /**
