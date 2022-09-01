@@ -15,6 +15,13 @@ import '../../utils/DataTypes.sol';
 interface IBardsStaking {
 
     /**
+     * @notice Set the address of tokens.
+     * 
+     * @param _stakingAddress The address of staking tokens;
+     */
+    function setStakingAddress(address _stakingAddress) external;
+
+    /**
      * @notice Set the default reserve ratio percentage for a curation pool.
      * 
      * Update the default reserver ratio to `_defaultReserveRatio`
@@ -25,9 +32,9 @@ interface IBardsStaking {
     /**
      * @notice Set the minimum stake required to.
      * 
-     * @param _minimumStake Minimum stake
+     * @param _minimumStaking Minimum stake
      */
-    function setMinimumStake(uint256 _minimumStake) external;
+    function setMinimumStaking(uint256 _minimumStaking) external;
 
     /**
      * @notice Set the thawing period for unstaking.
@@ -82,10 +89,12 @@ interface IBardsStaking {
     /**
      * @notice Return true if operator is allowed for the bards.
      * 
+     * @param _curator Address of the bards
      * @param _operator Address of the operator
-     * @param _theBards Address of the bards
      */
-    function isOperator(address _operator, address _theBards) external view returns (bool);
+    function isOperator(address _curator, address _operator) external view returns (bool);
+
+    function isStaked(uint256 _curationId) external view returns (bool);
 
     // -- Staking --
 
@@ -103,7 +112,7 @@ interface IBardsStaking {
      * @param _curationId Curation Id to unstake
      * @param _shares Amount of shares to unstake
      */
-    function unstake(uint256 _curationId, uint256 _shares) external;
+    function unstake(uint256 _curationId, uint256 _shares) external returns(uint256);
 
     /**
      * @notice Withdraw tokens once the thawing period has passed.
@@ -172,17 +181,17 @@ interface IBardsStaking {
      * @notice Claim tokens from the rebate pool.
      * 
      * @param _allocationID Allocation from where we are claiming tokens
-     * @param _restake True if restake fees instead of transfer to curation
+     * @param _stakeToCuration Restake to new curation
      */
-    function claim(address _allocationID, bool _restake) external;
+    function claim(address _allocationID, uint256 _stakeToCuration) external;
 
     /**
      * @notice Claim tokens from the rebate pool for many allocations.
      * 
      * @param _allocationIDs Array of allocations from where we are claiming tokens
-     * @param _restake True if restake fees instead of transfer to curation
+     * @param _stakeToCuration Restake to new curation
      */
-    function claimMany(address[] calldata _allocationIDs, bool _restake) external;
+    function claimMany(address[] calldata _allocationIDs, uint256 _stakeToCuration) external;
 
     // -- Getters and calculations --
 
@@ -218,6 +227,33 @@ interface IBardsStaking {
         external
         view
         returns (uint256);
+
+    /**
+     * @notice Get the address of staking tokens.
+     * 
+     * @return The address of Staking tokens.
+     */
+    function getStakingAddress() 
+        external
+        view
+        returns (address);
+
+    /**
+     * @notice Get the total staking tokens.
+     * 
+     * @return The total Staking tokens.
+     */
+    function getTotalStakingToken() 
+        external
+        view
+        returns (uint256);
+
+    function getSimpleAllocation(
+        address _allocationID
+    ) 
+        external 
+        view 
+        returns (DataTypes.SimpleAllocation memory);
 
     /**
      * @notice Returns amount of staked BCT tokens ready to be withdrawn after thawing period.
@@ -281,6 +317,15 @@ interface IBardsStaking {
     function isDelegator(uint256 _curationId, address _delegator) external view returns (bool);
 
     /**
+     * @notice Return whether the seller is one of the stakeholders of curation.
+     * 
+     * @param _recipientsMeta The snapshot of recipients from curationData
+     * @param _seller Address of the seller of curation NFT
+     * @return True if delegator of curation
+     */
+    function isSeller(bytes calldata _recipientsMeta, address _seller) external view returns (bool);
+
+    /**
      * @notice Calculate amount of share that can be bought with tokens in a staking pool.
      * 
      * @param _curationId Curation to mint share
@@ -297,11 +342,10 @@ interface IBardsStaking {
      * 
      * @param _curationId Curation to burn share
      * @param _shares Amount of share to burn
-     * @param _currency The currency of token return
      * 
      * @return Amount of tokens to get for an amount of shares
      */
-    function shareToTokens(uint256 _curationId, uint256 _shares, address _currency)
+    function shareToTokens(uint256 _curationId, uint256 _shares)
         external
         view
         returns (uint256);

@@ -7,6 +7,28 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library TokenUtils {
     /**
+     * @dev Transfer tokens from an address to anther.
+     * @param _ierc20 Token to transfer
+     * @param _from Address sending the tokens
+     * @param _amount Amount of tokens to transfer
+     * @param _to Address sending to
+     */
+    function transfer(
+        IERC20 _ierc20,
+        address _from,
+        uint256 _amount,
+        address _to
+    ) 
+        internal 
+    {
+        if (_amount > 0) {
+            address fromAddress = (_from == address(0))? address(this): _from;
+            address toAddress = (_to == address(0))? address(this): _to;
+            require(_ierc20.transferFrom(fromAddress, toAddress, _amount), "!transfer");
+        }
+    }
+
+    /**
      * @dev Pull tokens from an address to this contract.
      * @param _ierc20 Token to transfer
      * @param _from Address sending the tokens

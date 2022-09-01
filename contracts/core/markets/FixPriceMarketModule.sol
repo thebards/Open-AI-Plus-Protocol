@@ -80,7 +80,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
         DataTypes.FixPriceMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
 
         // Ensure ETH/ERC-20 payment from buyer is valid and take custody
-        _handleIncomingTransfer(buyer, marketData.price, marketData.currency);
+        _handleIncomingTransfer(buyer, marketData.price, marketData.currency, stakingAddress);
 
         // Payout respective parties, ensuring royalties are honored
         (uint256 remainingProfit, ) = _handleRoyaltyPayout(
@@ -122,6 +122,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
             // TODO payout staking
             uint256 stakingFee = remainingProfit.mul(uint256(curationData.stakingBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
+            
 
             _handleSellersSplitPayout(
                 tokenContract, 

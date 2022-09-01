@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.9;
 
-import '../../interfaces/tokens/IBardsShareToken.sol';
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 
@@ -19,20 +18,16 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
  * This contract is meant to be used as the implementation for Minimal Proxy clones for
  * gas-saving purposes.
  */
-contract BardsShareToken is ERC20Upgradeable, IBardsShareToken{
-	/**
-     * @dev Bards Share Token Contract initializer.
-     */
+contract BardsShareToken is ERC20Upgradeable{
+
     function initialize() external initializer {
         ERC20Upgradeable.__ERC20_init("Bards Share Token", "BST");
     }
 
-    /// @inheritdoc IBardsShareToken
     function mint(address _to, uint256 _amount) public {
         _mint(_to, _amount);
     }
 
-    /// @inheritdoc IBardsShareToken
     function burnFrom(address _account, uint256 _amount) public {
         _burn(_account, _amount);
     }

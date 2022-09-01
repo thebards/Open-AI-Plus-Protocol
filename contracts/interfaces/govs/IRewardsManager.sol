@@ -164,7 +164,7 @@ interface IRewardsManager {
      * @param _curationId Curation Id
      * @return Accumulated rewards for curation
      */
-    function onCurationStakedUpdate(
+    function onCurationStakingUpdate(
 		uint256 _curationId
 	) 
 	external 

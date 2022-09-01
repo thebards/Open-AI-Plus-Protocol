@@ -8,6 +8,7 @@ import '../storages/TokenStorage.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../utils/Events.sol';
 import '../../utils/Errors.sol';
+import '../govs/ContractRegistrar.sol';
 
 /**
  * @title BardsCurationToken contract
@@ -22,7 +23,7 @@ import '../../utils/Errors.sol';
  * assigned to the deployer.
  *
  */
-contract BardsCurationToken is ERC20Burnable, IBardsCurationToken, TokenStorage {
+contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
     using SafeMath for uint256;
     
     bytes32 private constant PERMIT_TYPEHASH =
@@ -30,40 +31,33 @@ contract BardsCurationToken is ERC20Burnable, IBardsCurationToken, TokenStorage 
             "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
     );
     mapping(address => bool) private _minters;
-    address private HUB;
 
     modifier onlyMinter() {
         require(isMinter(msg.sender), "Only minter can call");
         _;
     }
 
-    modifier onlyHub() {
-        require(msg.sender == HUB, "Only HUB can call");
-        _;
-    }
-
     /**
-     * @dev Bards Curation Token Contract Constructor.
+     * @notice Bards Curation Token Contract Constructor.
      * @param _initialSupply Initial supply of GRT
      */
     constructor(address _HUB, uint256 _initialSupply) ERC20("Bards Curation Token", "BCT") {
         if (_HUB == address(0)) revert Errors.InitParamsInvalid();
-        HUB = _HUB;
+        ContractRegistrar._initialize(_HUB);
         // The Governor has the initial supply of tokens
         _mint(msg.sender, _initialSupply);
         // The Governor is the default minter
         _addMinter(msg.sender);
         // HUB is minter too
-        _addMinter(HUB);
+        _addMinter(_HUB);
     }
 
-    /// @inheritdoc IBardsCurationToken
     function permit(
         address _owner,
         address _spender,
         uint256 _value,
         DataTypes.EIP712Signature calldata sig
-    ) external override {
+    ) external {
         if (_owner == address(0) || _spender == address(0)) revert Errors.ZeroSpender();
         unchecked {
             _validateRecoveredAddress(
@@ -87,46 +81,41 @@ contract BardsCurationToken is ERC20Burnable, IBardsCurationToken, TokenStorage 
         _approve(_owner, _spender, _value);
     }
 
-    /// @inheritdoc IBardsCurationToken
     function addMinter(address _account) external onlyHub {
         _addMinter(_account);
     }
 
-    /// @inheritdoc IBardsCurationToken
     function removeMinter(address _account) external onlyHub {
         _removeMinter(_account);
     }
 
-    /// @inheritdoc IBardsCurationToken
     function renounceMinter() external {
         _removeMinter(msg.sender);
     }
 
-    /// @inheritdoc IBardsCurationToken
     function mint(address _to, uint256 _amount) external onlyMinter {
         _mint(_to, _amount);
     }
 
-    /// @inheritdoc IBardsCurationToken
     function isMinter(address _account) public view returns (bool) {
         return _minters[_account];
     }
 
     /**
-     * @dev Add a new minter.
+     * @notice Add a new minter.
      * @param _account Address of the minter
      */
     function _addMinter(address _account) private {
         _minters[_account] = true;
-        emit MinterAdded(_account, block.timestamp);
+        emit Events.MinterAdded(_account, block.timestamp);
     }
 
     /**
-     * @dev Remove a minter.
+     * @notice Remove a minter.
      * @param _account Address of the minter
      */
     function _removeMinter(address _account) private {
         _minters[_account] = false;
-        emit MinterRemoved(_account, block.timestamp);
+        emit Events.MinterRemoved(_account, block.timestamp);
     }
 }

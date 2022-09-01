@@ -2,13 +2,20 @@
 
 pragma solidity ^0.8.9;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+
 /**
  * @title IBardsShareToken
  * @author TheBards Protocol
  * 
  * @notice This is the interface for the BardsShareToken contract.
  */
-interface IBardsShareToken {
+interface IBardsShareToken is IERC20Upgradeable {
+
+    /**
+     * @notice Bards Share Token Contract initializer.
+     */
+    function initialize() external;
 
     /**
      * @dev Burn tokens from an address.

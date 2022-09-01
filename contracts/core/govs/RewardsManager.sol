@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 
 import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
+import '../../utils/MathUtils.sol';
 import '../storages/RewardsManagerStorage.sol';
 import '../../interfaces/tokens/IBardsCurationToken.sol';
 import '../govs/ContractRegistrar.sol';
@@ -36,9 +37,10 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
     function setIssuanceRate(
 		uint256 _issuanceRate
 	) 
-	external 
-	override 
-	onlyHub {
+        external 
+        override 
+        onlyHub 
+    {
         _setIssuanceRate(_issuanceRate);
     }
 
@@ -65,9 +67,10 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
     function setMinimumStakingToken(
 		uint256 _minimumStakeingToken
 	) 
-	external 
-	override 
-	onlyHub {
+        external 
+        override 
+        onlyHub 
+    {
         uint256 prevMinimumStakingToken = minimumStakingToken;
         minimumStakingToken = _minimumStakeingToken;
         emit Events.MinimumStakeingTokenSet(
@@ -82,9 +85,9 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 		uint256 _curationId, 
 		bool _deny
 	)
-    external
-    override
-    onlyHub
+        external
+        override
+        onlyHub
     {
         _setDenied(_curationId, _deny);
     }
@@ -94,9 +97,9 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 		uint256[] calldata _curationIds, 
 		bool[] calldata _deny
 	)
-    external
-    override
-    onlyHub
+        external
+        override
+        onlyHub
     {
         require(_curationIds.length == _deny.length, "!length");
         for (uint256 i = 0; i < _curationIds.length; i++) {
@@ -123,10 +126,11 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
     function isDenied(
 		uint256 _curationId
 	) 
-	public 
-	view 
-	override 
-	returns (bool) {
+        public 
+        view 
+        override 
+        returns (bool) 
+    {
         return denylist[_curationId] > 0;
     }
 
@@ -145,22 +149,21 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         }
 
         // Zero issuance if no staked tokens
-        IBardsCurationToken bardsCurationToken = bardsCurationToken();
-        uint256 stakedTokens = bardsCurationToken.balanceOf(address(bardsStaking()));
-        if (stakedTokens == 0) {
+        uint256 stakingTokens = bardsCurationToken().balanceOf(bardsStaking().getStakingAddress());
+        if (stakingTokens == 0) {
             return 0;
         }
 
         uint256 r = issuanceRate;
         uint256 p = tokenSupplySnapshot;
-        uint256 a = p.mul(_pow(r, t, Constants.TOKEN_DECIMALS)).div(Constants.TOKEN_DECIMALS);
+        uint256 a = p.mul(MathUtils.pow(r, t, Constants.TOKEN_DECIMALS)).div(Constants.TOKEN_DECIMALS);
 
         // New issuance of tokens during time steps
         uint256 x = a.sub(p);
 
         // Get the new issuance per staked token
         // We multiply the decimals to keep the precision as fixed-point number
-        return x.mul(Constants.TOKEN_DECIMALS).div(stakedTokens);
+        return x.mul(Constants.TOKEN_DECIMALS).div(stakingTokens);
     }
 
 	/// @inheritdoc IRewardsManager
@@ -178,7 +181,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         DataTypes.CurationReward storage curationReward = curationRewards[_curationId];
 
         // Get tokens staked on the curation
-        uint256 curationStakedTokens = bardsStaking().getCurationStakingPoolTokens(_curationId);
+        uint256 curationStakedTokens = bardsStaking().getStakingPoolToken(_curationId, address(bardsCurationToken()));
 
         // Only accrue rewards if over a threshold
         uint256 newRewards = (curationStakedTokens >= minimumStakingToken) // Accrue new rewards since last snapshot
@@ -257,13 +260,13 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
             uint256 accRewardsForCuration
         ) = getAccRewardsPerAllocatedToken(_curationId);
         curationReward.accRewardsPerAllocatedToken = accRewardsPerAllocatedToken;
-        curationReward.accRewardsForCuratiinSnapshot = accRewardsForCuration;
+        curationReward.accRewardsForCurationSnapshot = accRewardsForCuration;
         return curationReward.accRewardsPerAllocatedToken;
     }
 
 	/// @inheritdoc IRewardsManager
     function getRewards(address _allocationID) external view override returns (uint256) {
-        DataTypes.Allocation memory alloc = bardsStaking().getAllocation(_allocationID);
+        DataTypes.SimpleAllocation memory alloc = bardsStaking().getSimpleAllocation(_allocationID);
 
         (uint256 accRewardsPerAllocatedToken, ) = getAccRewardsPerAllocatedToken(
             alloc.curationId
@@ -298,14 +301,19 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         IBardsStaking bardStaking = bardsStaking();
         require(msg.sender == address(bardStaking), "Caller must be the bardStaking contract");
 
-        DataTypes.Allocation memory alloc = bardStaking.allocations[_allocationID];
+        DataTypes.SimpleAllocation memory alloc = bardStaking.getSimpleAllocation(_allocationID);
         uint256 accRewardsPerAllocatedToken = onCurationAllocationUpdate(
             alloc.curationId
         );
 
         // Do not do rewards on denied subgraph deployments ID
         if (isDenied(alloc.curationId)) {
-            emit Events.RewardsDenied(alloc.curationId, _allocationID, alloc.closedAtEpoch, block.timestamp);
+            emit Events.RewardsDenied(
+                alloc.curationId, 
+                _allocationID, 
+                alloc.closedAtEpoch, 
+                block.timestamp
+            );
             return 0;
         }
 
@@ -319,7 +327,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
             // Mint directly to bardsStaking contract for the reward amount
             // The bardsStaking contract will do bookkeeping of the reward and
             // assign in proportion to each stakeholder incentive
-            bardsCurationToken().mint(address(bardStaking), rewards);
+            bardsCurationToken().mint(bardStaking.getStakingAddress(), rewards);
         }
 
         emit Events.RewardsAssigned(

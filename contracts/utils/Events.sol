@@ -645,6 +645,32 @@ library Events {
     );
 
     /**
+     * @notice Emitted when stakingAddress update
+     * 
+     * @param prevStakingAddress The previous stakingAddress
+     * @param newStakingAddress The new stakingAddress
+     * @param timestamp The current block timestamp.
+     */
+    event StakingAddressSet(
+        address prevStakingAddress,
+        address newStakingAddress,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when ReserveRatio update
+     * 
+     * @param prevStakingReserveRatio The previous prevStakingReserveRatio.
+     * @param newStakingReserveRatio The new newStakingReserveRatio.
+     * @param timestamp The current block timestamp.
+     */
+    event DefaultStakingReserveRatioSet(
+        uint32 prevStakingReserveRatio,
+        uint32 newStakingReserveRatio,
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when RebateRatio update
      * 
      * @param alphaNumerator Numerator of `alpha` in the cobb-douglas function
@@ -711,7 +737,7 @@ library Events {
      * `metadata` additional information related to the allocation.
      */
     event AllocationCreated(
-        address indexed curationId,
+        uint256 indexed curationId,
         uint256 epoch,
         uint256 tokens,
         address indexed allocationID,
@@ -730,6 +756,9 @@ library Events {
         uint256 tokens,
         address indexed allocationID,
         uint256 effectiveAllocationStake,
+        address sender,
+        bytes32 proof,
+        bool isCurator,
         uint256 timestamp
     );
 
@@ -762,6 +791,7 @@ library Events {
         uint256 tokens,
         address indexed allocationID,
         address from,
+        address currency,
         uint256 timestamp
     );
 }

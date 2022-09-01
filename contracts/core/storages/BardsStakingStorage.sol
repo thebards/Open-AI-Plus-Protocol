@@ -5,6 +5,11 @@ pragma solidity ^0.8.9;
 import '../../utils/DataTypes.sol';
 
 abstract contract BardsStakingStorage {
+    // Total staking tokens.
+    uint256 totalStakingTokens;
+    // The address of staking tokens;
+    address public stakingAddress;
+
 	// Tax charged when delegator deposit funds
     // Parts per million. (Allows for 4 decimal points, 999,999 = 99.9999%)
     uint32 public stakingTaxPercentage;
@@ -46,9 +51,6 @@ abstract contract BardsStakingStorage {
 
     // Allocations : allocationID => Allocation
     mapping(address => DataTypes.Allocation) public allocations;
-
-    // Subgraph Allocations: curationId => tokens
-    mapping(uint256 => uint256) public curationAllocations;
 
     // Rebate pools : epoch => Pool
     mapping(uint256 => DataTypes.RebatePool) public rebates;

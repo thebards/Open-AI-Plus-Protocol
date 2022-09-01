@@ -9,21 +9,25 @@ import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165C
 import {IWETH} from "./IWETH.sol";
 import {Events} from '../../utils/Events.sol';
 import {Errors} from '../../utils/Errors.sol';
+import '../../utils/TokenUtils.sol';
 import '../govs/BardsDaoData.sol';
 import '../BardsHub.sol';
+import '../govs/ContractRegistrar.sol';
+import '../../interfaces/tokens/IBardsStaking.sol';
 
 /**
  * @title FeePayout
  * @author TheBards Protocol
  * @notice This contract extension supports paying out funds to an external recipient
  */
-contract FeePayout {
+contract FeePayout is ContractRegistrar {
     using SafeERC20 for IERC20;
 
-    address public immutable HUB;
     IWETH immutable weth;
     // The Manifold Royalty Engine
     IRoyaltyEngineV1 royaltyEngine;
+    // The address of staking tokens.
+    address stakingAddress;
 
     constructor(
         address _hub, 
@@ -32,8 +36,10 @@ contract FeePayout {
     ) {
         if (_hub == address(0)) revert Errors.InitParamsInvalid();
         HUB = _hub;
+        ContractRegistrar._initialize(_hub);
         weth = IWETH(_wethAddress);
         royaltyEngine = IRoyaltyEngineV1(_royaltyEngine);
+        stakingAddress = bardsStaking().getStakingAddress();
     }
 
     /**
@@ -82,11 +88,14 @@ contract FeePayout {
      * @param _buyer The address of buyer.
      * @param _amount The amount to be received
      * @param _currency The currency to receive funds in, or address(0) for ETH
+     * @param _to The address of sending tokens to.
      */
     function _handleIncomingTransfer(
         address _buyer, 
         uint256 _amount, 
-        address _currency) 
+        address _currency,
+        address _to
+    ) 
     internal {
         if (_currency == address(0)) {
             require(msg.value >= _amount, "_handleIncomingTransfer msg value less than expected amount");
@@ -95,9 +104,10 @@ contract FeePayout {
             // as some tokens impose a transfer fee and would not actually transfer the
             // full amount to the market, resulting in potentally locked funds
             IERC20 token = IERC20(_currency);
-            uint256 beforeBalance = token.balanceOf(address(this));
-            IERC20(_currency).safeTransferFrom(_buyer, address(this), _amount);
-            uint256 afterBalance = token.balanceOf(address(this));
+            uint256 beforeBalance = token.balanceOf(_to);
+            TokenUtils.transfer(IERC20(_currency), _buyer, _amount, _to);
+            // IERC20(_currency).safeTransferFrom(_buyer, _to, _amount);
+            uint256 afterBalance = token.balanceOf(_to);
             require(beforeBalance + _amount == afterBalance, "_handleIncomingTransfer token transfer call did not transfer expected amount");
         }
     }
@@ -329,10 +339,12 @@ contract FeePayout {
             // If the ETH transfer fails (sigh), wrap the ETH and try send it as WETH.
             if (!success) {
                 weth.deposit{value: _amount}();
-                IERC20(address(weth)).safeTransfer(_dest, _amount);
+                // IERC20(address(weth)).safeTransferFrom(stakingAddress, _dest, _amount);
+                TokenUtils.transfer(IERC20(weth), stakingAddress, _amount, _dest);
             }
         } else {
-            IERC20(_currency).safeTransfer(_dest, _amount);
+            // IERC20(_currency).safeTransferFrom(stakingAddress, _dest, _amount);
+            TokenUtils.transfer(IERC20(_currency), stakingAddress, _amount, _dest);
         }
     }
 }

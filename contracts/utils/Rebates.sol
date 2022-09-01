@@ -4,9 +4,9 @@ pragma solidity ^0.8.9;
 pragma abicoder v2;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
-import "./Cobbs.sol";
+import './Cobbs.sol';
 import './DataTypes.sol';
+import './MultiCurrencyFeesUtils.sol';
 
 /**
  * @title A collection of data structures and functions to manage Rebates
@@ -16,6 +16,7 @@ import './DataTypes.sol';
 library Rebates {
     using SafeMath for uint256;
     using Rebates for DataTypes.RebatePool;
+    using MultiCurrencyFeesUtils for DataTypes.MultiCurrencyFees;
 
     /**
      * @notice Init the rebate pool with the rebate ratio.
@@ -45,7 +46,7 @@ library Rebates {
         DataTypes.RebatePool storage pool, 
         address _currency
     ) internal view returns (uint256) {
-        return pool.fees[_currency].sub(pool.claimedRewards[_currency]);
+        return pool.fees.fees[_currency].sub(pool.claimedRewards.fees[_currency]);
     }
 
     /**
@@ -61,8 +62,8 @@ library Rebates {
         uint256 _fees,
         uint256 _effectiveAllocatedStake
     ) internal {
-        pool.fees[_currency] = pool.fees[_currency].add(_fees);
-        pool.effectiveAllocatedStake = pool.effectiveAllocatedStake.add(
+        pool.fees.tryInsertCurrencyFees(_currency, _fees);
+        pool.effectiveAllocatedStake[_currency] = pool.effectiveAllocatedStake[_currency].add(
             _effectiveAllocatedStake
         );
         pool.unclaimedAllocationsCount += 1;
@@ -85,13 +86,13 @@ library Rebates {
         uint256 rebateReward = 0;
 
         // Calculate the rebate rewards for the delegator
-        if (pool.fees[_currency] > 0 && pool.effectiveAllocatedStake > 0) {
+        if (pool.fees.fees[_currency] > 0 && pool.effectiveAllocatedStake[_currency] > 0) {
             rebateReward = LibCobbDouglas.cobbDouglas(
-                pool.fees[_currency], // totalRewards
+                pool.fees.fees[_currency], // totalRewards
                 _fees,
-                pool.fees[_currency],
+                pool.fees.fees[_currency],
                 _effectiveAllocatedStake,
-                pool.effectiveAllocatedStake,
+                pool.effectiveAllocatedStake[_currency],
                 pool.alphaNumerator,
                 pool.alphaDenominator
             );
@@ -105,7 +106,7 @@ library Rebates {
 
         // Update pool state
         pool.unclaimedAllocationsCount -= 1;
-        pool.claimedRewards[_currency] = pool.claimedRewards[_currency].add(rebateReward);
+        pool.claimedRewards.fees[_currency] = pool.claimedRewards.fees[_currency].add(rebateReward);
 
         return rebateReward;
     }
