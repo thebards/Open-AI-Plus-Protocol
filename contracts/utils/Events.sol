@@ -757,7 +757,7 @@ library Events {
         address indexed allocationID,
         uint256 effectiveAllocationStake,
         address sender,
-        bytes32 proof,
+        uint256 stakeToCuration,
         bool isCurator,
         uint256 timestamp
     );

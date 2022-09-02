@@ -58,8 +58,10 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
 		
         if (price == 0) revert Errors.InitParamsInvalid();
 
+        _marketMetaData[tokenContract][tokenId].seller = seller;
         _marketMetaData[tokenContract][tokenId].price = price;
         _marketMetaData[tokenContract][tokenId].currency = currency;
+        _marketMetaData[tokenContract][tokenId].treasury = treasury;
 
         return data;
 	}
@@ -147,7 +149,8 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
                 tokenId,
                 curationFee,
                 marketData.currency,
-                curationIds
+                curationIds,
+                allocationIds
             );
 
             _handlePayout(

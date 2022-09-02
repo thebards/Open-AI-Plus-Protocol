@@ -181,7 +181,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         DataTypes.CurationReward storage curationReward = curationRewards[_curationId];
 
         // Get tokens staked on the curation
-        uint256 curationStakedTokens = bardsStaking().getStakingPoolToken(_curationId, address(bardsCurationToken()));
+        uint256 curationStakedTokens = bardsStaking().getStakingPoolToken(_curationId);
 
         // Only accrue rewards if over a threshold
         uint256 newRewards = (curationStakedTokens >= minimumStakingToken) // Accrue new rewards since last snapshot

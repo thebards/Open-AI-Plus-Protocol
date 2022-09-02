@@ -50,8 +50,8 @@ abstract contract BardsStakingStorage {
 	mapping (uint256 => DataTypes.CurationStakingPool) _stakingPools;
 
     // Allocations : allocationID => Allocation
-    mapping(address => DataTypes.Allocation) public allocations;
+    mapping(address => DataTypes.Allocation) allocations;
 
     // Rebate pools : epoch => Pool
-    mapping(uint256 => DataTypes.RebatePool) public rebates;
+    mapping(uint256 => DataTypes.RebatePool) rebates;
 }

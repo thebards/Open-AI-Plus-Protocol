@@ -35,7 +35,6 @@ contract FeePayout is ContractRegistrar {
         address _royaltyEngine
     ) {
         if (_hub == address(0)) revert Errors.InitParamsInvalid();
-        HUB = _hub;
         ContractRegistrar._initialize(_hub);
         weth = IWETH(_wethAddress);
         royaltyEngine = IRoyaltyEngineV1(_royaltyEngine);
@@ -157,7 +156,7 @@ contract FeePayout is ContractRegistrar {
             bardsStaking().collect(
                 _payoutCurrency, 
                 amount, 
-                allocationIds[i]
+                _allocationIds[i]
             );
 
             emit Events.CurationFeePayout(_tokenContract, _tokenId, recipient, amount, block.timestamp);

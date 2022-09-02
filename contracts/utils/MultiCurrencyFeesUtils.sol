@@ -10,6 +10,17 @@ library MultiCurrencyFeesUtils {
     using SafeMath for uint256;
     using MultiCurrencyFeesUtils for DataTypes.MultiCurrencyFees;
 
+	function clear(DataTypes.MultiCurrencyFees storage _fees) internal {
+		_fees.totalShare = 0;
+		uint256 j = _fees.currencies.length - 1;
+		while(j >= 0){
+			address _curCurrency = _fees.currencies[_fees.currencies.length - 1];
+			delete _fees.fees[_curCurrency];
+			_fees.currencies.pop();
+			j--;
+		}
+	}
+
 	/**
 	 * @notice Add fees
 	 */

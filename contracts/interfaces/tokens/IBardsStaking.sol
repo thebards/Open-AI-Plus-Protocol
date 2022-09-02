@@ -115,11 +115,6 @@ interface IBardsStaking {
     function unstake(uint256 _curationId, uint256 _shares) external returns(uint256);
 
     /**
-     * @notice Withdraw tokens once the thawing period has passed.
-     */
-    function withdraw() external;
-
-    /**
      * @notice Withdraw staked tokens once the thawing period has passed.
      * 
      * @param _curationId curation Id
@@ -141,26 +136,30 @@ interface IBardsStaking {
     /**
      * @notice Close an allocation and free the staked tokens.
      * 
-     * @param _allocationID The allocation identifier
+     * @param _allocationID The allocation identifier.
+     * @param _stakeToCuration Restake to curation.
      */
-    function closeAllocation(address _allocationID) external;
+    function closeAllocation(address _allocationID, uint256 _stakeToCuration) external;
 
     /**
      * @notice Close multiple allocations and free the staked tokens.
      * 
      * @param _allocationIDs An array of allocationID
+     * @param _stakeToCurations An array of curations for restaking.
      */
-    function closeAllocationMany(address[] calldata _allocationIDs) external;
+    function closeAllocationMany(address[] calldata _allocationIDs, uint256[] calldata _stakeToCurations) external;
 
     /**
      * @notice Close and allocate. This will perform a close and then create a new Allocation
      * atomically on the same transaction.
      * 
      * @param _closingAllocationID The identifier of the allocation to be closed
+     * @param _stakeToCuration The curation of restaking.
      * @param _createAllocationData Data of struct CreateAllocationData
      */
     function closeAndAllocate(
         address _closingAllocationID,
+        uint256 _stakeToCuration,
         DataTypes.CreateAllocateData calldata _createAllocationData
     ) external;
 
@@ -209,13 +208,6 @@ interface IBardsStaking {
     // -- Getters and calculations --
 
     /**
-     * @notice Getter that returns if a curation has any stake.
-     * @param _curationId Address of the indexer
-     * @return True if curation has staked tokens
-     */
-    function hasStake(uint256 _curationId) external view returns (bool);
-
-    /**
      * @dev Return the current state of an allocation.
      * @param _allocationID Address used as the allocation identifier
      * @return AllocationState
@@ -233,7 +225,7 @@ interface IBardsStaking {
     /**
      * @notice Return the total amount of tokens allocated to curation.
      * 
-     * @param _curationId curationId
+     * @param _curationId _curationId
      * @return Total tokens allocated to curation
      */
     function getCurationAllocatedTokens(uint256 _curationId)
@@ -311,11 +303,10 @@ interface IBardsStaking {
      * @notice Get the amount of share in a curation staking pool.
      * 
      * @param _curationId curation Id.
-     * @param _currency The currency of token.
      * 
      * @return Amount of share minted for the curation
      */
-    function getStakingPoolToken(uint256 _curationId, address _currency) 
+    function getStakingPoolToken(uint256 _curationId) 
         external 
         view 
         returns (uint256);
@@ -332,11 +323,11 @@ interface IBardsStaking {
     /**
      * @notice Return whether the seller is one of the stakeholders of curation.
      * 
-     * @param _recipientsMeta The snapshot of recipients from curationData
+     * @param _allocationID _allocationID
      * @param _seller Address of the seller of curation NFT
      * @return True if delegator of curation
      */
-    function isSeller(bytes calldata _recipientsMeta, address _seller) external view returns (bool);
+    function isSeller(address _allocationID, address _seller) external view returns (bool);
 
     /**
      * @notice Calculate amount of share that can be bought with tokens in a staking pool.

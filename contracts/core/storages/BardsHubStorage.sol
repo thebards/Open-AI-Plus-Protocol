@@ -31,7 +31,7 @@ abstract contract BardsHubStorage {
     address internal _emergencyAdmin;
 
 	// Track contract ids to contract address
-    mapping(bytes32 => address) private _registry;
+    mapping(bytes32 => address) internal _registry;
 
 	// address -> profile id
 	mapping(address => uint256) internal _defaultProfileByAddress;

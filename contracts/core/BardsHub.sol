@@ -132,7 +132,7 @@ contract BardsHub is
     onlyGov{
         require(_contractAddress != address(0), "Contract address must be set");
         _registry[_id] = _contractAddress;
-        emit Events.ContractRegistered(_id, _contractAddress);
+        emit Events.ContractRegistered(_id, _contractAddress, block.timestamp);
     }
 
     /// @inheritdoc IBardsHub
@@ -141,7 +141,7 @@ contract BardsHub is
         override 
     onlyGov {
         _registry[_id] = address(0);
-        emit Events.ContractRegistered(_id, address(0));
+        emit Events.ContractRegistered(_id, address(0), block.timestamp);
     }
 
     /// @inheritdoc IBardsHub

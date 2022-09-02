@@ -66,8 +66,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				sellerFundsRecipients: sellerFundsRecipients,
 				sellerBpses: sellerBpses,
 				curationBps: curationBps,
-				stakingBps: stakingBps,
-				treasury: treasury
+				stakingBps: stakingBps
 			});
 			
 			emit Events.CurationInitialized(_vars.tokenId, _vars.curationData, block.timestamp);
