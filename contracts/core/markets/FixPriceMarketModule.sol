@@ -12,7 +12,6 @@ import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
 import './MarketModuleBase.sol';
 import '../../utils/Constants.sol';
-import '../trades/FeePayout.sol';
 
 /**
  * @title FixPriceMarketModule
@@ -22,7 +21,7 @@ import '../trades/FeePayout.sol';
  * @notice This module allows sellers to list an owned ERC-721 token for sale for a given price in a given currency, 
  * and allows buyers to purchase from those asks.
  */
-contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
+contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 	// tokenContract address -> tokenId -> market data
@@ -30,14 +29,15 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
 
     constructor(
         address _hub, 
-        address _wethAddress, 
-        address _royaltyEngine, 
-        address _bardsDaoData,
+        address _wethAddress,
+        address _royaltyEngine,
         address _minter
-    ) MarketModuleBase(_bardsDaoData, _minter) FeePayout(_hub, _wethAddress, _royaltyEngine) {}
+    ) {
+        MarketModuleBase._initialize(_hub, _wethAddress, _royaltyEngine, _minter);
+    }
 
-	/**
-     * @dev See {IMarketModule-initializeModule}
+	/** 
+     * @notice See {IMarketModule-initializeModule}
      */
 	function initializeModule(
 		address tokenContract,
@@ -67,7 +67,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
 	}
 
 	/**
-     * @dev See {IMarketModule-buy}
+     * @notice See {IMarketModule-buy}
      */
 	function buy(
         address buyer,
@@ -105,7 +105,7 @@ contract FixPriceMarketModule is MarketModuleBase, FeePayout, IMarketModule {
         );
 
         // Transfer remaining ETH/ERC-20 to seller
-        // 1) when the NFT if minted by TheBards HUB, distribute profits proportionally to sellers.
+        // 1) when the NFT if minted by TheBards HUB, distribute profits proportionally to stakeholders.
         // 2) or, pay directly to the designated seller.
         if (tokenContract == HUB){
             // The fee split setting of curation.

@@ -27,14 +27,14 @@ contract BardsHub is
 {
     uint256 internal constant REVISION = 1;
 
-    /**
-     * @dev The constructor sets the immutable bardsDaoData implementations.
-     *
-     * @param bardsDaoDataImpl The bardsDaoData NFT implementation address.
-     */
-    constructor(address bardsDaoDataImpl) {
-        if (bardsDaoDataImpl == address(0)) revert Errors.InitParamsInvalid();
-    }
+    // /**
+    //  * @dev The constructor sets the immutable bardsDaoData implementations.
+    //  *
+    //  * @param bardsDaoDataImpl The bardsDaoData NFT implementation address.
+    //  */
+    // constructor(address bardsDaoDataImpl) {
+    //     if (bardsDaoDataImpl == address(0)) revert Errors.InitParamsInvalid();
+    // }
     
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.

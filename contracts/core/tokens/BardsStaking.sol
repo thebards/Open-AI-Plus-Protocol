@@ -53,17 +53,15 @@ contract BardsStaking is
 	/**
      * @dev Initialize this contract.
      */
-    function initialize(
+    constructor(
 		address _HUB,
         address _bondingCurve,
         address _bardsShareTokenImpl,
         uint32 _defaultStakingReserveRatio,
         uint32 _stakingTaxPercentage,
-        uint256 _minimumCurationStaking,
+        uint256 _minimumStaking,
         address _stakingAddress
-    ) 
-        external 
-    {
+    ) {
 		if (_HUB == address(0)) revert Errors.InitParamsInvalid();
         require(_bondingCurve != address(0), "Bonding curve must be set");
         bondingCurve = _bondingCurve;
@@ -72,7 +70,7 @@ contract BardsStaking is
 		_setBardsShareTokenImpl(_bardsShareTokenImpl);
         _setDefaultReserveRatio(_defaultStakingReserveRatio);
         _setStakingTaxPercentage(_stakingTaxPercentage);
-        _setMinimumStaking(_minimumCurationStaking);
+        _setMinimumStaking(_minimumStaking);
         _setStakingAddress(_stakingAddress);
     }
 

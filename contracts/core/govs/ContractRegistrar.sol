@@ -22,7 +22,7 @@ import '../../interfaces/govs/IBardsDaoData.sol';
  * Inspired by Livepeer:
  * https://github.com/livepeer/protocol/blob/streamflow/contracts/Controller.sol
  */
-contract ContractRegistrar is IContractRegistrar {
+abstract contract ContractRegistrar is IContractRegistrar {
 	address internal HUB;
     mapping(bytes32 => address) private addressCache;
 

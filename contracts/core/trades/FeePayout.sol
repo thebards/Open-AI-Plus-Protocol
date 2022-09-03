@@ -10,7 +10,6 @@ import {IWETH} from "./IWETH.sol";
 import {Events} from '../../utils/Events.sol';
 import {Errors} from '../../utils/Errors.sol';
 import '../../utils/TokenUtils.sol';
-import '../govs/BardsDaoData.sol';
 import '../BardsHub.sol';
 import '../govs/ContractRegistrar.sol';
 import '../../interfaces/tokens/IBardsStaking.sol';
@@ -20,20 +19,20 @@ import '../../interfaces/tokens/IBardsStaking.sol';
  * @author TheBards Protocol
  * @notice This contract extension supports paying out funds to an external recipient
  */
-contract FeePayout is ContractRegistrar {
+abstract contract FeePayout is ContractRegistrar {
     using SafeERC20 for IERC20;
 
-    IWETH immutable weth;
+    IWETH internal weth;
     // The Manifold Royalty Engine
-    IRoyaltyEngineV1 royaltyEngine;
+    IRoyaltyEngineV1 internal royaltyEngine;
     // The address of staking tokens.
-    address stakingAddress;
+    address internal stakingAddress;
 
-    constructor(
+    function _initialize(
         address _hub, 
         address _wethAddress, 
         address _royaltyEngine
-    ) {
+    ) internal {
         if (_hub == address(0)) revert Errors.InitParamsInvalid();
         ContractRegistrar._initialize(_hub);
         weth = IWETH(_wethAddress);
@@ -43,12 +42,11 @@ contract FeePayout is ContractRegistrar {
 
     /**
      * @notice Update the address of the Royalty Engine, in case of unexpected update on Manifold's Proxy
-     * @dev emergency use only – requires a frozen RoyaltyEngineV1 at commit 4ae77a73a8a73a79d628352d206fadae7f8e0f74
+     * emergency use only – requires a frozen RoyaltyEngineV1 at commit 4ae77a73a8a73a79d628352d206fadae7f8e0f74
      * to be deployed elsewhere, or a contract matching that ABI
      * @param _royaltyEngine The address for the new royalty engine
      */
-    function setRoyaltyEngineAddress(address _royaltyEngine) public {
-        require(msg.sender == HUB, "setRoyaltyEngineAddress only hub");
+    function setRoyaltyEngineAddress(address _royaltyEngine) public onlyHub {
         require(
             ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngineV1).interfaceId),
             "setRoyaltyEngineAddress must match IRoyaltyEngineV1 interface"

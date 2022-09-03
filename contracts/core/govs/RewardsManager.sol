@@ -29,7 +29,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 	/**
      * @notice Initialize this contract.
      */
-    function initialize(address _HUB) external {
+    constructor(address _HUB) {
         ContractRegistrar._initialize(_HUB);
 	}
 

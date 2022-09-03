@@ -226,12 +226,10 @@ library Events {
     /**
      * @notice Emitted when a market module inheriting from the `MarketModuleBase` is constructed.
      *
-     * @param bardsDaoData The ModuleGlobals contract address used.
      * @param minter The minter contract address used.
      * @param timestamp The current block timestamp.
      */
     event MarketModuleBaseConstructed(
-        address indexed bardsDaoData, 
         address indexed minter,
         uint256 timestamp
     );

@@ -3,68 +3,75 @@
 pragma solidity ^0.8.9;
 
 import '../../interfaces/markets/IMarketModule.sol';
-import '../../interfaces/govs/IBardsDaoData.sol';
+import '../govs/ContractRegistrar.sol';
+import '../trades/FeePayout.sol';
 import '../../utils/Errors.sol';
 import '../../utils/Events.sol';
 import '../../utils/DataTypes.sol';
 
-abstract contract MarketModuleBase {
-	address public immutable _bardsDaoData;
-	address public _minter;
+abstract contract MarketModuleBase is FeePayout {
+	address public minter;
 
-    constructor(address bardsDaoData, address minter) {
-        if (bardsDaoData == address(0) || minter == address(0)) revert Errors.InitParamsInvalid();
-        _bardsDaoData = bardsDaoData;
-		_minter = minter;
-        emit Events.MarketModuleBaseConstructed(_bardsDaoData, _minter, block.timestamp);
+    function _initialize(
+        address _hub, 
+        address _wethAddress,
+        address _royaltyEngine,
+        address _minter
+	) 
+		internal 
+	{
+        if (_hub == address(0) || _minter == address(0)) revert Errors.InitParamsInvalid();
+		minter = _minter;
+		FeePayout._initialize(_hub, _wethAddress, _royaltyEngine);
+        emit Events.MarketModuleBaseConstructed(_minter, block.timestamp);
     }
 
     function isCurrencyWhitelisted(address currency)
 		internal 
 		view 
 		returns (bool) {
-        	return IBardsDaoData(_bardsDaoData).isCurrencyWhitelisted(currency);
+        	return bardsDataDao().isCurrencyWhitelisted(currency);
     }
 
     function getProtocolFeeSetting()
 		internal 
 		view 
 		returns (DataTypes.ProtocolFeeSetting memory) {
-        	return IBardsDaoData(_bardsDaoData).getProtocolFeeSetting();
+        	return bardsDataDao().getProtocolFeeSetting();
     }
 
 	function getProtocolFee()
 		internal
 		view
 		returns (uint32) {
-			return IBardsDaoData(_bardsDaoData).getProtocolFee();
+			return bardsDataDao().getProtocolFee();
 	}
 
 	function getDefaultCurationBps()
 		internal
 		view
 		returns (uint32) {
-			return IBardsDaoData(_bardsDaoData).getDefaultCurationBps();
+			return bardsDataDao().getDefaultCurationBps();
 	}
 
 	function getDefaultStakingBps()
 		internal
 		view
 		returns (uint32) {
-			return IBardsDaoData(_bardsDaoData).getDefaultStakingBps();
+			return bardsDataDao().getDefaultStakingBps();
 	}
 
 	function getTreasury()
 		internal
 		view
 		returns (address){
-			return IBardsDaoData(_bardsDaoData).getTreasury();
+			return bardsDataDao().getTreasury();
 		}
 
 	function getFeeAmount(uint256 _amount)
 		internal
 		view
 		returns (uint256) {
-			return IBardsDaoData(_bardsDaoData).getFeeAmount(_amount);
+			return bardsDataDao().getFeeAmount(_amount);
 		}
 }

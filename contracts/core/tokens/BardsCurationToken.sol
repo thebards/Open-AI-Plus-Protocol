@@ -39,7 +39,7 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
 
     /**
      * @notice Bards Curation Token Contract Constructor.
-     * @param _initialSupply Initial supply of GRT
+     * @param _initialSupply Initial supply of BCT
      */
     constructor(address _HUB, uint256 _initialSupply) ERC20("Bards Curation Token", "BCT") {
         if (_HUB == address(0)) revert Errors.InitParamsInvalid();

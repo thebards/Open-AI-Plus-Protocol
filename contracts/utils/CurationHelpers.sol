@@ -70,7 +70,12 @@ library CurationHelpers {
             );
         }
 
-        _emitProfileCreated(_vars.profileId, _vars, marketModuleReturnData, mintModuleReturnData);
+        _emitProfileCreated(
+            _vars.profileId, 
+            _vars, 
+            marketModuleReturnData, 
+            mintModuleReturnData
+        );
     }
 
     /**

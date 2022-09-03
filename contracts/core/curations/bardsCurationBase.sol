@@ -43,9 +43,11 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				address[] memory sellerFundsRecipients,
 				uint32[] memory sellerBpses,
 				uint32 curationBps,
-				uint32 stakingBps,
-				address treasury
-			) = abi.decode(_vars.curationData, (address[], address[], uint32[], uint32, uint32, address));
+				uint32 stakingBps
+			) = abi.decode(
+				_vars.curationData, 
+				(address[], address[], uint32[], uint32, uint32)
+				);
 
 			require(
 				sellers.length == sellerFundsRecipients.length && 

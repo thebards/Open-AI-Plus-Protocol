@@ -18,7 +18,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
 	/**
      * @notice Initialize this contract.
      */
-    function initialize(address _HUB, uint256 _epochLength) external {
+    constructor(address _HUB, uint256 _epochLength) {
         require(_epochLength > 0, "Epoch length cannot be 0");
 
         ContractRegistrar._initialize(_HUB);
