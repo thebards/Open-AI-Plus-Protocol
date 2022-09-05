@@ -43,6 +43,7 @@ library CurationHelpers {
 
         _profileIdByHandleHash[handleHash] = _vars.profileId;
 
+        _curationById[_vars.profileId].curationType = _vars.curationType;
         _curationById[_vars.profileId].handle = _vars.handle;
         _curationById[_vars.profileId].contentURI = _vars.contentURI;
 		_isProfileById[_vars.profileId] = true;
@@ -61,6 +62,7 @@ library CurationHelpers {
 		bytes memory mintModuleReturnData;
         if (_vars.mintModule != address(0)) {
             _curationById[_vars.profileId].mintModule = _vars.mintModule;
+            // mint module is also a market module, whose minter is different.
 			mintModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
                 _vars.profileId,
@@ -178,6 +180,8 @@ library CurationHelpers {
 		mapping(uint256 => mapping(uint256 => bool)) storage _isMintedByIdById,
         mapping(address => bool) storage _marketModuleWhitelisted
     ) external {
+
+        _curationById[_vars.profileId].curationType = _vars.curationType;
         _curationById[_vars.curationId].contentURI = _vars.contentURI;
 		_curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
@@ -226,7 +230,11 @@ library CurationHelpers {
         mapping(address => bool) storage _marketModuleWhitelisted
     ) private returns (bytes memory) {
         if (!_marketModuleWhitelisted[marketModule]) revert Errors.MarketModuleNotWhitelisted();
-        return IMarketModule(marketModule).initializeModule(tokenContract, tokenId, marketModuleInitData);
+        return IMarketModule(marketModule).initializeModule(
+            tokenContract, 
+            tokenId, 
+            marketModuleInitData
+        );
     }
 
     function _emitProfileCreated(

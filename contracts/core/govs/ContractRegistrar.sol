@@ -11,6 +11,7 @@ import '../../interfaces/tokens/IBardsStaking.sol';
 import '../../interfaces/govs/IRewardsManager.sol';
 import '../../interfaces/govs/IEpochManager.sol';
 import '../../interfaces/govs/IBardsDaoData.sol';
+import '../trades/IWETH.sol';
 
 /**
  * @title ContractRegistrar
@@ -51,6 +52,22 @@ abstract contract ContractRegistrar is IContractRegistrar {
         require(_HUB != address(0), "HUB must be set");
         HUB = _HUB;
         emit Events.HUBSet(_HUB, block.timestamp);
+    }
+
+    /**
+     * @notice Return IBardsHub interface.
+     * @return IBardsHub contract registered with HUB
+     */
+    function bardsHub() internal view returns (IBardsHub) {
+        return IBardsHub(HUB);
+    }
+
+    /**
+     * @notice Return IWETH interface.
+     * @return IWETH contract registered with HUB
+     */
+    function iWETH() internal view returns (IWETH) {
+        return IWETH(_resolveContract(keccak256("IWETH")));
     }
 
     /**
@@ -102,7 +119,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
     function _resolveContract(bytes32 _nameHash) internal view returns (address) {
         address contractAddress = addressCache[_nameHash];
         if (contractAddress == address(0)) {
-            contractAddress = IBardsHub(HUB).getContractAddressRegistered(_nameHash);
+            contractAddress = bardsHub().getContractAddressRegistered(_nameHash);
         }
         return contractAddress;
     }
@@ -113,7 +130,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
      */
     function _syncContract(string memory _name) internal {
         bytes32 nameHash = keccak256(abi.encodePacked(_name));
-        address contractAddress = IBardsHub(HUB).getContractAddressRegistered(nameHash);
+        address contractAddress = bardsHub().getContractAddressRegistered(nameHash);
         if (addressCache[nameHash] != contractAddress) {
             addressCache[nameHash] = contractAddress;
             emit Events.ContractSynced(nameHash, contractAddress, block.timestamp);
@@ -127,6 +144,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
      * HUB to ensure the protocol is using the latest version
      */
     function syncAllContracts() external {
+        _syncContract("IWETH");
         _syncContract("BardsDaoData");
         _syncContract("BardsStaking");
         _syncContract("BardsCurationToken");

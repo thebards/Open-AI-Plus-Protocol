@@ -7,10 +7,11 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../interfaces/markets/IMarketModule.sol';
+import '../../interfaces/IBardsHub.sol';
 import '../../interfaces/curations/IBardsCurationBase.sol';
+import '../trades/MarketModuleBase.sol';
 import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
-import './MarketModuleBase.sol';
 import '../../utils/Constants.sol';
 
 /**
@@ -29,11 +30,9 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
 
     constructor(
         address _hub, 
-        address _wethAddress,
-        address _royaltyEngine,
-        address _minter
+        address _royaltyEngine
     ) {
-        MarketModuleBase._initialize(_hub, _wethAddress, _royaltyEngine, _minter);
+        MarketModuleBase._initialize(_hub, _royaltyEngine);
     }
 
 	/** 
@@ -48,20 +47,21 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             address seller,
             uint256 price,
             address currency,
-            address treasury
+            address treasury,
+            address minter
         ) = abi.decode(
             data, 
-            (address, uint256, address, address)
+            (address, uint256, address, address, address)
         );
 
         if (!isCurrencyWhitelisted(currency) || price == 0) revert Errors.InitParamsInvalid();
+        if (!bardsHub().isMintModuleWhitelisted(minter)) revert Errors.InitParamsInvalid();
 		
-        if (price == 0) revert Errors.InitParamsInvalid();
-
         _marketMetaData[tokenContract][tokenId].seller = seller;
         _marketMetaData[tokenContract][tokenId].price = price;
         _marketMetaData[tokenContract][tokenId].currency = currency;
         _marketMetaData[tokenContract][tokenId].treasury = treasury;
+        _marketMetaData[tokenContract][tokenId].minter = minter;
 
         return data;
 	}

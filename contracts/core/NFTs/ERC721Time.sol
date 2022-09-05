@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 
 import '../../interfaces/NFTs/IERC721Time.sol';
 import '../../utils/Events.sol';
+import '../../utils/DataTypes.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
 import '@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol';
 import '@openzeppelin/contracts/utils/Address.sol';
@@ -34,7 +35,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
 
     // Mapping from token ID to token Data (owner address and mint timestamp uint96), this
     // replaces the original mapping(uint256 => address) private _owners;
-    mapping(uint256 => TokenData) private _tokenData;
+    mapping(uint256 => DataTypes.TokenData) private _tokenData;
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
@@ -106,7 +107,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
         view
         virtual
         override
-        returns (TokenData memory)
+        returns (DataTypes.TokenData memory)
     {
         require(_exists(tokenId), 'ERC721: token data query for nonexistent token');
         return _tokenData[tokenId];

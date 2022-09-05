@@ -6,7 +6,7 @@ import {DataTypes} from './DataTypes.sol';
 
 library Events {
     /**
-     * @dev Emitted when the NFT contract's name and symbol are set at initialization.
+     * @notice Emitted when the NFT contract's name and symbol are set at initialization.
      *
      * @param name The NFT name set.
      * @param symbol The NFT symbol set.
@@ -15,7 +15,7 @@ library Events {
     event BaseInitialized(string name, string symbol, uint256 timestamp);
 
      /**
-     * @dev Emitted when the hub state is set.
+     * @notice Emitted when the hub state is set.
      *
      * @param caller The caller who set the state.
      * @param prevState The previous protocol state, an enum of either `Paused`, `PublishingPaused` or `Unpaused`.
@@ -30,7 +30,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the governance address is changed. We emit the caller even though it should be the previous
+     * @notice Emitted when the governance address is changed. We emit the caller even though it should be the previous
      * governance address, as we cannot guarantee this will always be the case due to upgradeability.
      *
      * @param caller The caller who set the governance address.
@@ -46,7 +46,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when `theBards` set `operator` access.
+     * @notice Emitted when `theBards` set `operator` access.
      */
     event OperatorSet(
         address indexed theBards, 
@@ -56,7 +56,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when the emergency admin is changed. We emit the caller even though it should be the previous
+     * @notice Emitted when the emergency admin is changed. We emit the caller even though it should be the previous
      * governance address, as we cannot guarantee this will always be the case due to upgradeability.
      *
      * @param caller The caller who set the emergency admin address.
@@ -226,16 +226,31 @@ library Events {
     /**
      * @notice Emitted when a market module inheriting from the `MarketModuleBase` is constructed.
      *
-     * @param minter The minter contract address used.
+     * @param stakingAddress The address of staking.
+     * @param royaltyEngine The address of royaltyEngine.
      * @param timestamp The current block timestamp.
      */
-    event MarketModuleBaseConstructed(
-        address indexed minter,
+    event MarketModuleBaseInitialized(
+        address indexed stakingAddress,
+        address indexed royaltyEngine,
         uint256 timestamp
     );
 
-        /**
-     * @dev Emitted when a market module is added to or removed from the whitelist.
+    /**
+     * @notice Emitted when a mint module is added to or removed from the whitelist.
+     *
+     * @param mintModule The address of the mint module.
+     * @param whitelisted Whether or not the follow module is being added to the whitelist.
+     * @param timestamp The current block timestamp.
+     */
+    event MintModuleWhitelisted(
+        address indexed mintModule,
+        bool indexed whitelisted,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when a market module is added to or removed from the whitelist.
      *
      * @param marketModule The address of the market module.
      * @param whitelisted Whether or not the follow module is being added to the whitelist.
@@ -248,7 +263,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a a default profile is set for a wallet as its main identity
+     * @notice Emitted when a a default profile is set for a wallet as its main identity
      *
      * @param wallet The wallet which set or unset its default profile.
      * @param profileId The token ID of the profile being set as default, or zero.
@@ -261,7 +276,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a profile is created.
+     * @notice Emitted when a profile is created.
      *
      * @param profileId The newly created profile's token ID.
      * @param creator The profile creator, who created the token with the given profile ID.
@@ -290,7 +305,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a curation is created.
+     * @notice Emitted when a curation is created.
      *
      * @param profileId The newly created profile's token ID.
      * @param curationId The newly created curation's token ID.
@@ -315,7 +330,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a curation's market module is set.
+     * @notice Emitted when a curation's market module is set.
      *
      * @param curationId The profile's token ID.
      * @param marketModule The profile's newly set follow module. This CAN be the zero address.
@@ -331,7 +346,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a curation's mint module is set.
+     * @notice Emitted when a curation's mint module is set.
      *
      * @param curationId The profile's token ID.
      * @param mintModule The profile's newly set follow module. This CAN be the zero address.
@@ -347,7 +362,7 @@ library Events {
     );
 
     /**
-     * @dev Emitted when a profile creator is added to or removed from the whitelist.
+     * @notice Emitted when a profile creator is added to or removed from the whitelist.
      *
      * @param profileCreator The address of the profile creator.
      * @param whitelisted Whether or not the profile creator is being added to the whitelist.

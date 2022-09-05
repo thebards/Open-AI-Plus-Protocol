@@ -3,6 +3,8 @@
 pragma solidity ^0.8.9;
 
 import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import '../../utils/DataTypes.sol';
+
 /**
  * @title IERC721Time
  * @author TheBards Protocol
@@ -11,20 +13,6 @@ import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
  * which contains the token owner and the mint timestamp as well as associated getters.
  */
 interface IERC721Time is IERC721 {
-
-    /**
-     * @notice Contains the owner address and the mint timestamp for every NFT.
-     *
-     * Note: Instead of the owner address in the _tokenOwners private mapping, we now store it in the
-     * _tokenData mapping, alongside the unchanging mintTimestamp.
-     *
-     * @param owner The token owner.
-     * @param mintTimestamp The mint timestamp.
-     */
-    struct TokenData {
-        address owner;
-        uint96 mintTimestamp;
-    }
 
     /**
      * @notice Returns the mint timestamp associated with a given NFT, stored only once upon initial mint.
@@ -44,7 +32,7 @@ interface IERC721Time is IERC721 {
      *
      * @return TokenData token data struct containing the owner address, curation BPS, staking BPS and the mint timestamp.
      */
-    function tokenDataOf(uint256 tokenId) external view returns (TokenData memory);
+    function tokenDataOf(uint256 tokenId) external view returns (DataTypes.TokenData memory);
 
     /**
      * @notice Returns whether a token with the given token ID exists.

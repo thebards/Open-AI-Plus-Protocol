@@ -14,12 +14,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pragma solidity ^0.8.9;
-pragma abicoder v2;
+// pragma abicoder v2;
 
 import "./LibFixedMath.sol";
 
 library LibCobbDouglas {
-    /// @dev The cobb-douglas function used to compute fee-based rewards for
+    /// @notice The cobb-douglas function used to compute fee-based rewards for
     ///      staking pools in a given epoch. This function does not perform
     ///      bounds checking on the inputs, but the following conditions
     ///      need to be true:

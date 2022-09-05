@@ -55,6 +55,20 @@ library DataTypes {
     }
 
     /**
+     * @notice Contains the owner address and the mint timestamp for every NFT.
+     *
+     * Note: Instead of the owner address in the _tokenOwners private mapping, we now store it in the
+     * _tokenData mapping, alongside the unchanging mintTimestamp.
+     *
+     * @param owner The token owner.
+     * @param mintTimestamp The mint timestamp.
+     */
+    struct TokenData {
+        address owner;
+        uint96 mintTimestamp;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
      * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
      *
@@ -140,12 +154,14 @@ library DataTypes {
      * @param currency The currency to ask.
      * @param price The fix price of nft.
      * @param treasury The recipient of the fee
+     * @param minter The minter of NFT.
      */
     struct FixPriceMarketData {
         address seller;
         address currency;
         uint256 price;
         address treasury;
+        address minter;
     }
 
     /**
@@ -165,6 +181,7 @@ library DataTypes {
     /**
      * @notice A struct containing data associated with each new Content Curation.
      *
+     * @param curationType The Type of curation.
      * @param handle The profile's associated handle.
        @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
      * @param tokenIdPointed The token ID this curation points to.
@@ -174,6 +191,7 @@ library DataTypes {
      * Make sure each curation can mint its own NFTs. MintModule is marketModule, but the initialization parameters are different.
      */
     struct CurationStruct {
+        CurationType curationType;
         string handle;
         address tokenContractPointed;
         uint256 tokenIdPointed;
@@ -186,6 +204,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
      *
      * @param to The address receiving the curation.
+     * @param curationType The Type of curation.
      * @param profileId the profile id creating the curation.
      * @param curationId the curation ID.
      * @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
@@ -201,6 +220,7 @@ library DataTypes {
      */
     struct CreateCurationData {
         address to;
+        CurationType curationType;
         uint256 profileId;
         uint256 curationId;
         address tokenContractPointed;
@@ -218,6 +238,7 @@ library DataTypes {
      * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
      *
      * @param to The address receiving the curation.
+     * @param curationType The Type of curation.
      * @param profileId the profile id creating the curation
      * @param curationId the curation ID.
      * @param tokenContractPointed The token contract address this curation points to, default is the bards hub.
@@ -233,6 +254,7 @@ library DataTypes {
      */
     struct CreateCurationWithSigData {
         address to;
+        CurationType curationType;
         uint256 profileId;
         uint256 curationId;
         address tokenContractPointed;

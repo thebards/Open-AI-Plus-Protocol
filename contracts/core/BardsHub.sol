@@ -5,7 +5,7 @@ pragma solidity ^0.8.9;
 import './curations/BardsCurationBase.sol';
 import './storages/BardsHubStorage.sol';
 import '../interfaces/IBardsHub.sol';
-import '../utils/DataTypes.sol';
+import {DataTypes} from '../utils/DataTypes.sol';
 import '../upgradeablity/VersionedInitializable.sol';
 import '../utils/CurationHelpers.sol';
 import '../utils/Errors.sol';
@@ -123,6 +123,20 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
+    function whitelistMintModule(address mintModule, bool whitelist)
+        external
+        override
+        onlyGov
+    {
+        _mintModuleWhitelisted[mintModule] = whitelist;
+        emit Events.MintModuleWhitelisted(
+            mintModule,
+            whitelist,
+            block.timestamp
+        );
+    }
+
+    /// @inheritdoc IBardsHub
     function registerContract(
         bytes32 _id, 
         address _contractAddress
@@ -183,7 +197,7 @@ contract BardsHub is
                     tokenId: profileId,
                     curationData: vars.curationMetaData
                 })
-            );
+            ); 
             return profileId;
         }
     }
@@ -328,7 +342,7 @@ contract BardsHub is
             vars.marketModule,
             vars.marketModuleInitData,
             _curationById[vars.curationId],
-            _marketModuleWhitelisted
+            _mintModuleWhitelisted
         );
     }
 
@@ -365,6 +379,16 @@ contract BardsHub is
         returns (bool)
     {
         return _marketModuleWhitelisted[marketModule];
+    }
+
+    /// @inheritdoc IBardsHub
+    function isMintModuleWhitelisted(address mintModule)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return _mintModuleWhitelisted[mintModule];
     }
 
     /// @inheritdoc IBardsHub

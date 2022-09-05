@@ -31,7 +31,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	function initializeCuration(DataTypes.InitializeCurationData memory _vars)
 		public
 		override
-		nonReentrant {
+		{
 			// address tokenOwner = IERC721(_vars.tokenContract).ownerOf(_vars.tokenId);
 
 			// require(
@@ -45,8 +45,8 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 				uint32 curationBps,
 				uint32 stakingBps
 			) = abi.decode(
-				_vars.curationData, 
-				(address[], address[], uint32[], uint32, uint32)
+					_vars.curationData, 
+					(address[], address[], uint32[], uint32, uint32)
 				);
 
 			require(
@@ -56,7 +56,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			);
 			require(
 				MathUtils.sum(MathUtils.uint32To256Array(sellerBpses)) == Constants.MAX_BPS, 
-				"Sellers fee bps must be equal to 10000."
+				"The sum of Sellers fee bps must be equal to 1000000."
 			);
 			require(
 				curationBps + stakingBps <= Constants.MAX_BPS, 

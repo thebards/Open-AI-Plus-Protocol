@@ -37,6 +37,7 @@ abstract contract BardsHubStorage {
 	mapping(address => uint256) internal _defaultProfileByAddress;
 	// whitelists
 	mapping(address => bool) internal _marketModuleWhitelisted;
+	mapping (address => bool) internal _mintModuleWhitelisted;
 	mapping(address => bool) internal _profileCreatorWhitelisted;
 	// hash -> profile id
 	mapping(bytes32 => uint256) internal _profileIdByHandleHash;

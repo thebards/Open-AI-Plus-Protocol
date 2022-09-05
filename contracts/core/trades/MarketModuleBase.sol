@@ -15,11 +15,11 @@ import '../govs/ContractRegistrar.sol';
 import '../../interfaces/tokens/IBardsStaking.sol';
 
 /**
- * @title FeePayout
+ * @title MarketModuleBase
  * @author TheBards Protocol
  * @notice This contract extension supports paying out funds to an external recipient
  */
-abstract contract FeePayout is ContractRegistrar {
+abstract contract MarketModuleBase is ContractRegistrar {
     using SafeERC20 for IERC20;
 
     IWETH internal weth;
@@ -30,14 +30,20 @@ abstract contract FeePayout is ContractRegistrar {
 
     function _initialize(
         address _hub, 
-        address _wethAddress, 
         address _royaltyEngine
     ) internal {
-        if (_hub == address(0)) revert Errors.InitParamsInvalid();
+        if (_hub == address(0) || _royaltyEngine == address(0)) revert Errors.InitParamsInvalid();
         ContractRegistrar._initialize(_hub);
-        weth = IWETH(_wethAddress);
+
+        weth = iWETH();
         royaltyEngine = IRoyaltyEngineV1(_royaltyEngine);
         stakingAddress = bardsStaking().getStakingAddress();
+        
+        emit Events.MarketModuleBaseInitialized(
+            stakingAddress,
+			_royaltyEngine,
+			block.timestamp
+		);
     }
 
     /**
@@ -53,6 +59,55 @@ abstract contract FeePayout is ContractRegistrar {
         );
         royaltyEngine = IRoyaltyEngineV1(_royaltyEngine);
     }
+
+    function isCurrencyWhitelisted(address currency)
+		internal 
+		view 
+		returns (bool) {
+        	return bardsDataDao().isCurrencyWhitelisted(currency);
+    }
+
+    function getProtocolFeeSetting()
+		internal 
+		view 
+		returns (DataTypes.ProtocolFeeSetting memory) {
+        	return bardsDataDao().getProtocolFeeSetting();
+    }
+
+	function getProtocolFee()
+		internal
+		view
+		returns (uint32) {
+			return bardsDataDao().getProtocolFee();
+	}
+
+	function getDefaultCurationBps()
+		internal
+		view
+		returns (uint32) {
+			return bardsDataDao().getDefaultCurationBps();
+	}
+
+	function getDefaultStakingBps()
+		internal
+		view
+		returns (uint32) {
+			return bardsDataDao().getDefaultStakingBps();
+	}
+
+	function getTreasury()
+		internal
+		view
+		returns (address){
+			return bardsDataDao().getTreasury();
+		}
+
+	function getFeeAmount(uint256 _amount)
+		internal
+		view
+		returns (uint256) {
+			return bardsDataDao().getFeeAmount(_amount);
+		}
 
     /**
      * 
@@ -157,7 +212,13 @@ abstract contract FeePayout is ContractRegistrar {
                 _allocationIds[i]
             );
 
-            emit Events.CurationFeePayout(_tokenContract, _tokenId, recipient, amount, block.timestamp);
+            emit Events.CurationFeePayout(
+                _tokenContract, 
+                _tokenId, 
+                recipient, 
+                amount, 
+                block.timestamp
+            );
 
             // Cannot underflow as remaining amount is ensured to be greater than or equal to _amount
             unchecked {

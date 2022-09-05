@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.9;
 
-import '../../interfaces/markets/IMinter.sol';
+import '../../interfaces/minters/IMinter.sol';
 
 /**
  * @title Minter
