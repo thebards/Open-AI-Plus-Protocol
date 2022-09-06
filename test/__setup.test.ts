@@ -113,7 +113,7 @@ export let abiCoder: AbiCoder;
 export let eventsLib: Events;
 export let errorsLib: Errors;
 export let mockMarketModuleInitData: BytesLike;
-export let mockMintModuleInitData: BytesLike;
+export let mockminterMarketModuleInitData: BytesLike;
 export let mockCurationMetaData: BytesLike;
 
 export function makeSuiteCleanRoom(name: string, tests: () => void) {
@@ -146,17 +146,18 @@ before(async function () {
 	governanceAddress = await governance.getAddress();
 	royaltyEngineAddress = await royaltyEnginer.getAddress();
 	treasuryAddress = await accounts[4].getAddress();
+
 	mockMarketModuleInitData = abiCoder.encode(
 		['address', 'uint256', 'address', 'address', 'address'],
-		[ZERO_ADDRESS, 0, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+		[ZERO_ADDRESS, 100000, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
 	);
-	mockMintModuleInitData = abiCoder.encode(
+	mockminterMarketModuleInitData = abiCoder.encode(
 		['address', 'uint256', 'address', 'address', 'address'],
-		[ZERO_ADDRESS, 0, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+		[ZERO_ADDRESS, 100000, ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
 	);
 	mockCurationMetaData = abiCoder.encode(
 		['address[]', 'address[]', 'uint32[]', 'uint32', 'uint32'],
-		[[ZERO_ADDRESS], [ZERO_ADDRESS], [1000000], DEFAULT_CURATION_BPS, DEFAULT_CURATION_BPS]
+		[[ZERO_ADDRESS], [ZERO_ADDRESS], [1000000], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
 	);
 
 	bardsDaoData = await new BardsDaoData__factory(deployer).deploy(
@@ -280,6 +281,12 @@ before(async function () {
 	).to.not.be.reverted;
 	await expect(
 		bardsHub.connect(governance).whitelistProfileCreator(testWallet.address, true)
+	).to.not.be.reverted;
+	await expect(
+		bardsHub.connect(governance).whitelistCurrency(bardsCurationToken.address, true)
+	).to.not.be.reverted;
+	await expect(
+		bardsHub.connect(governance).whitelistCurrency(weth.address, true)
 	).to.not.be.reverted;
 
 	expect(bardsHub).to.not.be.undefined;

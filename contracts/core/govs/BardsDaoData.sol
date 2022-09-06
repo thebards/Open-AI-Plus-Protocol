@@ -19,9 +19,6 @@ import '../../utils/DataTypes.sol';
  * allow the flexibility of using different governance executors.
  */
 contract BardsDaoData is IBardsDaoData {
-	/// token contract address -> bool
-    mapping(address => bool) internal _currencyWhitelisted;
-
     address internal _governance;
 
 	/// The Bards protocol fee
@@ -50,7 +47,7 @@ contract BardsDaoData is IBardsDaoData {
         _setTreasury(treasury);
         _setProtocolFee(protocolFee);
         _setDefaultCurationBps(defaultCurationBps);
-        _setDefaultCurationBps(defaultStakingBps);
+        _setDefaultStakingBps(defaultStakingBps);
     }
 
     /// @inheritdoc IBardsDaoData
@@ -66,16 +63,6 @@ contract BardsDaoData is IBardsDaoData {
     /// @inheritdoc IBardsDaoData
     function setProtocolFee(uint32 newProtocolFee) external override onlyGov {
         _setProtocolFee(newProtocolFee);
-    }
-
-    /// @inheritdoc IBardsDaoData
-    function whitelistCurrency(address currency, bool toWhitelist) external override onlyGov {
-        _whitelistCurrency(currency, toWhitelist);
-    }
-
-    /// @inheritdoc IBardsDaoData
-    function isCurrencyWhitelisted(address currency) external view override returns (bool) {
-        return _currencyWhitelisted[currency];
     }
 
     /// @inheritdoc IBardsDaoData
@@ -151,17 +138,5 @@ contract BardsDaoData is IBardsDaoData {
         uint32 prevDefaultStakingBps = _protocolFeeSetting.feeBps;
         _protocolFeeSetting.defaultStakingBps = newDefaultStakingBps;
         emit Events.ProtocolFeeSet(prevDefaultStakingBps, newDefaultStakingBps, block.timestamp);
-    }
-
-    function _whitelistCurrency(address currency, bool toWhitelist) internal {
-        if (currency == address(0)) revert Errors.InitParamsInvalid();
-        bool prevWhitelisted = _currencyWhitelisted[currency];
-        _currencyWhitelisted[currency] = toWhitelist;
-        emit Events.ProtocolCurrencyWhitelisted(
-            currency,
-            prevWhitelisted,
-            toWhitelist,
-            block.timestamp
-        );
     }
 }

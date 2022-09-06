@@ -242,7 +242,7 @@ contract BardsHub is
         override
         whenNotPaused
     {
-        _validateCallerIsCurationOwner(vars.curationId);
+        _validateCallerIsCurationOwnerOrApproved(vars.curationId);
         CurationHelpers.setMarketModule(
             vars.curationId,
             vars.tokenContract,
@@ -292,13 +292,13 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function setMintModule(DataTypes.SetMarketModuleData calldata vars)
+    function setMinterMarketModule(DataTypes.SetMarketModuleData calldata vars)
         external
         override
         whenNotPaused
     {
-        _validateCallerIsCurationOwner(vars.curationId);
-        CurationHelpers.setMintModule(
+        _validateCallerIsCurationOwnerOrApproved(vars.curationId);
+        CurationHelpers.setMinterMarketModule(
             vars.curationId,
             vars.tokenContract,
             vars.tokenId,
@@ -310,7 +310,7 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function setMintModuleWithSig(
+    function setMinterMarketModuleWithSig(
         DataTypes.SetMarketModuleWithSigData calldata vars
     ) external override whenNotPaused {
         address owner = ownerOf(vars.curationId);
@@ -335,14 +335,14 @@ contract BardsHub is
                 vars.sig
             );
         }
-        CurationHelpers.setMintModule(
+        CurationHelpers.setMinterMarketModule(
             vars.curationId,
             vars.tokenContract,
             vars.tokenId,
             vars.marketModule,
             vars.marketModuleInitData,
             _curationById[vars.curationId],
-            _mintModuleWhitelisted
+            _marketModuleWhitelisted
         );
     }
 
@@ -353,13 +353,46 @@ contract BardsHub is
         whenCurationEnabled
         returns (uint256)
     {
-        _validateCallerIsProfileOwner(vars.profileId);
+        _validateCallerIsCurationOwnerOrApproved(vars.curationId);
         return _createCuration(vars);
+    }
+
+    /// @inheritdoc IBardsHub
+    function whitelistCurrency(
+        address currency, 
+        bool toWhitelist
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
+        _whitelistCurrency(currency, toWhitelist);
     }
 
     /// *********************************
     /// *****EXTERNAL VIEW FUNCTIONS*****
     /// *********************************
+
+    /// @inheritdoc IBardsHub
+    function isAuthForCurator(address operator, address curator)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return (operator == curator ||
+            isApprovedForAll(curator, operator));
+    }
+
+    /// @inheritdoc IBardsHub
+    function isCurrencyWhitelisted(address currency) 
+        external 
+        view 
+        override 
+        returns (bool) 
+    {
+        return _currencyWhitelisted[currency];
+    }
 
     /// @inheritdoc IBardsHub
     function isProfileCreatorWhitelisted(address profileCreator)
@@ -462,13 +495,13 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function getMintModule(uint256 curationId)
+    function getMinterMarketModule(uint256 curationId)
         external
         view
         override
         returns (address)
     {
-        return _curationById[curationId].mintModule;
+        return _curationById[curationId].minterMarketModule;
     }
 
     /// @inheritdoc IBardsHub
@@ -520,6 +553,18 @@ contract BardsHub is
         );
     }
 
+    function _whitelistCurrency(address currency, bool toWhitelist) internal {
+        if (currency == address(0)) revert Errors.ZeroAddress();
+        bool prevWhitelisted = _currencyWhitelisted[currency];
+        _currencyWhitelisted[currency] = toWhitelist;
+        emit Events.ProtocolCurrencyWhitelisted(
+            currency,
+            prevWhitelisted,
+            toWhitelist,
+            block.timestamp
+        );
+    }
+
     /*
      * If the profile ID is zero, this is the equivalent of "unsetting" a default profile.
      * Note that the wallet address should either be the message sender or validated via a signature
@@ -531,14 +576,47 @@ contract BardsHub is
 
         _defaultProfileByAddress[wallet] = profileId;
 
-        emit Events.DefaultProfileSet(wallet, profileId, block.timestamp);
+        emit Events.DefaultProfileSet(
+            wallet, 
+            profileId, 
+            block.timestamp
+        );
     }
 
-    function _validateCallerIsProfileOwner(uint256 profileId) internal view {
-        if (msg.sender != ownerOf(profileId)) revert Errors.NotProfileOwner();
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) 
+        internal 
+        override 
+        whenNotPaused 
+    {
+        if (_defaultProfileByAddress[from] == tokenId) {
+            _defaultProfileByAddress[from] = 0;
+        }
+
+        super._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _validateCallerIsCurationOwner(uint256 curationId) internal view {
+    function _validateCallerIsCurationOwnerOrApproved(
+        uint256 curationId
+    ) 
+        internal 
+        view 
+    {
+        if (_isApprovedOrOwner(msg.sender, curationId)) {
+            return;
+        }
+        revert Errors.NotProfileOwnerOrDispatcher();
+    }
+
+    function _validateCallerIsCurationOwner(
+        uint256 curationId
+    ) 
+        internal 
+        view 
+    {
         if (msg.sender != ownerOf(curationId)) revert Errors.NotCurationOwner();
     }
 

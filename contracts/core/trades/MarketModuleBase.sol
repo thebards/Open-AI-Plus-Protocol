@@ -52,7 +52,12 @@ abstract contract MarketModuleBase is ContractRegistrar {
      * to be deployed elsewhere, or a contract matching that ABI
      * @param _royaltyEngine The address for the new royalty engine
      */
-    function setRoyaltyEngineAddress(address _royaltyEngine) public onlyHub {
+    function setRoyaltyEngineAddress(
+        address _royaltyEngine
+    ) 
+        public 
+        onlyGov 
+    {
         require(
             ERC165Checker.supportsInterface(_royaltyEngine, type(IRoyaltyEngineV1).interfaceId),
             "setRoyaltyEngineAddress must match IRoyaltyEngineV1 interface"
@@ -64,7 +69,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
 		internal 
 		view 
 		returns (bool) {
-        	return bardsDataDao().isCurrencyWhitelisted(currency);
+        	return bardsHub().isCurrencyWhitelisted(currency);
     }
 
     function getProtocolFeeSetting()

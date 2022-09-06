@@ -12,7 +12,7 @@ pragma solidity ^0.8.9;
 interface IRewardsManager {
 	// -- Config --
 
-	/**
+	  /**
      * @notice Sets the issuance rate.
      * The issuance rate is defined as a percentage increase of the total supply per block.
      * This means that it needs to be greater than 1.0, any number under 1.0 is not
@@ -21,17 +21,34 @@ interface IRewardsManager {
      * @param _issuanceRate Issuance rate expressed in wei
      */
     function setIssuanceRate(
-		uint256 _issuanceRate
-	) external;
+        uint256 _issuanceRate
+    ) external;
 
-	/**
+
+    /**
+     * @notice Set inflationChange. Only callable by gov
+     * @param _inflationChange Inflation change as a percentage of total token supply
+     */
+    function setInflationChange(
+        uint256 _inflationChange
+    ) external;
+
+    /**
+     * @notice Set targetBondingRate. Only callable by gov
+     * @param _targetBondingRate Target bonding rate as a percentage of total bonded tokens / total token supply
+     */
+    function setTargetBondingRate(
+        uint256 _targetBondingRate
+    ) external;
+
+	  /**
      * @notice Sets the minimum staked tokens on a curation to start accruing rewards.
      * Can be set to zero which means that this feature is not being used.
      * @param _minimumStakeingToken Minimum signaled tokens
      */
     function setMinimumStakingToken(
-		uint256 _minimumStakeingToken
-	) external;
+        uint256 _minimumStakeingToken
+    ) external;
 
     /**
      * @notice Denies to claim rewards for a curation.
@@ -39,9 +56,9 @@ interface IRewardsManager {
      * @param _deny Whether to set the curation as denied for claiming rewards or not
      */
     function setDenied(
-		uint256 _curationId, 
-		bool _deny
-	) external;
+        uint256 _curationId, 
+        bool _deny
+    ) external;
 
     /**
      * @notice Denies to claim rewards for multiple curations.
@@ -49,9 +66,9 @@ interface IRewardsManager {
      * @param _deny Array of denied status for claiming rewards for each curation
      */
     function setDeniedMany(
-		uint256[] calldata _curationIds, 
-		bool[] calldata _deny
-	) external;
+        uint256[] calldata _curationIds, 
+        bool[] calldata _deny
+    ) external;
 
     /**
      * @notice Tells if curation is in deny list
@@ -59,11 +76,11 @@ interface IRewardsManager {
      * @return Whether the subgraph is denied for claiming rewards or not
      */
     function isDenied(
-		uint256 _curationId
-	) 
-	external 
-	view 
-	returns (bool);
+        uint256 _curationId
+    ) 
+      external 
+      view 
+      returns (bool);
 
 	/**
      * @notice Gets the issuance of rewards per staking since last updated.
@@ -82,18 +99,18 @@ interface IRewardsManager {
      * @return newly accrued rewards per signal since last update
      */
     function getNewRewardsPerStaking() 
-	external 
-	view 
-	returns (uint256);
+        external 
+        view 
+        returns (uint256);
 
     /**
      * @notice Gets the currently accumulated rewards per staking.
      * @return Currently accumulated rewards per staking
      */
     function getAccRewardsPerStaking() 
-	external 
-	view 
-	returns (uint256);
+        external 
+        view 
+        returns (uint256);
 
     /**
      * @notice Gets the accumulated rewards for the curation.
@@ -101,11 +118,11 @@ interface IRewardsManager {
      * @return Accumulated rewards for curation
      */
     function getAccRewardsForCuration(
-		uint256 _curationId
-	)
-    external
-    view
-    returns (uint256);
+        uint256 _curationId
+    )
+        external
+        view
+        returns (uint256);
 
     /**
      * @notice Gets the accumulated rewards per allocated token for the curation.
@@ -114,11 +131,11 @@ interface IRewardsManager {
      * @return Accumulated rewards for curation
      */
     function getAccRewardsPerAllocatedToken(
-		uint256 _curationId
-	)
-    external
-    view
-    returns (uint256, uint256);
+        uint256 _curationId
+    )
+        external
+        view
+        returns (uint256, uint256);
 
     /**
      * @dev Calculate current rewards for a given allocation on demand.
@@ -126,11 +143,11 @@ interface IRewardsManager {
      * @return Rewards amount for an allocation
      */
     function getRewards(
-		address _allocationID
-	) 
-	external 
-	view 
-	returns (uint256);
+        address _allocationID
+    ) 
+      external 
+      view 
+      returns (uint256);
 
     /**
      * @notice Updates the accumulated rewards per staking and save checkpoint block number.
@@ -139,8 +156,13 @@ interface IRewardsManager {
      * @return Accumulated rewards per staking
      */
     function updateAccRewardsPerStaking() 
-	external 
-	returns (uint256);
+        external 
+        returns (uint256);
+
+    /**
+     * Set IssuanceRate based upon the current bonding rate and target bonding rate
+     */
+    function onUpdateIssuanceRate() external;
 
     /**
      * @notice Pull rewards from the contract for a particular allocation.
@@ -150,10 +172,10 @@ interface IRewardsManager {
      * @return Assigned rewards amount
      */
     function takeRewards(
-		address _allocationID
-	) 
-	external 
-	returns (uint256);
+        address _allocationID
+    ) 
+      external 
+      returns (uint256);
 
     // -- Hooks --
 
@@ -165,10 +187,10 @@ interface IRewardsManager {
      * @return Accumulated rewards for curation
      */
     function onCurationStakingUpdate(
-		uint256 _curationId
-	) 
-	external 
-	returns (uint256);
+        uint256 _curationId
+    ) 
+      external 
+      returns (uint256);
 
     /**
      * @notice Triggers an update of rewards for a curation.
@@ -179,9 +201,9 @@ interface IRewardsManager {
      * @return Accumulated rewards per allocated token for a curation
      */
     function onCurationAllocationUpdate(
-		uint256 _curationId
-	) 
-	external 
-	returns (uint256);
+        uint256 _curationId
+    ) 
+      external 
+      returns (uint256);
 	
 }

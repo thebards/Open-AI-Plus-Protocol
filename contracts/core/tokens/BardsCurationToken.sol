@@ -81,11 +81,21 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
         _approve(_owner, _spender, _value);
     }
 
-    function addMinter(address _account) external onlyHub {
+    function addMinter(
+        address _account
+    ) 
+        external 
+        onlyGov 
+    {
         _addMinter(_account);
     }
 
-    function removeMinter(address _account) external onlyHub {
+    function removeMinter(
+        address _account
+    ) 
+        external 
+        onlyGov 
+    {
         _removeMinter(_account);
     }
 
@@ -93,11 +103,23 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
         _removeMinter(msg.sender);
     }
 
-    function mint(address _to, uint256 _amount) external onlyMinter {
+    function mint(
+        address _to, 
+        uint256 _amount
+    ) 
+        external 
+        onlyMinter 
+    {
         _mint(_to, _amount);
     }
 
-    function isMinter(address _account) public view returns (bool) {
+    function isMinter(
+        address _account
+    ) 
+        public 
+        view 
+        returns (bool) 
+    {
         return _minters[_account];
     }
 
@@ -105,7 +127,11 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
      * @notice Add a new minter.
      * @param _account Address of the minter
      */
-    function _addMinter(address _account) private {
+    function _addMinter(
+        address _account
+    ) 
+        private 
+    {
         _minters[_account] = true;
         emit Events.MinterAdded(_account, block.timestamp);
     }
@@ -114,7 +140,11 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
      * @notice Remove a minter.
      * @param _account Address of the minter
      */
-    function _removeMinter(address _account) private {
+    function _removeMinter(
+        address _account
+    )
+        private 
+    {
         _minters[_account] = false;
         emit Events.MinterRemoved(_account, block.timestamp);
     }

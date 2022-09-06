@@ -31,7 +31,10 @@ abstract contract TokenStorage {
         bytes32 digest,
         address expectedAddress,
         DataTypes.EIP712Signature calldata sig
-    ) internal view {
+    ) 
+        internal 
+        view 
+    {
         if (sig.deadline < block.timestamp) revert Errors.SignatureExpired();
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
         if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
@@ -41,7 +44,11 @@ abstract contract TokenStorage {
     /**
      * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
      */
-    function _calculateDomainSeparator(string memory name) internal view returns (bytes32) {
+    function _calculateDomainSeparator(string memory name) 
+        internal 
+        view 
+        returns (bytes32) 
+    {
         return
             keccak256(
                 abi.encode(
@@ -63,7 +70,14 @@ abstract contract TokenStorage {
      *
      * @return bytes32 A 32-byte output representing the EIP712 digest
      */
-    function _calculateDigest(bytes32 hashedMessage, string memory name) internal view returns (bytes32) {
+    function _calculateDigest(
+        bytes32 hashedMessage, 
+        string memory name
+    ) 
+        internal 
+        view 
+        returns (bytes32) 
+    {
         bytes32 digest;
         unchecked {
             digest = keccak256(

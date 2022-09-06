@@ -6,6 +6,11 @@ import '../../utils/DataTypes.sol';
 
 abstract contract RewardsManagerStorage {
 	uint256 public issuanceRate;
+    // Change in inflation rate per round until the target bonding rate is achieved
+    uint256 public inflationChange;
+    // Target bonding rate
+    uint256 public targetBondingRate;
+    
     uint256 public accRewardsPerStaking;
     uint256 public accRewardsPerStakingLastBlockUpdated;
 

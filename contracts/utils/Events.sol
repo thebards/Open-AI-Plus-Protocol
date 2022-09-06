@@ -46,6 +46,19 @@ library Events {
     );
 
     /**
+     * @notice Emitted when a dispatcher is set for a specific profile.
+     *
+     * @param curationId The token ID of the curation for which the dispatcher is set.
+     * @param dispatcher The dispatcher set for the given profile.
+     * @param timestamp The current block timestamp.
+     */
+    event DispatcherSet(
+        uint256 indexed curationId, 
+        address indexed dispatcher, 
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when `theBards` set `operator` access.
      */
     event OperatorSet(
@@ -286,8 +299,8 @@ library Events {
      * @param marketModule The profile's newly set market module. This CAN be the zero address.
      * @param marketModuleReturnData The data returned from the market module's initialization. This is abi encoded
      * and totally depends on the market module chosen.
-     * @param mintModule The profile's newly set mint module. This CAN be the zero address.
-     * @param mintModuleReturnData The data returned from the mint module's initialization. This is abi encoded
+     * @param minterMarketModule The profile's newly set mint module. This CAN be the zero address.
+     * @param minterMarketModuleReturnData The data returned from the mint module's initialization. This is abi encoded
      * and totally depends on the mint module chosen.
      * @param timestamp The current block timestamp.
      */
@@ -299,8 +312,8 @@ library Events {
         string contentURI,
         address marketModule,
         bytes marketModuleReturnData,
-        address mintModule,
-        bytes mintModuleReturnData,
+        address minterMarketModule,
+        bytes minterMarketModuleReturnData,
         uint256 timestamp
     );
 
@@ -313,8 +326,8 @@ library Events {
      * @param marketModule The profile's newly set market module. This CAN be the zero address.
      * @param marketModuleReturnData The data returned from the market module's initialization. This is abi encoded
      * and totally depends on the market module chosen.
-     * @param mintModule The profile's newly set mint module. This CAN be the zero address.
-     * @param mintModuleReturnData The data returned from the mint module's initialization. This is abi encoded
+     * @param minterMarketModule The profile's newly set mint module. This CAN be the zero address.
+     * @param minterMarketModuleReturnData The data returned from the mint module's initialization. This is abi encoded
      * and totally depends on the mint module chosen.
      * @param timestamp The current block timestamp.
      */
@@ -324,8 +337,8 @@ library Events {
         string contentURI,
         address marketModule,
         bytes marketModuleReturnData,
-        address mintModule,
-        bytes mintModuleReturnData,
+        address minterMarketModule,
+        bytes minterMarketModuleReturnData,
         uint256 timestamp
     );
 
@@ -346,18 +359,18 @@ library Events {
     );
 
     /**
-     * @notice Emitted when a curation's mint module is set.
+     * @notice Emitted when a curation's minter market module is set.
      *
      * @param curationId The profile's token ID.
-     * @param mintModule The profile's newly set follow module. This CAN be the zero address.
-     * @param mintModuleReturnData The data returned from the follow module's initialization. This is abi encoded
+     * @param minterMarketModule The profile's newly set follow module. This CAN be the zero address.
+     * @param minterMarketModuleReturnData The data returned from the follow module's initialization. This is abi encoded
      * and totally depends on the follow module chosen.
      * @param timestamp The current block timestamp.
      */
-    event MintModuleSet(
+    event MinterMarketModuleSet(
         uint256 indexed curationId,
-        address mintModule,
-        bytes mintModuleReturnData,
+        address minterMarketModule,
+        bytes minterMarketModuleReturnData,
         uint256 timestamp
     );
 
@@ -615,6 +628,32 @@ library Events {
     event IssuanceRateSet(
         uint256 prevIssuanceRate,
         uint256 newIssuanceRate,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when TargetBondingRate update
+     * 
+     * @param prevTargetBondingRate The preivous target bonding rate of BCT token.
+     * @param newTargetBondingRate The new target bonding rate of BCT token.
+     * @param timestamp The current block timestamp.
+     */
+    event TargetBondingRateSet(
+        uint256 prevTargetBondingRate,
+        uint256 newTargetBondingRate,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when InflationChange update
+     * 
+     * @param prevInflationChange The preivous inflation Change of BCT token.
+     * @param newInflationChange The new inflation Change of BCT token.
+     * @param timestamp The current block timestamp.
+     */
+    event InflationChangeSet(
+        uint256 prevInflationChange,
+        uint256 newInflationChange,
         uint256 timestamp
     );
 

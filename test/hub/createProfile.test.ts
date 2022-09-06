@@ -30,7 +30,8 @@ import {
 	fixPriceMarketModule,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
-	mockMintModuleInitData
+	mockminterMarketModuleInitData,
+	bardsCurationToken
 } from '../__setup.test';
 import { DataTypes } from '../../typechain-types/contracts/core/BardsHub';
 
@@ -54,8 +55,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -77,8 +78,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -100,8 +101,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -123,8 +124,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -133,7 +134,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 				);
 			});
 
-			it('User should fail to create a profile with with invalid market module data format', async function () {
+			it('User should fail to create a profile with invalid market module data format', async function () {
 				await expect(
 					bardsHub.connect(governance).whitelistMarketModule(fixPriceMarketModule.address, true)
 				).to.not.be.reverted;
@@ -155,8 +156,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: fixPriceMarketModule.address,
 						marketModuleInitData: faultMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithoutReason;
@@ -175,8 +176,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: userAddress,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -202,8 +203,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: userAddress,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -238,8 +239,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -258,7 +259,9 @@ makeSuiteCleanRoom('Profile Creation', function () {
 			expect(mintTimestamp).to.eq(timestamp);
 			expect(tokenData.owner).to.eq(userAddress);
 			expect(tokenData.mintTimestamp).to.eq(timestamp);
-
+			expect(await bardsHub.curationBpsOf(FIRST_PROFILE_ID)).to.eq(DEFAULT_CURATION_BPS);
+			expect(await bardsHub.stakingBpsOf(FIRST_PROFILE_ID)).to.eq(DEFAULT_STAKING_BPS);
+			
 			const secondProfileId = FIRST_PROFILE_ID + 1;
 			const secondProfileHandle = '2nd_profile';
 			expect(
@@ -275,8 +278,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						contentURI: MOCK_PROFILE_CONTENT_URI,
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
-						mintModule: ZERO_ADDRESS,
-						mintModuleInitData: mockMintModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -295,6 +298,182 @@ makeSuiteCleanRoom('Profile Creation', function () {
 			expect(mintTimestamp).to.eq(timestamp);
 			expect(tokenData.owner).to.eq(userTwoAddress);
 			expect(tokenData.mintTimestamp).to.eq(timestamp);
+			expect(await bardsHub.curationBpsOf(secondProfileId)).to.eq(DEFAULT_CURATION_BPS);
+			expect(await bardsHub.stakingBpsOf(secondProfileId)).to.eq(DEFAULT_STAKING_BPS);
+		});
+
+		it('Should return the expected token IDs when creating profiles', async function () {
+			expect(
+				await createProfileReturningTokenId({
+					vars: {
+						to: userAddress,
+						curationType: CurationType.Profile,
+						profileId: 0,
+						curationId: 0,
+						tokenContractPointed: ZERO_ADDRESS,
+						tokenIdPointed: 0,
+						handle: 'token.id_1',
+						contentURI: MOCK_PROFILE_CONTENT_URI,
+						marketModule: ZERO_ADDRESS,
+						marketModuleInitData: mockMarketModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						curationMetaData: mockCurationMetaData
+					},
+				})
+			).to.eq(FIRST_PROFILE_ID);
+
+			const secondProfileId = FIRST_PROFILE_ID + 1;
+			expect(
+				await createProfileReturningTokenId({
+					sender: userTwo,
+					vars: {
+						to: userTwoAddress,
+						curationType: CurationType.Profile,
+						profileId: 0,
+						curationId: 0,
+						tokenContractPointed: ZERO_ADDRESS,
+						tokenIdPointed: 0,
+						handle: 'token.id_2',
+						contentURI: MOCK_PROFILE_CONTENT_URI,
+						marketModule: ZERO_ADDRESS,
+						marketModuleInitData: mockMarketModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						curationMetaData: mockCurationMetaData
+					},
+				})
+			).to.eq(secondProfileId);
+
+			const thirdProfileId = secondProfileId + 1;
+			expect(
+				await createProfileReturningTokenId({
+					vars: {
+						to: userAddress,
+						curationType: CurationType.Profile,
+						profileId: 0,
+						curationId: 0,
+						tokenContractPointed: ZERO_ADDRESS,
+						tokenIdPointed: 0,
+						handle: 'token.id_3',
+						contentURI: MOCK_PROFILE_CONTENT_URI,
+						marketModule: ZERO_ADDRESS,
+						marketModuleInitData: mockMarketModuleInitData,
+						minterMarketModule: ZERO_ADDRESS,
+						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						curationMetaData: mockCurationMetaData
+					},
+				})
+			).to.eq(thirdProfileId);
+		});
+
+		it('User should be able to create a profile with a handle including "-" and "_" characters', async function () {
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: 'morse--__-_--code',
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: ZERO_ADDRESS,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					curationMetaData: mockCurationMetaData
+				})
+			).to.not.be.reverted;
+		});
+
+		it('User should be able to create a profile with a handle 16 bytes long, then fail to create with the same handle, and create again with a different handle', async function () {
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: '123456789012345',
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: ZERO_ADDRESS,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					curationMetaData: mockCurationMetaData
+				})
+			).to.not.be.reverted;
+
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: '123456789012345',
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: ZERO_ADDRESS,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					curationMetaData: mockCurationMetaData
+				})
+			).to.be.revertedWithCustomError(
+				errorsLib,
+				ERRORS.PROFILE_HANDLE_TOKEN
+			);
+
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: 'abcdefghijklmno',
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: ZERO_ADDRESS,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					curationMetaData: mockCurationMetaData
+				})
+			).to.not.be.reverted;
+		});
+
+		it('User should be able to create a profile with a whitelisted market module', async function () {
+
+			const mockMarketModuleInitData = abiCoder.encode(
+				['address', 'uint256', 'address', 'address', 'address'],
+				[ZERO_ADDRESS, 100000, bardsCurationToken.address, ZERO_ADDRESS, fixPriceMarketModule.address]
+			);
+
+			await expect(
+				bardsHub.connect(governance).whitelistMarketModule(fixPriceMarketModule.address, true)
+			).to.not.be.reverted;
+
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: MOCK_PROFILE_HANDLE,
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: fixPriceMarketModule.address,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: fixPriceMarketModule.address,
+					minterMarketModuleInitData: mockMarketModuleInitData,
+					curationMetaData: mockCurationMetaData
+				})
+			).to.not.be.reverted;
 		});
 
 		it('User should create a profile for userTwo', async function () {
@@ -310,8 +489,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					contentURI: MOCK_PROFILE_CONTENT_URI,
 					marketModule: ZERO_ADDRESS,
 					marketModuleInitData: mockMarketModuleInitData,
-					mintModule: ZERO_ADDRESS,
-					mintModuleInitData: mockMintModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockminterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData
 				})
 			).to.not.be.reverted;

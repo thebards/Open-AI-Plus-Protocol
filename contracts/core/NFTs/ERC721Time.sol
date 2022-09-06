@@ -13,7 +13,7 @@ import '@openzeppelin/contracts/utils/Strings.sol';
 import '@openzeppelin/contracts/utils/introspection/ERC165.sol';
 
 /**
- * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
+ * @notice Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
  * the Metadata extension, but not including the Enumerable extension, which is available separately as
  * {ERC721Enumerable}.
  *
@@ -47,7 +47,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     mapping(address => mapping(address => bool)) private _operatorApprovals;
 
     /**
-     * @dev Initializes the ERC721 name and symbol.
+     * @notice Initializes the ERC721 name and symbol.
      *
      * @param name The name to set.
      * @param symbol The symbol to set.
@@ -58,7 +58,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC165-supportsInterface}.
+     * @notice See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId)
         public
@@ -74,7 +74,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-balanceOf}.
+     * @notice See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
         require(owner != address(0), 'ERC721: balance query for the zero address');
@@ -82,7 +82,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-ownerOf}.
+     * @notice See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
         address owner = _tokenData[tokenId].owner;
@@ -91,7 +91,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-mintTimestampOf}
+     * @notice See {IERC721Time-mintTimestampOf}
      */
     function mintTimestampOf(uint256 tokenId) public view virtual override returns (uint256) {
         uint96 mintTimestamp = _tokenData[tokenId].mintTimestamp;
@@ -100,7 +100,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-tokenDataOf}
+     * @notice See {IERC721Time-tokenDataOf}
      */
     function tokenDataOf(uint256 tokenId)
         public
@@ -114,28 +114,28 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721Time-exists}
+     * @notice See {IERC721Time-exists}
      */
     function exists(uint256 tokenId) public view virtual override returns (bool) {
         return _exists(tokenId);
     }
 
     /**
-     * @dev See {IERC721Metadata-name}.
+     * @notice See {IERC721Metadata-name}.
      */
     function name() public view virtual override returns (string memory) {
         return _name;
     }
 
     /**
-     * @dev See {IERC721Metadata-symbol}.
+     * @notice See {IERC721Metadata-symbol}.
      */
     function symbol() public view virtual override returns (string memory) {
         return _symbol;
     }
 
     /**
-     * @dev See {IERC721Metadata-tokenURI}.
+     * @notice See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
@@ -146,7 +146,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
+     * @notice Base URI for computing {tokenURI}. If set, the resulting URI for each
      * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
      * by default, can be overriden in child contracts.
      */
@@ -155,7 +155,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-approve}.
+     * @notice See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ERC721Time.ownerOf(tokenId);
@@ -170,7 +170,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-getApproved}.
+     * @notice See {IERC721-getApproved}.
      */
     function getApproved(uint256 tokenId) public view virtual override returns (address) {
         require(_exists(tokenId), 'ERC721: approved query for nonexistent token');
@@ -179,7 +179,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-setApprovalForAll}.
+     * @notice See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
         require(operator != _msgSender(), 'ERC721: approve to caller');
@@ -188,7 +188,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-isApprovedForAll}.
+     * @notice See {IERC721-isApprovedForAll}.
      */
     function isApprovedForAll(address owner, address operator)
         public
@@ -201,7 +201,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-transferFrom}.
+     * @notice See {IERC721-transferFrom}.
      */
     function transferFrom(
         address from,
@@ -218,7 +218,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-safeTransferFrom}.
+     * @notice See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(
         address from,
@@ -229,7 +229,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev See {IERC721-safeTransferFrom}.
+     * @notice See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(
         address from,
@@ -245,7 +245,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+     * @notice Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
      * are aware of the ERC721 protocol to prevent tokens from being forever locked.
      *
      * `_data` is additional data, it has no specified format and it is sent in call to `to`.
@@ -276,7 +276,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Returns whether `tokenId` exists.
+     * @notice Returns whether `tokenId` exists.
      *
      * Tokens can be managed by their owner or approved accounts via {approve} or {setApprovalForAll}.
      *
@@ -288,7 +288,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Returns whether `spender` is allowed to manage `tokenId`.
+     * @notice Returns whether `spender` is allowed to manage `tokenId`.
      *
      * Requirements:
      *
@@ -308,7 +308,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Safely mints `tokenId` and transfers it to `to`.
+     * @notice Safely mints `tokenId` and transfers it to `to`.
      *
      * Requirements:
      *
@@ -322,7 +322,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
+     * @notice Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
      * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
      */
     function _safeMint(
@@ -338,7 +338,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Mints `tokenId` and transfers it to `to`.
+     * @notice Mints `tokenId` and transfers it to `to`.
      *
      * WARNING: Usage of this method is discouraged, use {_safeMint} whenever possible
      *
@@ -363,7 +363,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Destroys `tokenId`.
+     * @notice Destroys `tokenId`.
      * The approval is cleared when the token is burned.
      *
      * Requirements:
@@ -387,7 +387,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Transfers `tokenId` from `from` to `to`.
+     * @notice Transfers `tokenId` from `from` to `to`.
      *  As opposed to {transferFrom}, this imposes no restrictions on msg.sender.
      *
      * Requirements:
@@ -418,7 +418,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Approve `to` to operate on `tokenId`
+     * @notice Approve `to` to operate on `tokenId`
      *
      * Emits a {Approval} event.
      */
@@ -428,7 +428,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Refactored from the original OZ ERC721 implementation: approve or revoke approval from
+     * @notice Refactored from the original OZ ERC721 implementation: approve or revoke approval from
      * `operator` to operate on all tokens owned by `owner`.
      *
      * Emits a {ApprovalForAll} event.
@@ -443,7 +443,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Private function to invoke {IERC721Receiver-onERC721Received} on a target address.
+     * @notice Private function to invoke {IERC721Receiver-onERC721Received} on a target address.
      * The call is not executed if the target address is not a contract.
      *
      * @param from address representing the previous owner of the given token ID
@@ -478,7 +478,7 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     }
 
     /**
-     * @dev Hook that is called before any token transfer. This includes minting
+     * @notice Hook that is called before any token transfer. This includes minting
      * and burning.
      *
      * Calling conditions:

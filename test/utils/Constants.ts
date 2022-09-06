@@ -4,7 +4,7 @@ import {toBCT, toBN} from './Helpers';
 export const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 export const WETH_ADDRESS = '0xa0Ee7A142d267C1f36714E4a8F75612F20a79720';
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const FAKE_PRIVATEKEY = '0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6';
+export const FAKE_PRIVATEKEY = '0xa2e0097c961c67ec197b6865d7ecea6caffc68ebeb00e6050368c8f67fc9c588';
 export const HARDHAT_CHAINID = 31337;
 export const DOMAIN_SALT = '0x51f3d585afe6dfeb2af01bba0889a36c1db03beec88c6a4d0c53817069026afa';
 

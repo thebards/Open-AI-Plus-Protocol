@@ -37,7 +37,13 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
      * @notice Set epoch length to `_epochLength` blocks
      * @param _epochLength Epoch length in blocks
      */
-    function setEpochLength(uint256 _epochLength) external override onlyHub {
+    function setEpochLength(
+        uint256 _epochLength
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
         require(_epochLength > 0, "Epoch length cannot be 0");
         require(_epochLength != epochLength, "Epoch length must be different to current");
 
@@ -59,6 +65,7 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
         lastRunEpoch = currentEpoch();
 
         // Hook for protocol general state updates
+        rewardsManager().onUpdateIssuanceRate();
 
         emit Events.EpochRun(lastRunEpoch, msg.sender, block.timestamp);
     }

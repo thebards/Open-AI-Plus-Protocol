@@ -187,23 +187,23 @@ interface IBardsHub {
 	    /**
      * @notice Sets a curation's mint module, must be called by the curator.
      *
-     * @param vars The SetMintModuleData struct containing the following parameters:
+     * @param vars The SetMarketModuleData struct containing the following parameters:
      *   curationId The token ID of the profile to set the mint module for.
      *   tokenContract The address of NFT token to curate.
      *   tokenId The NFT token ID to curate.
      *   marketModule The mint module to set for the given curation, must be whitelisted.
      *   marketModuleInitData The data to be passed to the mint module for initialization.
      */
-    function setMintModule( 
+    function setMinterMarketModule( 
         DataTypes.SetMarketModuleData calldata vars
     ) external;
 
     /**
      * @notice Sets a curation's mint module via signature with the specified parameters.
      *
-     * @param vars A SetMintModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     * @param vars A SetMarketModuleWithSigData struct, including the regular parameters and an EIP712Signature struct.
      */
-    function setMintModuleWithSig(DataTypes.SetMarketModuleWithSigData calldata vars) 
+    function setMinterMarketModuleWithSig(DataTypes.SetMarketModuleWithSigData calldata vars) 
 		external;
 
     /**
@@ -214,6 +214,14 @@ interface IBardsHub {
      * @return uint256 An integer representing the curation's token ID.
      */
     function createCuration(DataTypes.CreateCurationData calldata vars) external returns (uint256);
+
+    /**
+     * @notice Adds or removes a currency from the whitelist. This function can only be called by governance.
+     *
+     * @param currency The currency to add or remove from the whitelist.
+     * @param toWhitelist Whether to add or remove the currency from the whitelist.
+     */
+    function whitelistCurrency(address currency, bool toWhitelist) external;
 
     // /**
     //  * @notice Creates a curation to a given profile via signature with the specified parameters.
@@ -227,6 +235,21 @@ interface IBardsHub {
     /// ************************
     /// *****VIEW FUNCTIONS*****
     /// ************************
+
+    /**
+     * @notice Returns whether `spender` is allowed to manage things for `curator`.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     * 
+     * @param operator The address of operator
+     * @param curator The address of curation.
+     */
+    function isAuthForCurator(address operator, address curator)
+      external
+      view
+      returns (bool);
 
     /**
      * @notice Returns whether or not a profile creator is whitelisted.
@@ -277,6 +300,15 @@ interface IBardsHub {
 		returns (bool);
 
     /**
+     * @notice Returns whether a currency is whitelisted.
+     *
+     * @param currency The currency to query the whitelist for.
+     *
+     * @return bool True if the queried currency is whitelisted, false otherwise.
+     */
+    function isCurrencyWhitelisted(address currency) external view returns (bool);
+
+    /**
      * @notice Returns the currently configured governance address.
      *
      * @return address The address of the currently configured governance.
@@ -285,7 +317,7 @@ interface IBardsHub {
 		external 
 		view 
 		returns (address);
-
+    
 	/**
      * @notice Returns the market module associated with a given curation.
      *
@@ -299,13 +331,13 @@ interface IBardsHub {
 		returns (address);
 
 	/**
-     * @notice Returns the mint module associated with a given curation.
+     * @notice Returns the minter market module associated with a given curation.
      *
      * @param curationId The token ID of the profile that published the curation to query.
      *
      * @return address The address of the mint module associated with the queried curation.
      */
-    function getMintModule(uint256 curationId) 
+    function getMinterMarketModule(uint256 curationId) 
 		external 
 		view 
 		returns (address);

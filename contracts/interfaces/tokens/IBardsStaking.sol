@@ -72,28 +72,16 @@ interface IBardsStaking {
     function setStakingTaxPercentage(uint32 _percentage) external;
 
     /**
-     * @dev Set the master copy to use as clones for the Bards Share Tokens.
+     * @notice Set the master copy to use as clones for the Bards Share Tokens.
      * @param _bardsShareTokenImpl Address of implementation contract to use for Bards Share Tokens.
      */
     function setBardsShareTokenImpl(address _bardsShareTokenImpl) external;
 
-    // -- Operation --
-
     /**
-     * @notice Authorize or unauthorize an address to be an operator.
-     * @param _operator Address to authorize
-     * @param _allowed Whether authorized or not
-     */
-    function setOperator(address _operator, bool _allowed) external;
-
-    /**
-     * @notice Return true if operator is allowed for the bards.
+     * @notice Returns whether `_curationId` is staked.
      * 
-     * @param _curator Address of the bards
-     * @param _operator Address of the operator
+     * @param _curationId The curation ID.
      */
-    function isOperator(address _curator, address _operator) external view returns (bool);
-
     function isStaked(uint256 _curationId) external view returns (bool);
 
     // -- Staking --
@@ -208,7 +196,7 @@ interface IBardsStaking {
     // -- Getters and calculations --
 
     /**
-     * @dev Return the current state of an allocation.
+     * @notice Return the current state of an allocation.
      * @param _allocationID Address used as the allocation identifier
      * @return AllocationState
      */

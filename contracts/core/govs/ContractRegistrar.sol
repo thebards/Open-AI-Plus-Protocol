@@ -32,6 +32,11 @@ abstract contract ContractRegistrar is IContractRegistrar {
         _;
     }
 
+    modifier onlyGov(){
+        require(msg.sender == bardsHub().getGovernance(), 'Only governance can call');
+        _;
+    }
+
     /**
      * @notice Initialize the controller.
      */

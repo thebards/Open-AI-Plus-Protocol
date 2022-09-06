@@ -83,6 +83,20 @@ library DataTypes {
     }
 
     /**
+     * @notice A struct containing the parameters required for the `setDispatcherWithSig()` function. Parameters are the same
+     * as the regular `setDispatcher()` function, with an added EIP712Signature.
+     *
+     * @param curationId The token ID of the curation to set the dispatcher for.
+     * @param dispatcher The dispatcher address to set for the profile.
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct SetDispatcherWithSigData {
+        uint256 curationId;
+        address dispatcher;
+        EIP712Signature sig;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `setMarketModule()` function.
      *
      * @param curationId The token ID of the curation to change the marketModule for.
@@ -154,14 +168,14 @@ library DataTypes {
      * @param currency The currency to ask.
      * @param price The fix price of nft.
      * @param treasury The recipient of the fee
-     * @param minter The minter of NFT.
+     * @param minterMarket The market module of minter.
      */
     struct FixPriceMarketData {
         address seller;
         address currency;
         uint256 price;
         address treasury;
-        address minter;
+        address minterMarket;
     }
 
     /**
@@ -187,8 +201,8 @@ library DataTypes {
      * @param tokenIdPointed The token ID this curation points to.
      * @param contentURI The URI associated with this publication.
      * @param marketModule The address of the current market module in use by this curation to trade itself, can be empty.
-     * @param mintModule The address of the current mint module in use by this curation, can be empty. 
-     * Make sure each curation can mint its own NFTs. MintModule is marketModule, but the initialization parameters are different.
+     * @param minterMarketModule The address of the current mint market module in use by this curation. 
+     * Make sure each curation can mint its own NFTs. minterMarketModule is marketModule, but the initialization parameters are different.
      */
     struct CurationStruct {
         CurationType curationType;
@@ -197,7 +211,7 @@ library DataTypes {
         uint256 tokenIdPointed;
         string contentURI;
         address marketModule;
-        address mintModule;
+        address minterMarketModule;
     }
 
     /**
@@ -213,9 +227,9 @@ library DataTypes {
      * @param contentURI The URI to set for the profile metadata.
      * @param marketModule The market module to use, can be the zero address to trade itself.
      * @param marketModuleInitData The market module initialization data, if any.
-     * @param mintModule The mint module to use, can be the zero address. Make sure each curation can mint its own NFTs.
-     * MintModule is marketModule, but the initialization parameters are different.
-     * @param mintModuleInitData The mint module initialization data, if any.
+     * @param minterMarketModule The minter market module to use, can be the zero address. Make sure each curation can mint its own NFTs.
+     * minterMarketModule is marketModule, but the initialization parameters are different.
+     * @param minterMarketModuleInitData The minter market module initialization data, if any.
      * @param curationMetaData The data of CurationData struct.
      */
     struct CreateCurationData {
@@ -229,8 +243,8 @@ library DataTypes {
         string contentURI;
         address marketModule;
         bytes marketModuleInitData;
-        address mintModule;
-        bytes mintModuleInitData;
+        address minterMarketModule;
+        bytes minterMarketModuleInitData;
         bytes curationMetaData;
     }
 
@@ -247,9 +261,9 @@ library DataTypes {
      * @param contentURI The URI to set for the profile metadata.
      * @param marketModule The market module to use, can be the zero address to trade itself.
      * @param marketModuleInitData The market module initialization data, if any.
-     * @param mintModule The mint module to use, can be the zero address. Make sure each curation can mint its own NFTs.
-     * MintModule is marketModule, but the initialization parameters are different.
-     * @param mintModuleInitData The mint module initialization data, if any.
+     * @param minterMarketModule The minter market module to use, can be the zero address. Make sure each curation can mint its own NFTs.
+     * minterMarketModule is marketModule, but the initialization parameters are different.
+     * @param minterMarketModuleInitData The minter market module initialization data, if any.
      * @param curationMetaData The data of CurationData struct.
      */
     struct CreateCurationWithSigData {
@@ -263,8 +277,8 @@ library DataTypes {
         string contentURI;
         address marketModule;
         bytes marketModuleInitData;
-        address mintModule;
-        bytes mintModuleInitData;
+        address minterMarketModule;
+        bytes minterMarketModuleInitData;
         bytes curationMetaData;
         EIP712Signature sig;
     }

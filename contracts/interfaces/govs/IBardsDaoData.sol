@@ -33,26 +33,9 @@ interface IBardsDaoData {
      */
     function setProtocolFee(uint32 newProtocolFee) external;
 
-    /**
-     * @notice Adds or removes a currency from the whitelist. This function can only be called by governance.
-     *
-     * @param currency The currency to add or remove from the whitelist.
-     * @param toWhitelist Whether to add or remove the currency from the whitelist.
-     */
-    function whitelistCurrency(address currency, bool toWhitelist) external;
-
     /// ************************
     /// *****VIEW FUNCTIONS*****
     /// ************************
-
-    /**
-     * @notice Returns whether a currency is whitelisted.
-     *
-     * @param currency The currency to query the whitelist for.
-     *
-     * @return bool True if the queried currency is whitelisted, false otherwise.
-     */
-    function isCurrencyWhitelisted(address currency) external view returns (bool);
 
     /**
      * @notice Returns the governance address.

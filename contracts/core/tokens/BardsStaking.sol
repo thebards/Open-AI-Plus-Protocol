@@ -78,7 +78,7 @@ contract BardsStaking is
     function setStakingAddress(address _stakingAddress)
         external
         override
-        onlyHub 
+        onlyGov 
     {
         _setStakingAddress(_stakingAddress);
     }
@@ -87,7 +87,7 @@ contract BardsStaking is
     function setDefaultReserveRatio(uint32 _defaultReserveRatio) 
 		external 
 		override 
-	    onlyHub 
+	    onlyGov
     {
         _setDefaultReserveRatio(_defaultReserveRatio);
     }
@@ -96,7 +96,7 @@ contract BardsStaking is
     function setMinimumStaking(uint256 _minimumStaking)
         external
         override
-        onlyHub
+        onlyGov
     {
         _setMinimumStaking(_minimumStaking);
     }
@@ -105,7 +105,7 @@ contract BardsStaking is
     function setThawingPeriod(uint32 _thawingPeriod)
         external
         override
-        onlyHub
+        onlyGov
     {
         _setThawingPeriod(_thawingPeriod);
     }
@@ -114,7 +114,7 @@ contract BardsStaking is
     function setChannelDisputeEpochs(uint32 _channelDisputeEpochs) 
         external 
         override 
-        onlyHub 
+        onlyGov
     {
         _setChannelDisputeEpochs(_channelDisputeEpochs);
     }
@@ -123,7 +123,7 @@ contract BardsStaking is
     function setMaxAllocationEpochs(uint32 _maxAllocationEpochs) 
         external 
         override 
-        onlyHub 
+        onlyGov
     {
         _setMaxAllocationEpochs(_maxAllocationEpochs);
     }
@@ -136,7 +136,7 @@ contract BardsStaking is
     function setRebateRatio(uint32 _alphaNumerator, uint32 _alphaDenominator)
         external
         override
-        onlyHub 
+        onlyGov
     {
         _setRebateRatio(_alphaNumerator, _alphaDenominator);
     }
@@ -145,7 +145,7 @@ contract BardsStaking is
 	function setStakingTaxPercentage(uint32 _percentage) 
 		external 
 		override 
-	    onlyHub 
+	    onlyGov
     {
         _setStakingTaxPercentage(_percentage);
     }
@@ -154,28 +154,11 @@ contract BardsStaking is
     function setBardsShareTokenImpl(address _bardsShareTokenImpl) 
 		external 
 		override 
-	    onlyHub 
+	    onlyGov
     {
         _setBardsShareTokenImpl(_bardsShareTokenImpl);
     }
 
-    /// @inheritdoc IBardsStaking
-    function setOperator(
-        address _operator, 
-        bool _allowed
-    ) 
-        external 
-        override 
-    {
-        require(_operator != msg.sender, "operator == sender");
-        operatorAuth[msg.sender][_operator] = _allowed;
-        emit Events.OperatorSet(
-            msg.sender, 
-            _operator, 
-            _allowed, 
-            block.timestamp
-        );
-    }
 
     /// @inheritdoc IBardsStaking
     function isDelegator(
@@ -215,16 +198,6 @@ contract BardsStaking is
             }
         }
         return false;
-    }
-
-    /// @inheritdoc IBardsStaking
-    function isOperator(address _curator, address _operator) 
-        public 
-        view 
-        override 
-        returns (bool) 
-    {
-        return operatorAuth[_curator][_operator];
     }
 
     /// @inheritdoc IBardsStaking
@@ -1110,12 +1083,12 @@ contract BardsStaking is
     /**
      * @dev Check if the caller is authorized
      */
-    function _isAuth(address _curator) 
+    function _isAuth(address _curator)
         private 
         view 
         returns (bool) 
     {
-        return msg.sender == _curator || isOperator(_curator, msg.sender) == true;
+        return bardsHub().isAuthForCurator(msg.sender, _curator);
     }
 
     /**

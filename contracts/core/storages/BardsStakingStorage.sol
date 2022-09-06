@@ -43,7 +43,7 @@ abstract contract BardsStakingStorage {
     uint32 public alphaDenominator;
 
     // Operator auth : sender => operator
-    mapping(address => mapping(address => bool)) public operatorAuth;
+    // mapping(address => mapping(address => bool)) public operatorAuth;
 
     // Mapping of curationId => CurationStakingPool
     // There is only one CurationStakingPool per curationId

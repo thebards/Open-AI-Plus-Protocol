@@ -29,8 +29,16 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 	/**
      * @notice Initialize this contract.
      */
-    constructor(address _HUB) {
+    constructor(
+        address _HUB,
+        uint256 _issuanceRate,
+        uint256 _inflationChange,
+        uint256 _targetBondingRate
+    ) {
         ContractRegistrar._initialize(_HUB);
+        _setIssuanceRate(_issuanceRate);
+        _setInflationChange(_inflationChange);
+        _setTargetBondingRate(_targetBondingRate);
 	}
 
 	/// @inheritdoc IRewardsManager
@@ -39,7 +47,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 	) 
         external 
         override 
-        onlyHub 
+        onlyGov
     {
         _setIssuanceRate(_issuanceRate);
     }
@@ -48,7 +56,11 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
      * @dev Sets the issuance rate.
      * @param _issuanceRate Issuance rate
      */
-    function _setIssuanceRate(uint256 _issuanceRate) private {
+    function _setIssuanceRate(
+        uint256 _issuanceRate
+    ) 
+        private 
+    {
         require(_issuanceRate >= Constants.MIN_ISSUANCE_RATE, "Issuance rate under minimum allowed");
 
         // Called since `issuance rate` will change
@@ -63,13 +75,67 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         );
     }
 
+    /// @inheritdoc IRewardsManager
+    function setTargetBondingRate(
+        uint256 _targetBondingRate
+    ) 
+        external 
+    {
+        _setTargetBondingRate(_targetBondingRate);
+    }
+
+    function _setTargetBondingRate(
+        uint256 _targetBondingRate
+    )
+        private
+    {
+        // Must be valid percentage
+        require(_targetBondingRate <= Constants.MAX_BPS, "_targetBondingRate is invalid percentage");
+
+        uint256 prevTargetBondingRate = targetBondingRate;
+        targetBondingRate = _targetBondingRate;
+
+        emit Events.TargetBondingRateSet(
+            prevTargetBondingRate,
+            targetBondingRate,
+            block.timestamp
+        );
+    }
+
+    /// @inheritdoc IRewardsManager
+    function setInflationChange(
+        uint256 _inflationChange
+    ) 
+        external 
+    {
+        _setInflationChange(_inflationChange);
+    }
+
+    function _setInflationChange(
+        uint256 _inflationChange
+    )
+        private
+    {
+        // Must be valid percentage
+        require(_inflationChange <= Constants.MAX_BPS, "_inflationChange is invalid percentage");
+
+        uint256 prevInflationChange = inflationChange;
+        inflationChange = _inflationChange;
+
+        emit Events.InflationChangeSet(
+            prevInflationChange,
+            inflationChange,
+            block.timestamp
+        );
+    }
+
 	/// @inheritdoc IRewardsManager
     function setMinimumStakingToken(
 		uint256 _minimumStakeingToken
 	) 
         external 
         override 
-        onlyHub 
+        onlyGov
     {
         uint256 prevMinimumStakingToken = minimumStakingToken;
         minimumStakingToken = _minimumStakeingToken;
@@ -87,7 +153,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 	)
         external
         override
-        onlyHub
+        onlyGov
     {
         _setDenied(_curationId, _deny);
     }
@@ -99,7 +165,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 	)
         external
         override
-        onlyHub
+        onlyGov
     {
         require(_curationIds.length == _deny.length, "!length");
         for (uint256 i = 0; i < _curationIds.length; i++) {
@@ -149,7 +215,8 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         }
 
         // Zero issuance if no staked tokens
-        uint256 stakingTokens = bardsCurationToken().balanceOf(bardsStaking().getStakingAddress());
+        // uint256 stakingTokens = bardsCurationToken().balanceOf(bardsStaking().getStakingAddress());
+        uint256 stakingTokens = bardsStaking().getTotalStakingToken();
         if (stakingTokens == 0) {
             return 0;
         }
@@ -229,6 +296,41 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         accRewardsPerStakingLastBlockUpdated = block.number;
         tokenSupplySnapshot = bardsCurationToken().totalSupply();
         return accRewardsPerStaking;
+    }
+
+    /// @inheritdoc IRewardsManager
+    function onUpdateIssuanceRate() 
+        external 
+        override 
+    {
+        _onUpdateIssuanceRate();
+    }
+
+    /**
+     * @notice Set issuanceRate based upon the current bonding rate and target bonding rate
+     */
+    function _onUpdateIssuanceRate() 
+        internal 
+    {
+        uint256 currentBondingRate;
+        uint256 totalSupply = tokenSupplySnapshot;
+
+        if (totalSupply > 0) {
+            uint256 stakingTokens = bardsStaking().getTotalStakingToken();
+            currentBondingRate = stakingTokens.mul(Constants.MAX_BPS).div(totalSupply);
+        }
+
+        if (currentBondingRate < targetBondingRate) {
+            // Bonding rate is below the target - increase inflation
+            issuanceRate = issuanceRate.add(inflationChange);
+        } else if (currentBondingRate > targetBondingRate) {
+            // Bonding rate is above the target - decrease inflation
+            if (inflationChange > issuanceRate) {
+                issuanceRate = 0;
+            } else {
+                issuanceRate = issuanceRate.sub(inflationChange);
+            }
+        }
     }
 
 	/// @inheritdoc IRewardsManager

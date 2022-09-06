@@ -48,20 +48,22 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             uint256 price,
             address currency,
             address treasury,
-            address minter
+            address minterMarket
         ) = abi.decode(
             data, 
             (address, uint256, address, address, address)
         );
 
-        if (!isCurrencyWhitelisted(currency) || price == 0) revert Errors.InitParamsInvalid();
-        if (!bardsHub().isMintModuleWhitelisted(minter)) revert Errors.InitParamsInvalid();
+        if (!isCurrencyWhitelisted(currency)) revert Errors.CurrencyNotWhitelisted();
+        if (price == 0) revert Errors.ZeroPrice();
+        if (minterMarket != address(0) && !bardsHub().isMarketModuleWhitelisted(minterMarket))
+            revert Errors.MarketModuleNotWhitelisted();
 		
         _marketMetaData[tokenContract][tokenId].seller = seller;
         _marketMetaData[tokenContract][tokenId].price = price;
         _marketMetaData[tokenContract][tokenId].currency = currency;
         _marketMetaData[tokenContract][tokenId].treasury = treasury;
-        _marketMetaData[tokenContract][tokenId].minter = minter;
+        _marketMetaData[tokenContract][tokenId].minterMarket = minterMarket;
 
         return data;
 	}

@@ -7,6 +7,8 @@ library Errors {
     error Initialized();
     error SignatureExpired();
     error ZeroSpender();
+    error ZeroPrice();
+    error ZeroAddress();
     error SignatureInvalid();
     error NotOwnerOrApproved();
     error NotHub();
@@ -16,9 +18,11 @@ library Errors {
     error EmergencyAdminCannotUnpause();
     error CallerNotWhitelistedModule();
     error MarketModuleNotWhitelisted();
+    error CurrencyNotWhitelisted();
     error ProfileCreatorNotWhitelisted();
     error NotCurationOwner();
     error NotProfileOwner();
+    error NotProfileOwnerOrDispatcher();
     error CurationDoesNotExist();
     error HandleToken();
     error HandleLengthInvalid();

@@ -23,7 +23,11 @@ abstract contract BardsHubStorage {
         );
 	bytes32 internal constant CREATE_CURATION_WITH_SIG_TYPEHASH =
         keccak256(
-            'createCurationWithSig(address to,uint256 profileId,address tokenContractPointed,uint256 tokenIdPointed,string handle,string contentURI,address marketModule,bytes marketModuleInitData,address mintModule,bytes mintModuleInitData,bytes curationMetaData,uint256 nonce,uint256 deadline)'
+            'createCurationWithSig(address to,uint256 profileId,address tokenContractPointed,uint256 tokenIdPointed,string handle,string contentURI,address marketModule,bytes marketModuleInitData,address minterMarketModule,bytes minterMarketModuleInitData,bytes curationMetaData,uint256 nonce,uint256 deadline)'
+        );
+	bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
         );
 
 	uint256 internal _curationCounter;
@@ -39,6 +43,8 @@ abstract contract BardsHubStorage {
 	mapping(address => bool) internal _marketModuleWhitelisted;
 	mapping (address => bool) internal _mintModuleWhitelisted;
 	mapping(address => bool) internal _profileCreatorWhitelisted;
+    mapping(address => bool) internal _currencyWhitelisted;
+
 	// hash -> profile id
 	mapping(bytes32 => uint256) internal _profileIdByHandleHash;
 	// self curation or profile

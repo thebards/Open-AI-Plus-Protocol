@@ -59,15 +59,15 @@ library CurationHelpers {
                 _marketModuleWhitelisted
             );
         }
-		bytes memory mintModuleReturnData;
-        if (_vars.mintModule != address(0)) {
-            _curationById[_vars.profileId].mintModule = _vars.mintModule;
+		bytes memory minterMarketModuleReturnData;
+        if (_vars.minterMarketModule != address(0)) {
+            _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
             // mint module is also a market module, whose minter is different.
-			mintModuleReturnData = _initMarketModule(
+			minterMarketModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
                 _vars.profileId,
-				_vars.mintModule,
-				_vars.mintModuleInitData,
+				_vars.minterMarketModule,
+				_vars.minterMarketModuleInitData,
                 _marketModuleWhitelisted
             );
         }
@@ -76,7 +76,7 @@ library CurationHelpers {
             _vars.profileId, 
             _vars, 
             marketModuleReturnData, 
-            mintModuleReturnData
+            minterMarketModuleReturnData
         );
     }
 
@@ -133,7 +133,7 @@ library CurationHelpers {
      * @param _curation The storage reference to the curation struct associated with the given curation token ID.
      * @param _marketModuleWhitelisted The storage reference to the mapping of whitelist status by market module address.
      */
-    function setMintModule(
+    function setMinterMarketModule(
 		uint256 curationId,
 		address tokenContract,
         uint256 tokenId,
@@ -142,8 +142,8 @@ library CurationHelpers {
         DataTypes.CurationStruct storage _curation,
         mapping(address => bool) storage _marketModuleWhitelisted
     ) external {
-        if (marketModule != _curation.mintModule) {
-            _curation.mintModule = marketModule;
+        if (marketModule != _curation.minterMarketModule) {
+            _curation.minterMarketModule = marketModule;
         }
 
         bytes memory marketModuleReturnData;
@@ -156,7 +156,7 @@ library CurationHelpers {
                 _marketModuleWhitelisted
             );
 			 
-        emit Events.MintModuleSet(
+        emit Events.MinterMarketModuleSet(
 			curationId,
             marketModule,
             marketModuleInitData,
@@ -198,14 +198,14 @@ library CurationHelpers {
                 _marketModuleWhitelisted
             );
         }
-		bytes memory mintModuleReturnData;
-        if (_vars.mintModule != address(0)) {
-            _curationById[_vars.profileId].mintModule = _vars.mintModule;
-			mintModuleReturnData = _initMarketModule(
+		bytes memory minterMarketModuleReturnData;
+        if (_vars.minterMarketModule != address(0)) {
+            _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
+			minterMarketModuleReturnData = _initMarketModule(
 				msg.sender, // Creator is always the profile's owner
                 _vars.curationId,
-				_vars.mintModule,
-				_vars.mintModuleInitData,
+				_vars.minterMarketModule,
+				_vars.minterMarketModuleInitData,
                 _marketModuleWhitelisted
             );
         }
@@ -216,8 +216,8 @@ library CurationHelpers {
             _vars.contentURI,
             _vars.marketModule,
             _vars.marketModuleInitData,
-            _vars.mintModule,
-            _vars.mintModuleInitData,
+            _vars.minterMarketModule,
+            _vars.minterMarketModuleInitData,
             block.timestamp
         );
     }
@@ -241,7 +241,7 @@ library CurationHelpers {
         uint256 profileId,
         DataTypes.CreateCurationData memory vars,
         bytes memory marketModuleReturnData,
-		bytes memory mintModuleReturnData
+		bytes memory minterMarketModuleReturnData
     ) internal {
         emit Events.ProfileCreated(
             profileId,
@@ -251,8 +251,8 @@ library CurationHelpers {
             vars.contentURI,
             vars.marketModule,
             marketModuleReturnData,
-            vars.mintModule,
-            mintModuleReturnData,
+            vars.minterMarketModule,
+            minterMarketModuleReturnData,
             block.timestamp
         );
     }
