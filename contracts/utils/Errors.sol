@@ -18,11 +18,10 @@ library Errors {
     error EmergencyAdminCannotUnpause();
     error CallerNotWhitelistedModule();
     error MarketModuleNotWhitelisted();
+    error MinterModuleNotWhitelisted();
     error CurrencyNotWhitelisted();
     error ProfileCreatorNotWhitelisted();
-    error NotCurationOwner();
-    error NotProfileOwner();
-    error NotProfileOwnerOrDispatcher();
+    error NotOwner();
     error CurationDoesNotExist();
     error HandleToken();
     error HandleLengthInvalid();
@@ -31,9 +30,11 @@ library Errors {
     error BlockNumberInvalid();
     error ArrayMismatch();
     error NotWhitelisted();
+    error CurationContentURILengthInvalid();
 
     // Market Errors
     error InitParamsInvalid();
+    error MarketZeroAddress();
     error CollectExpired();
     error ModuleDataMismatch();
     error MintLimitExceeded();

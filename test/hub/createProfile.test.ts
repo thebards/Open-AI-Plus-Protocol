@@ -30,8 +30,10 @@ import {
 	fixPriceMarketModule,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
-	mockminterMarketModuleInitData,
-	bardsCurationToken
+	mockMinterMarketModuleInitData,
+	bardsCurationToken,
+	treasuryAddress,
+	transferMinter
 } from '../__setup.test';
 import { DataTypes } from '../../typechain-types/contracts/core/BardsHub';
 
@@ -56,7 +58,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -79,7 +81,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -102,7 +104,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -125,7 +127,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -157,7 +159,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: fixPriceMarketModule.address,
 						marketModuleInitData: faultMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithoutReason;
@@ -177,7 +179,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: userAddress,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -204,7 +206,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: userAddress,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					})
 				).to.be.revertedWithCustomError(
@@ -240,7 +242,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -279,7 +281,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -317,7 +319,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -339,7 +341,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -360,7 +362,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModule: ZERO_ADDRESS,
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
-						minterMarketModuleInitData: mockminterMarketModuleInitData,
+						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData
 					},
 				})
@@ -381,7 +383,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModule: ZERO_ADDRESS,
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
-					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData
 				})
 			).to.not.be.reverted;
@@ -401,7 +403,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModule: ZERO_ADDRESS,
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
-					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData
 				})
 			).to.not.be.reverted;
@@ -419,7 +421,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModule: ZERO_ADDRESS,
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
-					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData
 				})
 			).to.be.revertedWithCustomError(
@@ -440,7 +442,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModule: ZERO_ADDRESS,
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
-					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData
 				})
 			).to.not.be.reverted;
@@ -449,8 +451,8 @@ makeSuiteCleanRoom('Profile Creation', function () {
 		it('User should be able to create a profile with a whitelisted market module', async function () {
 
 			const mockMarketModuleInitData = abiCoder.encode(
-				['address', 'uint256', 'address', 'address', 'address'],
-				[ZERO_ADDRESS, 100000, bardsCurationToken.address, ZERO_ADDRESS, fixPriceMarketModule.address]
+				['address', 'address', 'uint256', 'address', 'address'],
+				[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, transferMinter.address]
 			);
 
 			await expect(
@@ -490,7 +492,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModule: ZERO_ADDRESS,
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
-					minterMarketModuleInitData: mockminterMarketModuleInitData,
+					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData
 				})
 			).to.not.be.reverted;

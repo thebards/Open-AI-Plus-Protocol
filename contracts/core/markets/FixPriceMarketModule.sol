@@ -4,11 +4,11 @@ pragma solidity ^0.8.9;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../interfaces/markets/IMarketModule.sol';
 import '../../interfaces/IBardsHub.sol';
 import '../../interfaces/curations/IBardsCurationBase.sol';
+import '../../interfaces/minters/IProgrammableMinter.sol';
 import '../trades/MarketModuleBase.sol';
 import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
@@ -35,6 +35,20 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
         MarketModuleBase._initialize(_hub, _royaltyEngine);
     }
 
+    /**
+     * @notice Get market meta data.
+     */
+    function getMarketData(
+        address tokenContract,
+        uint256 tokenId
+    ) 
+        external 
+        view
+        returns (DataTypes.FixPriceMarketData memory)
+    {
+        return _marketMetaData[tokenContract][tokenId];
+    }
+
 	/** 
      * @notice See {IMarketModule-initializeModule}
      */
@@ -45,75 +59,69 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
     ) external override returns (bytes memory) {
 		(   
             address seller,
-            uint256 price,
             address currency,
+            uint256 price,
             address treasury,
-            address minterMarket
+            address minter
         ) = abi.decode(
             data, 
-            (address, uint256, address, address, address)
+            (address, address, uint256, address, address)
         );
 
         if (!isCurrencyWhitelisted(currency)) revert Errors.CurrencyNotWhitelisted();
         if (price == 0) revert Errors.ZeroPrice();
-        if (minterMarket != address(0) && !bardsHub().isMarketModuleWhitelisted(minterMarket))
-            revert Errors.MarketModuleNotWhitelisted();
+        if (minter != address(0) && !bardsHub().isMintModuleWhitelisted(minter))
+            revert Errors.MinterModuleNotWhitelisted();
 		
         _marketMetaData[tokenContract][tokenId].seller = seller;
         _marketMetaData[tokenContract][tokenId].price = price;
         _marketMetaData[tokenContract][tokenId].currency = currency;
         _marketMetaData[tokenContract][tokenId].treasury = treasury;
-        _marketMetaData[tokenContract][tokenId].minterMarket = minterMarket;
+        _marketMetaData[tokenContract][tokenId].minter = minter;
 
         return data;
 	}
 
 	/**
-     * @notice See {IMarketModule-buy}
+     * @notice See {IMarketModule-collect}
      */
-	function buy(
-        address buyer,
+	function collect(
+        address collector,
         uint256 curationId,
 		address tokenContract,
         uint256 tokenId,
         uint256[] memory curationIds,
-        address[] memory allocationIds
-    ) external override {
+        address[] memory allocationIds,
+        bytes memory collectMetaData
+    ) 
+        external 
+        override 
+        returns (address, uint256)
+    {
         // Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
-
+        address _collector = collector;
         // The price and currency of NFT.
         DataTypes.FixPriceMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
 
-        // Ensure ETH/ERC-20 payment from buyer is valid and take custody
-        _handleIncomingTransfer(buyer, marketData.price, marketData.currency, stakingAddress);
-
-        // Payout respective parties, ensuring royalties are honored
-        (uint256 remainingProfit, ) = _handleRoyaltyPayout(
-            tokenContract, 
-            tokenId, 
+        // Before core logic of  collecting, collect fees to a specific address, 
+        // and pay royalties and protocol fees
+        uint256 remainingProfit = _beforeCollecting(
+            _collector,
             marketData.price, 
-            marketData.currency, 
-            Constants.USE_ALL_GAS_FLAG
-        );
-
-        // Payout protocol fee
-        uint256 protocolFee = getFeeAmount(remainingProfit);
-        address protocolTreasury = getTreasury();
-        remainingProfit = _handleProtocolFeePayout(
-            remainingProfit,
-            marketData.currency, 
-            protocolFee, 
-            protocolTreasury
+            marketData.currency,
+            tokenContract,
+            tokenId
         );
 
         // Transfer remaining ETH/ERC-20 to seller
         // 1) when the NFT if minted by TheBards HUB, distribute profits proportionally to stakeholders.
         // 2) or, pay directly to the designated seller.
-        if (tokenContract == HUB){
+        uint256 curationFee;
+        if (tokenContract == HUB) {
             // The fee split setting of curation.
 		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
             // collect curation
-            uint256 curationFee = remainingProfit.mul(uint256(curationData.curationBps)).div(Constants.MAX_BPS);
+            curationFee = remainingProfit.mul(uint256(curationData.curationBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
                 tokenContract, 
@@ -141,10 +149,10 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 curationData.sellerFundsRecipients,
                 curationData.sellerBpses
             );
-        }else{
+        } else {
             // using default curation and staking bps setting.
             // payout curation
-            uint256 curationFee = remainingProfit.mul(uint256(getDefaultCurationBps())).div(Constants.MAX_BPS);
+            curationFee = remainingProfit.mul(uint256(getDefaultCurationBps())).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
                 tokenContract, 
@@ -163,10 +171,16 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             );
         }
         
-        // Transfer NFT to buyer
-        IERC721(tokenContract).safeTransferFrom(marketData.seller, buyer, tokenId);
+        (
+            address retTokenContract,
+            uint256 retTokenId
+        ) = IProgrammableMinter(marketData.minter).mint(
+            collectMetaData
+        );
 
         delete _marketMetaData[tokenContract][tokenId];
+
+        return (retTokenContract, retTokenId);
 	}
 
 }

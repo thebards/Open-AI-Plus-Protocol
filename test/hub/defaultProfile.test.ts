@@ -26,7 +26,7 @@ import {
 	userTwoAddress,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
-	mockminterMarketModuleInitData,
+	mockMinterMarketModuleInitData,
 	errorsLib,
 } from '../__setup.test';
 
@@ -58,7 +58,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 					bardsHub.connect(userTwo).setDefaultProfile(FIRST_PROFILE_ID)
 				).to.be.revertedWithCustomError(
 					errorsLib,
-					ERRORS.NOT_PROFILE_OWNER
+					ERRORS.NOT_OWNER
 				);
 			});
 		});

@@ -162,6 +162,22 @@ interface IBardsHub {
     function setDefaultProfileWithSig(DataTypes.SetDefaultProfileWithSigData calldata vars)
         external;
 
+    /**
+     * @notice Sets a curation's content URI.
+     *
+     * @param curationId The token ID of the curation to set the URI for.
+     * @param contentURI The URI to set for the given curation.
+     */
+    function setCurationContentURI(uint256 curationId, string calldata contentURI) external;
+
+    /**
+     * @notice Sets a curation's content URI via signature with the specified parameters.
+     *
+     * @param vars A SetCurationContentURIWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setCurationContentURIWithSig(DataTypes.SetCurationContentURIWithSigData calldata vars)
+        external;
+
 	    /**
      * @notice Sets a curation's market module, must be called by the curator.
      *
@@ -223,14 +239,40 @@ interface IBardsHub {
      */
     function whitelistCurrency(address currency, bool toWhitelist) external;
 
-    // /**
-    //  * @notice Creates a curation to a given profile via signature with the specified parameters.
-    //  *
-    //  * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
-    //  *
-    //  * @return uint256 An integer representing the curation's token ID.
-    //  */
-    // function createCurationWithSig(DataTypes.CreateCurationWithSigData calldata vars) external returns (uint256);
+    /**
+     * @notice Creates a curation via signature with the specified parameters.
+     *
+     * @param vars A CreateCurationWithSigData struct containing the regular parameters and an EIP712Signature struct.
+     *
+     * @return uint256 An integer representing the curation's token ID.
+     */
+    function createCurationWithSig(
+      DataTypes.CreateCurationWithSigData calldata vars
+    ) external returns (uint256);
+
+    /**
+     * @notice Collects a given curation, executing market module logic and transfering curation to the caller.
+     *
+     * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
+     * an EIP712Signature struct.
+     *
+     * @return (addresss, uint256) An  address and integer pair representing the minted token ID.
+     */
+    function collect(
+      DataTypes.DoCollectData calldata vars
+    ) external returns (address, uint256);
+
+    /**
+     * @notice Collects a given curation via signature with the specified parameters.
+     *
+     * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
+     * an EIP712Signature struct.
+     *
+     * @return (addresss, uint256) An  address and integer pair representing the minted token ID.
+     */
+    function collectWithSig(
+      DataTypes.DoCollectWithSigData calldata vars
+    ) external returns (address, uint256);
 
     /// ************************
     /// *****VIEW FUNCTIONS*****

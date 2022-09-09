@@ -1,5 +1,5 @@
 import hre, { ethers } from 'hardhat';
-import { providers, utils, BigNumber, Signer, Wallet, BigNumberish } from 'ethers'
+import { providers, utils, BigNumber, Signer, Wallet, BigNumberish, Bytes } from 'ethers'
 import { formatUnits, getAddress } from 'ethers/lib/utils'
 import { expect } from 'chai';
 
@@ -15,6 +15,7 @@ import {
 	bardsHub,
 	testWallet,
 	user,
+	CurationType
 } from '../__setup.test';
 
 import { 
@@ -167,6 +168,73 @@ export async function getSetDefaultProfileWithSigParts(
 	return await getSig(msgParams);
 }
 
+export async function getCreateCurationWithSigParts(
+	profileId: BigNumberish,
+	tokenContractPointed: string,
+	tokenIdPointed: BigNumberish,
+	contentURI: string,
+	marketModule: string,
+	marketModuleInitData: Bytes | string,
+	minterMarketModule: string,
+	minterMarketModuleInitData: Bytes | string,
+	curationMetaData: Bytes | string,
+	nonce: number,
+	deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+	const msgParams = buildCreateCurationWithSigParams(
+		profileId,
+		tokenContractPointed,
+		tokenIdPointed,
+		contentURI,
+		marketModule,
+		marketModuleInitData,
+		minterMarketModule,
+		minterMarketModuleInitData,
+		curationMetaData,
+		nonce,
+		deadline
+	);
+	return await getSig(msgParams);
+}
+
+export async function getSetCurationContentURIWithSigParts(
+	curationId: BigNumberish,
+	contentURI: string,
+	nonce: number,
+	deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+	const msgParams = buildSetCurationContentURIWithSigParams(
+		curationId, 
+		contentURI, 
+		nonce, 
+		deadline
+	);
+	return await getSig(msgParams);
+}
+
+const buildSetCurationContentURIWithSigParams = (
+	curationId: BigNumberish,
+	contentURI: string,
+	nonce: number,
+	deadline: string
+) => ({
+	types: {
+		SetCurationContentURIWithSig: [
+			{ name: 'curationId', type: 'uint256' },
+			{ name: 'contentURI', type: 'string' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'deadline', type: 'uint256' },
+		],
+	},
+	domain: domain(),
+	value: {
+		curationId: curationId,
+		contentURI: contentURI,
+		nonce: nonce,
+		deadline: deadline
+	},
+});
+
 const buildSetDefaultProfileWithSigParams = (
 	profileId: BigNumberish,
 	wallet: string,
@@ -186,10 +254,106 @@ const buildSetDefaultProfileWithSigParams = (
 		wallet: wallet,
 		profileId: profileId,
 		nonce: nonce,
+		deadline: deadline
+	},
+});
+
+const buildCreateCurationWithSigParams = (
+	profileId: BigNumberish,
+	tokenContractPointed: string,
+	tokenIdPointed: BigNumberish,
+	contentURI: string,
+	marketModule: string,
+	marketModuleInitData: Bytes | string,
+	minterMarketModule: string,
+	minterMarketModuleInitData: Bytes | string,
+	curationMetaData: Bytes | string,
+	nonce: number,
+	deadline: string
+) => ({
+	types: {
+		CreateCurationWithSig: [
+			{ name: 'profileId', type: 'uint256' },
+			{ name: 'tokenContractPointed', type: 'address' },
+			{ name: 'tokenIdPointed', type: 'uint256' },
+			{ name: 'contentURI', type: 'string' },
+			{ name: 'marketModule', type: 'address' },
+			{ name: 'marketModuleInitData', type: 'bytes' },
+			{ name: 'minterMarketModule', type: 'address' },
+			{ name: 'minterMarketModuleInitData', type: 'bytes' },
+			{ name: 'curationMetaData', type: 'bytes' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'deadline', type: 'uint256' },
+		],
+	},
+	domain: domain(),
+	value: {
+		profileId: profileId,
+		tokenContractPointed: tokenContractPointed,
+		tokenIdPointed: tokenIdPointed,
+		contentURI: contentURI,
+		marketModule: marketModule,
+		marketModuleInitData: marketModuleInitData,
+		minterMarketModule: minterMarketModule,
+		minterMarketModuleInitData: minterMarketModuleInitData,
+		curationMetaData: curationMetaData,
+		nonce: nonce,
 		deadline: deadline,
 	},
 });
 
+export async function getSetMarketModuleWithSigParts(
+	curationId: BigNumberish,
+	tokenContract: string,
+	tokenId: number,
+	marketModule: string,
+	marketModuleInitData: Bytes | string,
+	nonce: number,
+	deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+	const msgParams = buildSetMarketModuleWithSigParams(
+		curationId,
+		tokenContract,
+		tokenId,
+		marketModule,
+		marketModuleInitData,
+		nonce,
+		deadline
+	);
+	return await getSig(msgParams);
+}
+
+const buildSetMarketModuleWithSigParams = (
+	curationId: BigNumberish,
+	tokenContract: string,
+	tokenId: number,
+	marketModule: string,
+	marketModuleInitData: Bytes | string,
+	nonce: number,
+	deadline: string
+) => ({
+	types: {
+		SetMarketModuleWithSig: [
+			{ name: 'curationId', type: 'uint256' },
+			{ name: 'tokenContract', type: 'address' },
+			{ name: 'tokenId', type: 'uint256' },
+			{ name: 'marketModule', type: 'address' },
+			{ name: 'marketModuleInitData', type: 'bytes' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'deadline', type: 'uint256' },
+		],
+	},
+	domain: domain(),
+	value: {
+		curationId: curationId,
+		tokenContract: tokenContract,
+		tokenId: tokenId,
+		marketModule: marketModule,
+		marketModuleInitData: marketModuleInitData,
+		nonce: nonce,
+		deadline: deadline,
+	},
+});
 
 async function getSig(msgParams: {
 	domain: any;
@@ -218,4 +382,32 @@ function domain(): {
 		verifyingContract: bardsHub.address,
 		salt: DOMAIN_SALT
 	};
+}
+
+// Allocation keys
+
+interface ChannelKey {
+	privKey: string
+	pubKey: string
+	address: string
+	wallet: Signer
+	generateProof: (address) => Promise<string>
+}
+
+export const deriveChannelKey = (): ChannelKey => {
+	const w = Wallet.createRandom()
+	return {
+		privKey: w.privateKey,
+		pubKey: w.publicKey,
+		address: w.address,
+		wallet: w,
+		generateProof: (curatorAddress: string): Promise<string> => {
+			const messageHash = utils.solidityKeccak256(
+				['address', 'address'],
+				[curatorAddress, w.address],
+			)
+			const messageHashBytes = utils.arrayify(messageHash)
+			return w.signMessage(messageHashBytes)
+		},
+	}
 }

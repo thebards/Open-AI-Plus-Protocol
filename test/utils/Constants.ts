@@ -17,7 +17,7 @@ export const DEFAULT_STAKING_BPS = 100000;
 export const BARDS_HUB_NFT_NAME = 'TheBards HUB';
 export const BARDS_HUB_NFT_SYMBOL = 'TBH';
 export const MOCK_PROFILE_HANDLE = 'thebards.bpp';
-export const MOCK_PROFILE_CONTENT_URI = '';
+export const MOCK_PROFILE_CONTENT_URI = 'https://thebards.xyz';
 
 export const DEFAULTS = {
 	epochs: {
@@ -39,5 +39,7 @@ export const DEFAULTS = {
 	},
 	rewards: {
 		issuanceRate: toBCT('1.000000023206889619'), // 5% annual rate
+		inflationChange: 3,
+		targetBondingRate: 500000
 	},
 }

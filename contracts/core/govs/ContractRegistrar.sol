@@ -11,6 +11,7 @@ import '../../interfaces/tokens/IBardsStaking.sol';
 import '../../interfaces/govs/IRewardsManager.sol';
 import '../../interfaces/govs/IEpochManager.sol';
 import '../../interfaces/govs/IBardsDaoData.sol';
+import '../../interfaces/minters/IProgrammableMinter.sol';
 import '../trades/IWETH.sol';
 
 /**
@@ -81,7 +82,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
      */
     function bardsDataDao() internal view returns (IBardsDaoData) {
         return IBardsDaoData(_resolveContract(keccak256("BardsDaoData")));
-    }
+    } 
 
     /**
      * @notice Return BardsStaking interface.
@@ -89,7 +90,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
      */
     function bardsStaking() internal view returns (IBardsStaking) {
         return IBardsStaking(_resolveContract(keccak256("BardsStaking")));
-    }
+    } 
 
     /**
      * @notice Return BardsCurationToken interface.
@@ -115,6 +116,15 @@ abstract contract ContractRegistrar is IContractRegistrar {
      */
     function epochManager() internal view returns (IEpochManager) {
         return IEpochManager(_resolveContract(keccak256("EpochManager")));
+    }
+
+    /**
+     * @notice Return transferMinter as default minter interface.
+     * 
+     * @return Transfer Minter contract registered with HUB
+     */
+    function defaultMinter() internal view returns (IProgrammableMinter) {
+        return IProgrammableMinter(_resolveContract(keccak256("TransferMinter")));
     }
 
     /**
@@ -155,5 +165,6 @@ abstract contract ContractRegistrar is IContractRegistrar {
         _syncContract("BardsCurationToken");
         _syncContract("RewardsManager");
         _syncContract("EpochManager");
+        _syncContract("TransferMinter");
     }
 }

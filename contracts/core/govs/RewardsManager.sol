@@ -6,10 +6,10 @@ import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
 import '../../utils/MathUtils.sol';
 import '../storages/RewardsManagerStorage.sol';
-import '../../interfaces/tokens/IBardsCurationToken.sol';
 import '../govs/ContractRegistrar.sol';
 import '../../interfaces/govs/IRewardsManager.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import '../../interfaces/tokens/IBardsCurationToken.sol';
 
 /**
  * @title RewardsManager
@@ -29,7 +29,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 	/**
      * @notice Initialize this contract.
      */
-    constructor(
+    constructor( 
         address _HUB,
         uint256 _issuanceRate,
         uint256 _inflationChange,

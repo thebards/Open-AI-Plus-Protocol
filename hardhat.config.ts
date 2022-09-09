@@ -85,6 +85,7 @@ const config: HardhatUserConfig = {
         balance,
       })),
       forking: mainnetFork,
+      allowUnlimitedContractSize: true,
     },
   },
   gasReporter: {

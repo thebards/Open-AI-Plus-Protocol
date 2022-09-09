@@ -184,6 +184,9 @@ contract BardsHub is
             uint256 profileId = ++_curationCounter;
             _mint(vars.to, profileId);
             vars.profileId = profileId;
+            vars.tokenContractPointed = address(this);
+            vars.tokenIdPointed = profileId;
+            
             CurationHelpers.createProfile(
                 vars,
                 _profileIdByHandleHash,
@@ -234,6 +237,49 @@ contract BardsHub is
             );
             _setDefaultProfile(vars.wallet, vars.profileId);
         }
+    }
+
+    /// @inheritdoc IBardsHub
+    function setCurationContentURI(
+        uint256 curationId, 
+        string calldata contentURI
+    )
+        external
+        override
+        whenNotPaused
+    {
+        _validateCallerIsCurationOwnerOrApproved(curationId);
+        _setCurationContentURI(curationId, contentURI);
+    }
+
+    /// @inheritdoc IBardsHub
+    function setCurationContentURIWithSig(
+        DataTypes.SetCurationContentURIWithSigData calldata vars
+    )
+        external
+        override
+        whenNotPaused 
+    {
+        address owner = ownerOf(vars.curationId);
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            SET_CURATION_CONTENT_URI_WITH_SIG_TYPEHASH,
+                            vars.curationId,
+                            keccak256(bytes(vars.contentURI)),
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
+                    ),
+                    name()
+                ),
+                owner,
+                vars.sig
+            );
+        }
+        _setCurationContentURI(vars.curationId, vars.contentURI);
     }
 
     /// @inheritdoc IBardsHub
@@ -312,7 +358,11 @@ contract BardsHub is
     /// @inheritdoc IBardsHub
     function setMinterMarketModuleWithSig(
         DataTypes.SetMarketModuleWithSigData calldata vars
-    ) external override whenNotPaused {
+    ) 
+        external 
+        override 
+        whenNotPaused 
+    {
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
@@ -353,8 +403,119 @@ contract BardsHub is
         whenCurationEnabled
         returns (uint256)
     {
-        _validateCallerIsCurationOwnerOrApproved(vars.curationId);
+        _validateCallerIsCurationOwnerOrApproved(vars.profileId);
         return _createCuration(vars);
+    }
+
+    /// @inheritdoc IBardsHub
+    function createCurationWithSig(
+        DataTypes.CreateCurationWithSigData calldata vars
+    )
+        external
+        override
+        whenCurationEnabled
+        returns (uint256)
+    {
+        address owner = ownerOf(vars.profileId);
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            CREATE_CURATION_WITH_SIG_TYPEHASH,
+                            vars.profileId,
+                            vars.tokenContractPointed,
+                            vars.tokenIdPointed,
+                            keccak256(bytes(vars.contentURI)),
+                            vars.marketModule,
+                            keccak256(vars.marketModuleInitData),
+                            vars.minterMarketModule,
+                            keccak256(vars.minterMarketModuleInitData),
+                            keccak256(vars.curationMetaData),
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
+                    ),
+                    name()
+                ),
+                owner,
+                vars.sig
+            );
+        }
+        return _createCuration(
+            DataTypes.CreateCurationData({
+                to: owner,
+                curationType: vars.curationType,
+                profileId: vars.profileId,
+                curationId: vars.curationId,
+                tokenContractPointed: vars.tokenContractPointed,
+                tokenIdPointed: vars.tokenIdPointed,
+                handle: vars.handle,
+                contentURI: vars.contentURI,
+                marketModule: vars.marketModule,
+                marketModuleInitData: vars.marketModuleInitData,
+                minterMarketModule: vars.minterMarketModule,
+                minterMarketModuleInitData: vars.minterMarketModuleInitData,
+                curationMetaData: vars.curationMetaData
+            }
+        ));
+    }
+
+    /// @inheritdoc IBardsHub
+    function collect(
+        DataTypes.DoCollectData calldata vars
+    ) 
+        external 
+        override 
+        whenNotPaused 
+        returns (address, uint256)
+    {
+        return CurationHelpers.collect(
+            msg.sender,
+            vars,
+            _curationById
+        );
+    }
+
+    /// @inheritdoc IBardsHub
+    function collectWithSig(
+        DataTypes.DoCollectWithSigData calldata vars
+    )
+        external
+        override
+        whenNotPaused
+        returns (address, uint256)
+    {
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            COLLECT_WITH_SIG_TYPEHASH,
+                            vars.curationId,
+                            keccak256(vars.collectMetaData),
+                            sigNonces[vars.collector]++,
+                            vars.sig.deadline
+                        )
+                    ),
+                    name()
+                ),
+                vars.collector,
+                vars.sig
+            );
+        }
+        return CurationHelpers.collect(
+            vars.collector,
+            DataTypes.DoCollectData({
+                collector: vars.collector,
+                curationId: vars.curationId,
+                curationIds: vars.curationIds,
+                allocationIds: vars.allocationIds,
+                collectMetaData: vars.collectMetaData,
+                fromCuration: vars.fromCuration
+            }),
+            _curationById
+        );
     }
 
     /// @inheritdoc IBardsHub
@@ -526,6 +687,10 @@ contract BardsHub is
             uint256 curationId = ++_curationCounter;
             _mint(_vars.to, curationId);
             _vars.curationId = curationId;
+            if (_vars.tokenContractPointed == address(0)){
+                _vars.tokenContractPointed = address(this);
+                _vars.tokenIdPointed = curationId;
+            }
             CurationHelpers.createCuration(
                 _vars,
                 _curationById,
@@ -540,6 +705,24 @@ contract BardsHub is
             );
             return curationId;
         }
+    }
+
+    function _setCurationContentURI(
+        uint256 curationId, 
+        string calldata contentURI
+    ) 
+        internal 
+    {
+        if (bytes(contentURI).length > Constants.MAX_CURATION_CONTENT_URI_LENGTH)
+            revert Errors.CurationContentURILengthInvalid();
+
+        _curationById[curationId].contentURI = contentURI;
+
+        emit Events.CurationContentURISet(
+            curationId, 
+            contentURI, 
+            block.timestamp
+        );
     }
 
     function _setGovernance(address newGovernance) internal {
@@ -572,7 +755,7 @@ contract BardsHub is
      */
     function _setDefaultProfile(address wallet, uint256 profileId) internal {
         if (profileId > 0 && wallet != ownerOf(profileId))
-            revert Errors.NotProfileOwner();
+            revert Errors.NotOwner();
 
         _defaultProfileByAddress[wallet] = profileId;
 
@@ -608,7 +791,7 @@ contract BardsHub is
         if (_isApprovedOrOwner(msg.sender, curationId)) {
             return;
         }
-        revert Errors.NotProfileOwnerOrDispatcher();
+        revert Errors.NotOwnerOrApproved();
     }
 
     function _validateCallerIsCurationOwner(
@@ -617,7 +800,7 @@ contract BardsHub is
         internal 
         view 
     {
-        if (msg.sender != ownerOf(curationId)) revert Errors.NotCurationOwner();
+        if (msg.sender != ownerOf(curationId)) revert Errors.NotOwner();
     }
 
     function _validateCallerIsGovernance() internal view {

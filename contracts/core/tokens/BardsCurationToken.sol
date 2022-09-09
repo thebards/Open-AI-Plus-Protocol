@@ -25,7 +25,6 @@ import '../govs/ContractRegistrar.sol';
  */
 contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
     using SafeMath for uint256;
-    
     bytes32 private constant PERMIT_TYPEHASH =
         keccak256(
             "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"

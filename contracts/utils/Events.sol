@@ -576,6 +576,19 @@ library Events {
     );
 
     /**
+     * @notice Emitted when a curation's URI is set.
+     *
+     * @param curationId The token ID of the curation for which the URI is set.
+     * @param contentURI The URI set for the given profile.
+     * @param timestamp The current block timestamp.
+     */
+    event CurationContentURISet(
+        uint256 indexed curationId, 
+        string contentURI, 
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when epoch length updated
      * 
      * @param epoch epoch
@@ -844,6 +857,25 @@ library Events {
         address indexed allocationID,
         address from,
         address currency,
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted upon a successful collect action.
+     *
+     * @param collector The address collecting the NFT.
+     * @param curationId The token ID of the curation.
+     * @param tokenContractPointed The address of the NFT contract whose NFT is being collected.
+     * @param tokenIdPointed The token ID of NFT being collected.
+     * @param collectModuleData The data passed to the collect module.
+     * @param timestamp The current block timestamp.
+     */
+    event Collected(
+        address indexed collector,
+        uint256 indexed curationId,
+        address tokenContractPointed,
+        uint256 tokenIdPointed,
+        bytes collectModuleData,
         uint256 timestamp
     );
 }

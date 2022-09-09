@@ -17,13 +17,21 @@ abstract contract BardsHubStorage {
         keccak256(
             'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
         );
+	bytes32 internal constant SET_CURATION_CONTENT_URI_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetCurationContentURIWithSig(uint256 curationId,string contentURI,uint256 nonce,uint256 deadline)'
+        );
     bytes32 internal constant SET_MARKET_MODULE_WITH_SIG_TYPEHASH =
         keccak256(
             'SetMarketModuleWithSig(uint256 curationId,address tokenContract,uint256 tokenId,address marketModule,bytes marketModuleInitData,uint256 nonce,uint256 deadline)'
         );
 	bytes32 internal constant CREATE_CURATION_WITH_SIG_TYPEHASH =
         keccak256(
-            'createCurationWithSig(address to,uint256 profileId,address tokenContractPointed,uint256 tokenIdPointed,string handle,string contentURI,address marketModule,bytes marketModuleInitData,address minterMarketModule,bytes minterMarketModuleInitData,bytes curationMetaData,uint256 nonce,uint256 deadline)'
+            'CreateCurationWithSig(uint256 profileId,address tokenContractPointed,uint256 tokenIdPointed,string contentURI,address marketModule,bytes marketModuleInitData,address minterMarketModule,bytes minterMarketModuleInitData,bytes curationMetaData,uint256 nonce,uint256 deadline)'
+        );
+	bytes32 internal constant COLLECT_WITH_SIG_TYPEHASH =
+        keccak256(
+            'CollectWithSig(uint256 curationId,bytes collectMetaData,uint256 nonce,uint256 deadline)'
         );
 	bytes32 internal constant SET_DISPATCHER_WITH_SIG_TYPEHASH =
         keccak256(

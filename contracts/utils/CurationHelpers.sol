@@ -46,30 +46,34 @@ library CurationHelpers {
         _curationById[_vars.profileId].curationType = _vars.curationType;
         _curationById[_vars.profileId].handle = _vars.handle;
         _curationById[_vars.profileId].contentURI = _vars.contentURI;
+        _curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
+		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
 		_isProfileById[_vars.profileId] = true;
 
         bytes memory marketModuleReturnData;
         if (_vars.marketModule != address(0)) {
             _curationById[_vars.profileId].marketModule = _vars.marketModule;
             marketModuleReturnData = _initMarketModule(
-				msg.sender, // Creator is always the profile's owner
-                _vars.profileId,
+				_vars.tokenContractPointed, 
+                _vars.tokenIdPointed,
                 _vars.marketModule,
                 _vars.marketModuleInitData,
                 _marketModuleWhitelisted
             );
+            _curationById[_vars.curationId].marketModule = _vars.marketModule;
         }
 		bytes memory minterMarketModuleReturnData;
         if (_vars.minterMarketModule != address(0)) {
             _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
             // mint module is also a market module, whose minter is different.
 			minterMarketModuleReturnData = _initMarketModule(
-				msg.sender, // Creator is always the profile's owner
-                _vars.profileId,
+				_vars.tokenContractPointed,
+                _vars.tokenIdPointed,
 				_vars.minterMarketModule,
 				_vars.minterMarketModuleInitData,
                 _marketModuleWhitelisted
             );
+            _curationById[_vars.curationId].minterMarketModule = _vars.minterMarketModule;
         }
 
         _emitProfileCreated(
@@ -185,29 +189,33 @@ library CurationHelpers {
         _curationById[_vars.curationId].contentURI = _vars.contentURI;
 		_curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
-		_isMintedByIdById[_vars.profileId][_vars.curationId] = true;
+		// _isMintedByIdById[_vars.profileId][_vars.curationId] = true;
 
         bytes memory marketModuleReturnData;
         if (_vars.marketModule != address(0)) {
             _curationById[_vars.profileId].marketModule = _vars.marketModule;
             marketModuleReturnData = _initMarketModule(
-				msg.sender, // Creator is always the profile's owner
-                _vars.curationId,
+				_vars.tokenContractPointed, // Creator is always the profile's owner
+                _vars.tokenIdPointed,
                 _vars.marketModule,
                 _vars.marketModuleInitData,
                 _marketModuleWhitelisted
             );
+            _curationById[_vars.curationId].marketModule = _vars.marketModule;
+
         }
 		bytes memory minterMarketModuleReturnData;
         if (_vars.minterMarketModule != address(0)) {
             _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
 			minterMarketModuleReturnData = _initMarketModule(
-				msg.sender, // Creator is always the profile's owner
-                _vars.curationId,
+				_vars.tokenContractPointed, // Creator is always the profile's owner
+                _vars.tokenIdPointed,
 				_vars.minterMarketModule,
 				_vars.minterMarketModuleInitData,
                 _marketModuleWhitelisted
             );
+            _curationById[_vars.curationId].minterMarketModule = _vars.minterMarketModule;
+
         }
 
         emit Events.CurationCreated(
@@ -220,6 +228,59 @@ library CurationHelpers {
             _vars.minterMarketModuleInitData,
             block.timestamp
         );
+    }
+
+    /**
+     * @notice Collects the given curation, executing the necessary logic and module call before minting the
+     * collect NFT to the collector.
+     *
+     * @param _vars A struct of DoCollectData.
+     *
+     */
+    function collect(
+        address collector,
+        DataTypes.DoCollectData memory _vars,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById
+    ) 
+        external
+        returns (address, uint256)
+    {
+        // Avoids stack too deep
+        DataTypes.CurationStruct storage curation = _curationById[_vars.curationId];
+        address marketModule;
+        if (_vars.fromCuration == true){
+            marketModule = curation.minterMarketModule;
+        } else{
+            marketModule = curation.marketModule;
+        }
+        
+        if (marketModule == address(0)) {
+            revert Errors.MarketZeroAddress();
+        }
+
+        (
+            address retTokenContract, 
+            uint256 retTokenId
+        ) = IMarketModule(marketModule).collect(
+            collector,
+            _vars.curationId,
+            curation.tokenContractPointed,
+            curation.tokenIdPointed,
+            _vars.curationIds,
+            _vars.allocationIds,
+            _vars.collectMetaData
+        );
+
+        emit Events.Collected(
+            collector,
+            _vars.curationId,
+            curation.tokenContractPointed,
+            curation.tokenIdPointed,
+            _vars.collectMetaData,
+            block.timestamp
+        );
+
+        return (retTokenContract, retTokenId);
     }
 
 	function _initMarketModule(

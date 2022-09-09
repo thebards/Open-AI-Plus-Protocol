@@ -83,20 +83,6 @@ library DataTypes {
     }
 
     /**
-     * @notice A struct containing the parameters required for the `setDispatcherWithSig()` function. Parameters are the same
-     * as the regular `setDispatcher()` function, with an added EIP712Signature.
-     *
-     * @param curationId The token ID of the curation to set the dispatcher for.
-     * @param dispatcher The dispatcher address to set for the profile.
-     * @param sig The EIP712Signature struct containing the profile owner's signature.
-     */
-    struct SetDispatcherWithSigData {
-        uint256 curationId;
-        address dispatcher;
-        EIP712Signature sig;
-    }
-
-    /**
      * @notice A struct containing the parameters required for the `setMarketModule()` function.
      *
      * @param curationId The token ID of the curation to change the marketModule for.
@@ -163,19 +149,29 @@ library DataTypes {
     }
 
     /**
+     * @notice The metadata for a free market.
+     * @param seller The seller of nft
+     * @param minter The programmable minter module.
+     */
+    struct FreeMarketData {
+        address seller;
+        address minter;
+    }
+
+    /**
      * @notice The metadata for a fix price market.
      * @param seller The seller of nft
      * @param currency The currency to ask.
      * @param price The fix price of nft.
      * @param treasury The recipient of the fee
-     * @param minterMarket The market module of minter.
+     * @param minter The programmable minter module.
      */
     struct FixPriceMarketData {
         address seller;
         address currency;
         uint256 price;
         address treasury;
-        address minterMarket;
+        address minter;
     }
 
     /**
@@ -215,6 +211,83 @@ library DataTypes {
     }
 
     /**
+     * @notice A struct containing the parameters required for the `setCurationContentURIWithSig()` function. Parameters are the same
+     * as the regular `setCurationContentURI()` function, with an added EIP712Signature.
+     *
+     * @param curationId The token ID of the curation to set the URI for.
+     * @param contentURI The URI to set for the given curation.
+     * @param sig The EIP712Signature struct containing the curation owner's signature.
+     */
+    struct SetCurationContentURIWithSigData {
+        uint256 curationId;
+        string contentURI;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the paramters required for the `collect` function.
+     * 
+     * @param collector The address executing the collect.
+     * @param curationId The token ID of the curation being collected's parent profile.
+     * @param curationIds A array of curation IDs sharing trade fees.
+     * @param allocationIds A array of allocation IDs.
+     * @param collectMetaData The meta data for collecting.
+     * @param fromCuration Whether to mint from scratch in curation.
+     * 
+     */
+    struct DoCollectData {
+        address collector;
+        uint256 curationId;
+        uint256[] curationIds;
+        address[] allocationIds;
+        bytes collectMetaData;
+        bool fromCuration;
+    }
+
+    /**
+     * @notice A struct containing the paramters required for the `collectWithSig` function.
+     * 
+     * @param collector The address executing the collect.
+     * @param curationId The token ID of the curation being collected's parent profile.
+     * @param curationIds A array of curation IDs sharing trade fees.
+     * @param allocationIds A array of allocation IDs.
+     * @param collectMetaData The meta data for collecting.
+     * @param fromCuration Whether to mint from scratch in curation.
+     * @param sig
+     */
+    struct DoCollectWithSigData {
+        address collector;
+        uint256 curationId;
+        uint256[] curationIds;
+        address[] allocationIds;
+        bytes collectMetaData;
+        bool fromCuration;
+        EIP712Signature sig;
+    }
+
+    /**
+     * @notice A struct containing the paramters required for the `collect` function.
+     * 
+     * @param collector The address executing the collect.
+     * @param curationId The token ID of the curation being collected's parent profile.
+     * @param tokenContract The address of token.
+     * @param tokenId The token id.
+     * @param curationIds A array of curation IDs sharing trade fees.
+     * @param allocationIds A array of allocation IDs.
+     * @param collectMetaData The meta data for collecting.
+     * 
+     */
+    struct MarketCollectData {
+        address collector;
+        uint256 curationId;
+        address tokenContract;
+        uint256 tokenId;
+        uint256[] curationIds;
+        address[] allocationIds;
+        bytes collectMetaData;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
      *
      * @param to The address receiving the curation.
@@ -251,7 +324,6 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `createProfile()` and `creationCuration` function.
      *
-     * @param to The address receiving the curation.
      * @param curationType The Type of curation.
      * @param profileId the profile id creating the curation
      * @param curationId the curation ID.
@@ -265,9 +337,9 @@ library DataTypes {
      * minterMarketModule is marketModule, but the initialization parameters are different.
      * @param minterMarketModuleInitData The minter market module initialization data, if any.
      * @param curationMetaData The data of CurationData struct.
+     * @param sig
      */
     struct CreateCurationWithSigData {
-        address to;
         CurationType curationType;
         uint256 profileId;
         uint256 curationId;

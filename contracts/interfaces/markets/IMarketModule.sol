@@ -26,22 +26,24 @@ interface IMarketModule {
     ) external returns (bytes memory);
 
 	/**
-     * @notice Processes a buy action for a given NFT, this can only be called by the hub.
+     * @notice Processes a collect action for a given NFT.
      *
-     * @param buyer The buyer address.
+     * @param collector The buyer address.
      * @param curationId The curation ID.
      * @param tokenContract The address of content NFT contract.
      * @param tokenId The token ID of content NFT contract.
      * @param curationIds the list of curation id, who act curators.
      * @param allocationIds The list of allocation id.
+     * @param collectMetaData The meta data of collect.
      */
-    function buy(
-        address buyer,
+    function collect(
+        address collector,
         uint256 curationId,
         address tokenContract,
         uint256 tokenId,
         uint256[] memory curationIds,
-        address[] memory allocationIds
-    ) external;
+        address[] memory allocationIds,
+        bytes memory collectMetaData
+    ) external returns (address, uint256);
 	
 }

@@ -115,6 +115,56 @@ abstract contract MarketModuleBase is ContractRegistrar {
 		}
 
     /**
+     * @notice Before core logic of  collecting, collect fees to a specific address, 
+     * and pay royalties and protocol fees
+     * 
+     * @param collector The colloctor of NFT.
+     * @param price The price of NFT.
+     * @param currency The currency
+     * @param tokenContract The address of token contract.
+     * @param tokenId The token Id of NFT.
+     */
+    function _beforeCollecting(
+        address collector,
+        uint256 price,
+        address currency,
+        address tokenContract,
+        uint256 tokenId
+    ) 
+        internal
+        returns (uint256)
+    {
+        // Ensure ETH/ERC-20 payment from collector is valid and take custody
+        _handleIncomingTransfer(
+            collector, 
+            price, 
+            currency, 
+            stakingAddress
+        );
+
+        // Payout respective parties, ensuring royalties are honored
+        (uint256 remainingProfit, ) = _handleRoyaltyPayout(
+            tokenContract, 
+            tokenId, 
+            price, 
+            currency, 
+            Constants.USE_ALL_GAS_FLAG
+        );
+
+        // Payout protocol fee
+        uint256 protocolFee = getFeeAmount(remainingProfit);
+        address protocolTreasury = getTreasury();
+        remainingProfit = _handleProtocolFeePayout(
+            remainingProfit,
+            currency, 
+            protocolFee, 
+            protocolTreasury
+        );
+
+        return remainingProfit;
+    }
+
+    /**
      * 
      * @notice Pays out the protocol fee to its protocol treasury
      * @param _amount The sale amount
