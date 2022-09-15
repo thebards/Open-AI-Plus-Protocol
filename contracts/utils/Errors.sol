@@ -31,6 +31,7 @@ library Errors {
     error ArrayMismatch();
     error NotWhitelisted();
     error CurationContentURILengthInvalid();
+    error NoAllowance();
 
     // Market Errors
     error InitParamsInvalid();

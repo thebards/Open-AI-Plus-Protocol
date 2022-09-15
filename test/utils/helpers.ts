@@ -5,6 +5,7 @@ import { expect } from 'chai';
 
 import { 
 	BARDS_HUB_NFT_NAME, 
+	BARDS_CURATION_TOKEN_NAME,
 	HARDHAT_CHAINID, 
 	DOMAIN_SALT,
 	MAX_UINT256
@@ -15,7 +16,8 @@ import {
 	bardsHub,
 	testWallet,
 	user,
-	CurationType
+	CurationType,
+	bardsCurationToken
 } from '../__setup.test';
 
 import { 
@@ -168,6 +170,24 @@ export async function getSetDefaultProfileWithSigParts(
 	return await getSig(msgParams);
 }
 
+export async function getBCTPermitWithSigParts(
+	owner: string,
+	spender: string,
+	value: BigNumberish,
+	nonce: number,
+	deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+	const msgParams = buildBCTPermitWithSigParams(
+		owner,
+		spender,
+		value,
+		nonce,
+		deadline
+	);
+
+	return await getSig(msgParams);
+}
+
 export async function getCreateCurationWithSigParts(
 	profileId: BigNumberish,
 	tokenContractPointed: string,
@@ -230,6 +250,32 @@ const buildSetCurationContentURIWithSigParams = (
 	value: {
 		curationId: curationId,
 		contentURI: contentURI,
+		nonce: nonce,
+		deadline: deadline
+	},
+});
+
+const buildBCTPermitWithSigParams = (
+	owner: string,
+	spender: string,
+	value: BigNumberish,
+	nonce: number,
+	deadline: string
+) => ({
+	types: {
+		Permit: [
+			{ name: 'owner', type: 'address' },
+			{ name: 'spender', type: 'address' },
+			{ name: 'value', type: 'uint256' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'deadline', type: 'uint256' }
+		],
+	},
+	domain: BCTDomain(),
+	value: {
+		owner: owner,
+		spender: spender,
+		value: value,
 		nonce: nonce,
 		deadline: deadline
 	},
@@ -366,6 +412,22 @@ async function getSig(msgParams: {
 		msgParams.value
 	);
 	return utils.splitSignature(sig);
+}
+
+function BCTDomain(): {
+	name: string;
+	version: string;
+	chainId: number;
+	verifyingContract: string,
+	salt: string
+} {
+	return {
+		name: BARDS_CURATION_TOKEN_NAME,
+		version: '1',
+		chainId: getChainId(),
+		verifyingContract: bardsCurationToken.address,
+		salt: DOMAIN_SALT
+	};
 }
 
 function domain(): { 

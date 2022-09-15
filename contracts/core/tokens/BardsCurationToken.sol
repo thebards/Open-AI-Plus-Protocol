@@ -43,12 +43,15 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
     constructor(address _HUB, uint256 _initialSupply) ERC20("Bards Curation Token", "BCT") {
         if (_HUB == address(0)) revert Errors.InitParamsInvalid();
         ContractRegistrar._initialize(_HUB);
+        address gov = bardsHub().getGovernance();
         // The Governor has the initial supply of tokens
-        _mint(msg.sender, _initialSupply);
+        _mint(gov, _initialSupply);
         // The Governor is the default minter
-        _addMinter(msg.sender);
+        _addMinter(gov);
         // HUB is minter too
         _addMinter(_HUB);
+        _addMinter(msg.sender);
+
     }
 
     function permit(

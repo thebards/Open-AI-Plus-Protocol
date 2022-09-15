@@ -586,7 +586,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, setting follow module should work', async function () {
+			it('Governance should pause curation, setting follow module should work', async function () {
 				await expect(
 					bardsHub.createProfile({
 						to: userAddress,
@@ -620,7 +620,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, setting market module with sig should work', async function () {
+			it('Governance should pause curation, setting market module with sig should work', async function () {
 				await expect(
 					bardsHub.connect(testWallet).createProfile({
 						to: testWallet.address,
@@ -672,7 +672,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, setting profile URI should work', async function () {
+			it('Governance should pause curation, setting profile URI should work', async function () {
 				await expect(
 					bardsHub.createProfile({
 						to: userAddress,
@@ -700,7 +700,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, setting profile URI with sig should work', async function () {
+			it('Governance should pause curation, setting profile URI with sig should work', async function () {
 				await expect(
 					bardsHub.connect(testWallet).createProfile({
 						to: testWallet.address,
@@ -745,7 +745,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, burning should work', async function () {
+			it('Governance should pause curation, burning should work', async function () {
 				await expect(
 					bardsHub.createProfile({
 						to: userAddress,
@@ -773,7 +773,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, posting should fail, then governance unpauses the hub and posting should work', async function () {
+			it('Governance should pause curation, posting should fail, then governance unpauses the hub and posting should work', async function () {
 				await expect(
 					bardsHub.createProfile({
 						to: userAddress,
@@ -840,7 +840,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				).to.not.be.reverted;
 			});
 
-			it('Governance should pause publishing, posting with sig should fail, then governance unpauses the hub and posting with sig should work', async function () {
+			it('Governance should pause curation, creating curation with sig should fail, then governance unpauses the hub and creating curation sig should work', async function () {
 				await expect(
 					bardsHub.connect(testWallet).createProfile({
 						to: testWallet.address,
@@ -997,6 +997,9 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 
 				const channelKey = deriveChannelKey();
 				const allocationID = channelKey.address;
+
+				// await bardsCurationToken.transfer(userAddress, 1000000);
+				// console.log(await bardsCurationToken.balanceOf(userAddress));
 
 				await expect(
 					bardsHub.collect({

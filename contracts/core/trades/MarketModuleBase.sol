@@ -204,6 +204,9 @@ abstract contract MarketModuleBase is ContractRegistrar {
         address _to
     ) 
     internal {
+        // if (msg.sender == HUB){
+        //     revert Errors.NoAllowance();
+        // }
         if (_currency == address(0)) {
             require(msg.value >= _amount, "_handleIncomingTransfer msg value less than expected amount");
         } else {

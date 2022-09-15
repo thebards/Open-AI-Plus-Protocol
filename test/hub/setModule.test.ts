@@ -385,7 +385,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 				).to.not.be.reverted;
 
 				const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
-
+				
 				const { v, r, s } = await getSetMarketModuleWithSigParts(
 					FIRST_PROFILE_ID,
 					bardsHub.address,
