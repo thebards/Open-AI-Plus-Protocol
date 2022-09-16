@@ -7,6 +7,7 @@ import './Errors.sol';
 import './Events.sol';
 import './Constants.sol';
 import '../interfaces/markets/IMarketModule.sol';
+import "hardhat/console.sol";
 
 /**
  * @title CurationHelpers
@@ -274,8 +275,8 @@ library CurationHelpers {
         emit Events.Collected(
             collector,
             _vars.curationId,
-            curation.tokenContractPointed,
-            curation.tokenIdPointed,
+            retTokenContract,
+            retTokenId,
             _vars.collectMetaData,
             block.timestamp
         );

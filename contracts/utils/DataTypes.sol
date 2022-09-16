@@ -69,6 +69,20 @@ library DataTypes {
     }
 
     /**
+     * A struct containing the parameters required for the `permit` function of bardsCurationToken.
+     * @param owner The address of the owner of token.
+     * @param spender The address of the spender who will be approved.
+     * @param value The token amount.
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct BCTPermitWithSigData{
+        address owner;
+        address spender;
+        uint256 value;
+        EIP712Signature sig;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
      * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
      *

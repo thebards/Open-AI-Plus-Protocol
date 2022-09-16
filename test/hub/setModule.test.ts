@@ -225,10 +225,11 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 
 			it('TestWallet should fail to set a market module with sig with invalid deadline', async function () {
@@ -262,10 +263,11 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: '0',
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_EXPIRED
-				);
+				).to.be.revertedWith('SignatureExpired');
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_EXPIRED
+				// );
 			});
 
 			it('TestWallet should fail to set a market module with sig with invalid nonce', async function () {
@@ -299,10 +301,11 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 
 			it('TestWallet should fail to set a market module with sig with an unwhitelisted follow module', async function () {
@@ -371,10 +374,11 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 		});
 

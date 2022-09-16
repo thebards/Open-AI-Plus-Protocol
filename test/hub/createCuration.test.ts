@@ -35,7 +35,8 @@ import {
 	errorsLib,
 	fixPriceMarketModule,
 	bardsCurationToken,
-	transferMinter
+	transferMinter,
+	emptyMinter
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Create Curations', function () {
@@ -113,7 +114,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 				).to.not.be.reverted;
 
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(transferMinter.address, false)
+					bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, false)
 				).to.not.be.reverted;
 
 				await expect(
@@ -206,7 +207,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					bardsHub.connect(governance).whitelistMarketModule(fixPriceMarketModule.address, true)
 				).to.not.be.reverted;
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(transferMinter.address, true)
+					bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, true)
 				).to.not.be.reverted;
 
 				await expect(
@@ -295,10 +296,11 @@ makeSuiteCleanRoom('Create Curations', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 
 			it('Testwallet should fail to create curation with sig with invalid deadline', async function () {
@@ -342,10 +344,11 @@ makeSuiteCleanRoom('Create Curations', function () {
 							deadline: '0',
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_EXPIRED
-				);
+				).to.be.revertedWith('SignatureExpired');
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_EXPIRED
+				// );
 			});
 
 			it('Testwallet should fail to create curation with sig with invalid nonce', async function () {
@@ -389,10 +392,11 @@ makeSuiteCleanRoom('Create Curations', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 
 			it('Testwallet should fail to create curation with sig with an unwhitelisted market module', async function () {
@@ -444,7 +448,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 				).to.not.be.reverted;
 
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(transferMinter.address, false)
+					bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, false)
 				).to.not.be.reverted;
 
 				const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
@@ -532,10 +536,11 @@ makeSuiteCleanRoom('Create Curations', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 		});
 

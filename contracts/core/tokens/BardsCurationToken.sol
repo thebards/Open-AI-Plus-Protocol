@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../utils/Events.sol';
 import '../../utils/Errors.sol';
 import '../govs/ContractRegistrar.sol';
+import "hardhat/console.sol";
 
 /**
  * @title BardsCurationToken contract
@@ -55,32 +56,29 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
     }
 
     function permit(
-        address _owner,
-        address _spender,
-        uint256 _value,
-        DataTypes.EIP712Signature calldata sig
+        DataTypes.BCTPermitWithSigData calldata _vars
     ) external {
-        if (_owner == address(0) || _spender == address(0)) revert Errors.ZeroSpender();
+        if (_vars.owner == address(0) || _vars.spender == address(0)) revert Errors.ZeroSpender();
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
                     keccak256(
                         abi.encode(
                             PERMIT_TYPEHASH,
-                            _owner,
-                            _spender,
-                            _value,
-                            sigNonces[_owner]++,
-                            sig.deadline
+                            _vars.owner,
+                            _vars.spender,
+                            _vars.value,
+                            sigNonces[_vars.owner]++,
+                            _vars.sig.deadline
                         )
                     ),
                     name()
                 ),
-                _owner,
-                sig
+                _vars.owner,
+                _vars.sig
             );
         }
-        _approve(_owner, _spender, _value);
+        _approve(_vars.owner, _vars.spender, _vars.value);
     }
 
     function addMinter(

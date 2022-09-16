@@ -4,8 +4,6 @@ pragma solidity ^0.8.9;
 
 import {DataTypes} from '../../utils/DataTypes.sol';
 import {Errors} from '../../utils/Errors.sol';
-import "hardhat/console.sol";
-
 
 /**
  * @title TokenStorage
@@ -36,15 +34,16 @@ abstract contract TokenStorage {
         internal 
         view 
     {
-        console.log("deadline: %s, now: %s", sig.deadline, block.timestamp);
-        if (sig.deadline < block.timestamp){
-            console.log(expectedAddress);
-            revert Errors.SignatureExpired();
-        }
+        // if (sig.deadline < block.timestamp) {
+        //     revert Errors.SignatureExpired();
+        // }
+
+        require(sig.deadline >= block.timestamp, 'SignatureExpired');
 
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-            revert Errors.SignatureInvalid();
+        // if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
+        //     revert Errors.SignatureInvalid();
+        require(recoveredAddress != address(0) && recoveredAddress == expectedAddress, 'SignatureInvalid');
     }
 
     /**

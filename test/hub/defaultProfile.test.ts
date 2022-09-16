@@ -157,10 +157,11 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib,
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib,
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 
 			it('TestWallet should fail to set default profile with sig with invalid deadline', async function () {
@@ -183,10 +184,11 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: '0',
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib, 
-					ERRORS.SIGNATURE_EXPIRED
-				);
+				).to.be.revertedWith('SignatureExpired');
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib, 
+				// 	ERRORS.SIGNATURE_EXPIRED
+				// );
 			});
 
 			it('TestWallet should fail to set default profile with sig with invalid nonce', async function () {
@@ -209,10 +211,11 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib, 
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib, 
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 
 			it('TestWallet should sign attempt to set default profile with sig, cancel with empty permitForAll, then fail to set default profile with sig', async function () {
@@ -237,10 +240,11 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.revertedWithCustomError(
-					errorsLib, 
-					ERRORS.SIGNATURE_INVALID
-				);
+				).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
+				// .to.be.revertedWithCustomError(
+				// 	errorsLib, 
+				// 	ERRORS.SIGNATURE_INVALID
+				// );
 			});
 		});
 

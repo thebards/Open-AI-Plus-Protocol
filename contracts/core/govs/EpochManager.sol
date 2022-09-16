@@ -29,7 +29,11 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
         lastLengthUpdateBlock = blockNum();
         epochLength = _epochLength;
 
-        emit Events.EpochLengthUpdate(lastLengthUpdateEpoch, epochLength, block.timestamp);
+        emit Events.EpochLengthUpdate(
+            lastLengthUpdateEpoch, 
+            epochLength, 
+            block.timestamp
+        );
     }
 
     /**
@@ -51,14 +55,21 @@ contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
         lastLengthUpdateBlock = currentEpochBlock();
         epochLength = _epochLength;
 
-        emit Events.EpochLengthUpdate(lastLengthUpdateEpoch, epochLength, block.timestamp);
+        emit Events.EpochLengthUpdate(
+            lastLengthUpdateEpoch, 
+            epochLength, 
+            block.timestamp
+        );
     }
 
     /**
      * @notice Run a new epoch, should be called once at the start of any epoch.
      * @notice Perform state changes for the current epoch
      */
-    function runEpoch() external override {
+    function runEpoch() 
+        external 
+        override 
+    {
         // Check if already called for the current epoch
         require(!isCurrentEpochRun(), "Current epoch already run");
 

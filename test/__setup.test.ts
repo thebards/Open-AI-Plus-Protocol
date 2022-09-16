@@ -29,6 +29,8 @@ import {
 	Events__factory,
 	BardsDaoData,
 	BardsDaoData__factory,
+	FreeMarketModule,
+	FreeMarketModule__factory,
 	FixPriceMarketModule,
 	FixPriceMarketModule__factory,
 	CurationHelpers,
@@ -57,7 +59,9 @@ import {
 	TransferMinter,
 	TransferMinter__factory,
 	CloneMinter,
-	CloneMinter__factory
+	CloneMinter__factory,
+	EmptyMinter,
+	EmptyMinter__factory
 } from '../typechain-types';
 
 import { BardsHubLibraryAddresses} from "../typechain-types/factories/contracts/core/BardsHub__factory";
@@ -111,12 +115,15 @@ export let weth: WETH;
 export let hubLibs: BardsHubLibraryAddresses;
 export let bardsStakingLibs: BardsStakingLibraryAddresses;
 export let fixPriceMarketModule: FixPriceMarketModule;
+export let freeMarketModule: FreeMarketModule;
 export let transferMinter: TransferMinter;
 export let cloneMinter: CloneMinter;
+export let emptyMinter: EmptyMinter;
 export let abiCoder: AbiCoder;
 export let eventsLib: Events;
 export let errorsLib: Errors;
 export let mockMarketModuleInitData: BytesLike;
+export let mockFreeMarketModuleInitData: BytesLike;
 export let mockMinterMarketModuleInitData: BytesLike;
 export let mockCurationMetaData: BytesLike;
 
@@ -269,12 +276,23 @@ before(async function () {
 	cloneMinter = await new CloneMinter__factory(deployer).deploy(
 		bardsHub.address
 	)
+	// Empty minter
+	emptyMinter = await new EmptyMinter__factory(deployer).deploy(
+		bardsHub.address
+	)
 
 	// market and mint module
+	freeMarketModule = await new FreeMarketModule__factory(deployer).deploy(
+		bardsHub.address,
+		royaltyEngine.address
+	)
+
 	fixPriceMarketModule = await new FixPriceMarketModule__factory(deployer).deploy(
 		bardsHub.address,
 		royaltyEngine.address
 	);
+
+
 
 	await expect(
 		bardsStaking.syncAllContracts()
@@ -329,13 +347,21 @@ before(async function () {
 		bardsHub.connect(governance).whitelistMintModule(transferMinter.address, true)
 	).to.not.be.reverted;
 
+	await expect(
+		bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, true)
+	).to.not.be.reverted;
+
 	mockMarketModuleInitData = abiCoder.encode(
 		['address', 'address', 'uint256', 'address', 'address'],
-		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, transferMinter.address]
+		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, emptyMinter.address]
+	);
+	mockFreeMarketModuleInitData = abiCoder.encode(
+		['address', 'address'],
+		[ZERO_ADDRESS, emptyMinter.address]
 	);
 	mockMinterMarketModuleInitData = abiCoder.encode(
 		['address', 'address', 'uint256', 'address', 'address'],
-		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, transferMinter.address]
+		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, emptyMinter.address]
 	);
 	mockCurationMetaData = abiCoder.encode(
 		['address[]', 'address[]', 'uint32[]', 'uint32', 'uint32'],

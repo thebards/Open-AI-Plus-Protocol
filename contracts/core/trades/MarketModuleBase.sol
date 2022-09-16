@@ -13,6 +13,7 @@ import '../../utils/TokenUtils.sol';
 import '../BardsHub.sol';
 import '../govs/ContractRegistrar.sol';
 import '../../interfaces/tokens/IBardsStaking.sol';
+import "hardhat/console.sol";
 
 /**
  * @title MarketModuleBase

@@ -28,6 +28,11 @@ import {
 	DataTypes
 } from "../../typechain-types/contracts/core/BardsHub";
 
+import { 
+	EpochManager 
+} from '../../typechain-types/contracts/core/govs/EpochManager';
+import { Address } from 'defender-relay-client';
+
 
 const { hexlify, parseUnits, randomBytes } = utils
 
@@ -57,6 +62,48 @@ export async function getTimestamp(): Promise<any> {
 	const blockNumber = await hre.ethers.provider.send('eth_blockNumber', []);
 	const block = await hre.ethers.provider.send('eth_getBlockByNumber', [blockNumber, false]);
 	return block.timestamp;
+}
+
+export const provider = (): providers.JsonRpcProvider => hre.ethers.provider
+
+export const latestBlock = (): Promise<BigNumber> =>
+	provider().send('eth_blockNumber', []).then(toBN)
+
+export const advanceBlock = (): Promise<void> => {
+	return provider().send('evm_mine', [])
+}
+
+export const advanceBlockTo = async (blockNumber: string | number | BigNumber): Promise<void> => {
+	const target =
+		typeof blockNumber === 'number' || typeof blockNumber === 'string'
+			? toBN(blockNumber)
+			: blockNumber
+	const currentBlock = await latestBlock()
+	const start = Date.now()
+	let notified
+	if (target.lt(currentBlock))
+		throw Error(`Target block #(${target}) is lower than current block #(${currentBlock})`)
+	while ((await latestBlock()).lt(target)) {
+		if (!notified && Date.now() - start >= 5000) {
+			notified = true
+			console.log(`advanceBlockTo: Advancing too ` + 'many blocks is causing this test to be slow.')
+		}
+		await advanceBlock()
+	}
+}
+
+export const advanceBlocks = async (blocks: string | number | BigNumber) => {
+	const steps = typeof blocks === 'number' || typeof blocks === 'string' ? toBN(blocks) : blocks
+	const currentBlock = await latestBlock()
+	const toBlock = currentBlock.add(steps)
+	await advanceBlockTo(toBlock)
+}
+
+export const advanceToNextEpoch = async (epochManager: EpochManager): Promise<void> => {
+	const currentBlock = await latestBlock()
+	const epochLength = await epochManager.epochLength()
+	const nextEpochBlock = currentBlock.add(epochLength)
+	await advanceBlockTo(nextEpochBlock)
 }
 
 export interface CreateProfileReturningTokenIdStruct {
@@ -164,6 +211,21 @@ export async function getSetDefaultProfileWithSigParts(
 	const msgParams = buildSetDefaultProfileWithSigParams(
 		profileId, 
 		wallet, 
+		nonce, 
+		deadline
+	);
+	return await getSig(msgParams);
+}
+
+export async function getCollectWithSigParts(
+	curationId: BigNumberish,
+	collectMetaData: Bytes | string,
+	nonce: number,
+	deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+	const msgParams = buildCollectWithSigParams(
+		curationId, 
+		collectMetaData,
 		nonce, 
 		deadline
 	);
@@ -278,6 +340,29 @@ const buildBCTPermitWithSigParams = (
 		value: value,
 		nonce: nonce,
 		deadline: deadline
+	},
+});
+
+const buildCollectWithSigParams = (
+	curationId: BigNumberish,
+	collectMetaData: Bytes | string,
+	nonce: number,
+	deadline: string
+) => ({
+	types: {
+		CollectWithSig: [
+			{ name: 'curationId', type: 'uint256' },
+			{ name: 'collectMetaData', type: 'bytes' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'deadline', type: 'uint256' },
+		],
+	},
+	domain: domain(),
+	value: {
+		curationId: curationId,
+		collectMetaData: collectMetaData,
+		nonce: nonce,
+		deadline: deadline,
 	},
 });
 
@@ -472,4 +557,26 @@ export const deriveChannelKey = (): ChannelKey => {
 			return w.signMessage(messageHashBytes)
 		},
 	}
+}
+
+export interface CollectReturningPairStruct {
+	sender?: Signer;
+	vars: DataTypes.DoCollectDataStruct | DataTypes.DoCollectWithSigDataStruct;
+}
+
+export async function collectReturningTokenPair({
+	sender = user,
+	vars,
+}: CollectReturningPairStruct): Promise<[string, BigNumber]> {
+	let tokenPair: [string, BigNumber];
+	if ('sig' in vars) {
+		tokenPair = await bardsHub.connect(sender).callStatic.collectWithSig(vars);
+		await expect(bardsHub.connect(sender).collectWithSig(vars)).to.not.be.reverted;
+	} else {
+		tokenPair = await bardsHub
+			.connect(sender)
+			.callStatic.collect(vars);
+		await expect(bardsHub.connect(sender).collect(vars)).to.not.be.reverted;
+	}
+	return tokenPair;
 }
