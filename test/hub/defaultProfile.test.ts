@@ -157,7 +157,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
 				// .to.be.revertedWithCustomError(
 				// 	errorsLib,
 				// 	ERRORS.SIGNATURE_INVALID
@@ -184,7 +184,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: '0',
 						},
 					})
-				).to.be.revertedWith('SignatureExpired');
+				).to.be.revertedWith(ERRORS.SIGNATURE_EXPIRED);
 				// .to.be.revertedWithCustomError(
 				// 	errorsLib, 
 				// 	ERRORS.SIGNATURE_EXPIRED
@@ -211,7 +211,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
 				// .to.be.revertedWithCustomError(
 				// 	errorsLib, 
 				// 	ERRORS.SIGNATURE_INVALID

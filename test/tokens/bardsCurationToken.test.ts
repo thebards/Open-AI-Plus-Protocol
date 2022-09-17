@@ -68,7 +68,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.connect(testWallet).permit({
+				bardsCurationToken.permit({
 					owner: testWallet.address,
 					spender: userAddress,
 					value: tokensToApprove,
@@ -110,7 +110,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.connect(testWallet).permit({
+				bardsCurationToken.permit({
 					owner: testWallet.address,
 					spender: userAddress,
 					value: tokensToApprove,
@@ -153,7 +153,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.connect(testWallet).permit({
+				bardsCurationToken.permit({
 					owner: testWallet.address,
 					spender: userAddress,
 					value: tokensToApprove,
@@ -200,7 +200,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.connect(testWallet).permit({
+				bardsCurationToken.permit({
 					owner: testWallet.address,
 					spender: userAddress,
 					value: tokensToApprove,
@@ -211,7 +211,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 						deadline: '0'
 					},
 				})
-			).to.be.rejectedWith('SignatureExpired');
+			).to.be.revertedWith(ERRORS.SIGNATURE_EXPIRED);
 		})
 
 		it('reject permit if holder address does not match', async function () {
@@ -228,7 +228,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.connect(testWallet).permit({
+				bardsCurationToken.permit({
 					owner: testWallet.address,
 					spender: userTwoAddress,
 					value: tokensToApprove,
@@ -239,7 +239,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 						deadline: MAX_UINT256
 					},
 				})
-			).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+			).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
 			// .revertedWithCustomError(
 			// 	errorsLib,
 			// 	ERRORS.SIGNATURE_INVALID
@@ -260,7 +260,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.connect(testWallet).permit({
+				bardsCurationToken.permit({
 					owner: testWallet.address,
 					spender: userAddress,
 					value: tokensToApprove,

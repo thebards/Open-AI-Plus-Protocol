@@ -82,7 +82,6 @@ contract FreeMarketModule is MarketModuleBase, IMarketModule {
 		address tokenContract,
         uint256 tokenId,
         uint256[] memory curationIds,
-        address[] memory allocationIds,
         bytes memory collectMetaData
     ) 
         external 

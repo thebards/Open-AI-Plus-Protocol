@@ -19,6 +19,7 @@ export const BARDS_HUB_NFT_SYMBOL = 'TBH';
 export const BARDS_CURATION_TOKEN_NAME = 'Bards Curation Token';
 export const BARDS_CURATION_TOKEN_SYMBOL = 'BCT';
 export const MOCK_PROFILE_HANDLE = 'thebards.bpp';
+export const MOCK_PROFILE_HANDLE2 = 'thebards2.bpp';
 export const MOCK_PROFILE_CONTENT_URI = 'https://thebards.xyz';
 
 export const DEFAULTS = {

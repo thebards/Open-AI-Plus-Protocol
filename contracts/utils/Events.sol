@@ -69,6 +69,15 @@ library Events {
     );
 
     /**
+     * @notice Emitted when `curationId` set `allocationId` access.
+     */
+    event AllocationIdSet(
+        uint256 curationId,
+        address allocationId,
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when the emergency admin is changed. We emit the caller even though it should be the previous
      * governance address, as we cannot guarantee this will always be the case due to upgradeability.
      *
@@ -123,12 +132,36 @@ library Events {
     /**
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
-     * @param sellerBpses The fee that is sent to the sellers.
+     * @param curationFundsRecipients The curation Ids where funds are sent after the trade.
      * @param timestamp The current block timestamp.
      */
-    event CurationSellerBpsesUpdated(
+    event CurationFundsRecipientsUpdated(
         uint256 indexed tokenId, 
-        uint32[] sellerBpses, 
+        uint256[] curationFundsRecipients, 
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when the fee for a NFT is updated.
+     * @param tokenId The token Id of a NFT.
+     * @param sellerFundsBpses The fee that is sent to the sellers.
+     * @param timestamp The current block timestamp.
+     */
+    event CurationSellerFundsBpsesUpdated(
+        uint256 indexed tokenId, 
+        uint32[] sellerFundsBpses, 
+        uint256 timestamp
+    );
+
+    /**
+     * @notice Emitted when the fee for a NFT is updated.
+     * @param tokenId The token Id of a NFT.
+     * @param curationFundsBpses The fee that is sent to the curations.
+     * @param timestamp The current block timestamp.
+     */
+    event CurationFundsBpsesUpdated(
+        uint256 indexed tokenId, 
+        uint32[] curationFundsBpses, 
         uint256 timestamp
     );
    
@@ -426,14 +459,12 @@ library Events {
      * 
      * @param tokenContract The ERC-721 token address of the curation fee payout
      * @param tokenId The ERC-721 token ID of the curation fee payout
-     * @param recipient The recipient address of the curation fee
      * @param amount The amount paid to the recipient
      * @param timestamp The current block timestamp.
      */
     event CurationFeePayout(
         address indexed tokenContract, 
         uint256 indexed tokenId,
-        address recipient,
         uint256 amount,
         uint256 timestamp
     );

@@ -37,6 +37,10 @@ abstract contract BardsHubStorage {
         keccak256(
             'SetDispatcherWithSig(uint256 profileId,address dispatcher,uint256 nonce,uint256 deadline)'
         );
+    bytes32 internal constant SET_ALLOCATION_ID_WITH_SIG_TYPEHASH =
+        keccak256(
+            'SetAllocationIdWithSig(uint256 curationId,address allocationId,uint256 nonce,uint256 deadline)'
+        );
 
 	uint256 internal _curationCounter;
     address internal _governance;
@@ -61,5 +65,7 @@ abstract contract BardsHubStorage {
 	mapping(uint256 => DataTypes.CurationStruct) internal _curationById;
 	// curation id (or profile) -> curation id -> bool
 	mapping(uint256 => mapping(uint256 => bool)) internal _isMintedByIdById;
+    // curation id => Allocation Id
+    mapping(uint256 => address) internal _allocationIdById;
 
 }

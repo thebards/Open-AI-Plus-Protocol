@@ -83,6 +83,31 @@ library DataTypes {
     }
 
     /**
+     * @notice A struct containing the parameters required for the `SetAllocationIdData()` function. 
+     *
+     * @param allocationId The address of the allocation.
+     * @param curationId The token ID of the curation .
+     */
+    struct SetAllocationIdData {
+        address allocationId;
+        uint256 curationId;
+    }
+
+    /**
+     * @notice A struct containing the parameters required for the `setAllocationIdWithSig()` function. Parameters are
+     * the same as the regular `setAllocationId()` function, with an added EIP712Signature.
+     *
+     * @param allocationId The address of the allocation.
+     * @param curationId The token ID of the curation .
+     * @param sig The EIP712Signature struct containing the profile owner's signature.
+     */
+    struct SetAllocationIdWithSigData {
+        address allocationId;
+        uint256 curationId;
+        EIP712Signature sig;
+    }
+
+    /**
      * @notice A struct containing the parameters required for the `setDefaultProfileWithSig()` function. Parameters are
      * the same as the regular `setDefaultProfile()` function, with an added EIP712Signature.
      *
@@ -136,17 +161,18 @@ library DataTypes {
     /**
      * @notice Contains the curation BPS and staking BPSfor every Curation.
      *
-	 * @param sellers The addresses of the sellers.
 	 * @param sellerFundsRecipients The addresses where funds are sent after the trade.
-	 * @param sellerBpses The fee that is sent to the sellers.
+	 * @param curationFundsRecipients The curation Id where funds are sent after the trade.
+	 * @param sellerFundsBpses The fee percents that is sent to the sellers.
+	 * @param curationFundsBpses The fee percents that is sent to the curation.
 	 * @param curationBps The points fee of willing to share of the NFT income to curators.
 	 * @param stakingBps The points fee of willing to share of the NFT income to delegators who staking tokens.
-     * @param treasury The recipient of the fee
      */
     struct CurationData {
-		address[] sellers;
         address[] sellerFundsRecipients;
-		uint32[] sellerBpses;
+        uint256[] curationFundsRecipients;
+		uint32[] sellerFundsBpses;
+        uint32[] curationFundsBpses;
 		uint32 curationBps;
 		uint32 stakingBps;
     }
@@ -244,7 +270,6 @@ library DataTypes {
      * @param collector The address executing the collect.
      * @param curationId The token ID of the curation being collected's parent profile.
      * @param curationIds A array of curation IDs sharing trade fees.
-     * @param allocationIds A array of allocation IDs.
      * @param collectMetaData The meta data for collecting.
      * @param fromCuration Whether to mint from scratch in curation.
      * 
@@ -253,7 +278,6 @@ library DataTypes {
         address collector;
         uint256 curationId;
         uint256[] curationIds;
-        address[] allocationIds;
         bytes collectMetaData;
         bool fromCuration;
     }
@@ -264,7 +288,6 @@ library DataTypes {
      * @param collector The address executing the collect.
      * @param curationId The token ID of the curation being collected's parent profile.
      * @param curationIds A array of curation IDs sharing trade fees.
-     * @param allocationIds A array of allocation IDs.
      * @param collectMetaData The meta data for collecting.
      * @param fromCuration Whether to mint from scratch in curation.
      * @param sig
@@ -273,7 +296,6 @@ library DataTypes {
         address collector;
         uint256 curationId;
         uint256[] curationIds;
-        address[] allocationIds;
         bytes collectMetaData;
         bool fromCuration;
         EIP712Signature sig;
@@ -287,7 +309,6 @@ library DataTypes {
      * @param tokenContract The address of token.
      * @param tokenId The token id.
      * @param curationIds A array of curation IDs sharing trade fees.
-     * @param allocationIds A array of allocation IDs.
      * @param collectMetaData The meta data for collecting.
      * 
      */
@@ -297,7 +318,6 @@ library DataTypes {
         address tokenContract;
         uint256 tokenId;
         uint256[] curationIds;
-        address[] allocationIds;
         bytes collectMetaData;
     }
 

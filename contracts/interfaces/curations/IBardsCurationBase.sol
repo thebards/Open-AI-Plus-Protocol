@@ -21,15 +21,6 @@ interface IBardsCurationBase {
 				/* GETTERs */
 
 	/**
-     * @notice Returns the sellers associated with a given NFT, stored only once upon initial mint.
-     *
-     * @param tokenId The token ID of the NFT to query the curation BPS for.
-     *
-     * @return address[] The addresses of the sellers
-     */
-    function sellersOf(uint256 tokenId) external view returns (address[] memory);
-	
-	/**
      * @notice Returns the sellerFundsRecipients associated with a given NFT, stored only once upon initial mint.
      *
      * @param tokenId The token ID of the NFT to query the curation BPS for.
@@ -39,13 +30,32 @@ interface IBardsCurationBase {
     function sellerFundsRecipientsOf(uint256 tokenId) external view returns (address[] memory);
 
 	/**
-     * @notice Returns the sellerBpses associated with a given NFT, stored only once upon initial mint.
+     * @notice Returns the curationFundsRecipients associated with a given NFT, stored only once upon initial mint.
+     *
+     * @param tokenId The token ID of the NFT to query the curation BPS for.
+     *
+     * @return uint256[] The addresses of the sellers
+     */
+    function curationFundsRecipientsOf(uint256 tokenId) external view returns (uint256[] memory);
+
+	/**
+     * @notice Returns the sellerFundsBpses associated with a given NFT, stored only once upon initial mint.
      *
      * @param tokenId The token ID of the NFT to query the curation BPS for.
      *
      * @return uint32[] The fee that is sent to the sellers.
      */
-    function sellerBpsesOf(uint256 tokenId) external view returns (uint32[] memory);
+    function sellerFundsBpsesOf(uint256 tokenId) external view returns (uint32[] memory);
+
+	/**
+     * @notice Returns the curationFundsBpses associated with a given NFT, stored only once upon initial mint.
+     *
+     * @param tokenId The token ID of the NFT to query the curation BPS for.
+     *
+     * @return uint32[] The fee that is sent to the sellers.
+     */
+    function curationFundsBpsesOf(uint256 tokenId) external view returns (uint32[] memory);
+
 
 	/**
      * @notice Returns the curation BPS associated with a given NFT, stored only once upon initial mint.
@@ -95,28 +105,37 @@ interface IBardsCurationBase {
 				/* SETTERs */
 
     /**
-     * @notice Sets the addresses of the sellers for a NFT.
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param sellers The addresses of the sellers.
-     */
-    function setSellersParams(uint256 tokenId, address[] calldata sellers) external;
-
-    /**
      * @notice Sets the sellerFundsRecipients of the sellers for a NFT
      * 
      * @param tokenId The token Id of the NFT to set fee params.
-     * @param sellerFundsRecipients The bps of curation
+     * @param sellerFundsRecipients The bpses of seller funds
      */
     function setSellerFundsRecipientsParams(uint256 tokenId, address[] calldata sellerFundsRecipients) external;
+
+    /**
+     * @notice Sets the curationFundsRecipients of the sellers for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param curationFundsRecipients The bpses of curation funds
+     */
+    function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) external;
+
 
     /**
      * @notice Sets the fee that is sent to the sellers for a NFT
      * 
      * @param tokenId The token Id of the NFT to set fee params.
-     * @param sellerBpses The fee that is sent to the sellers.
+     * @param sellerFundsBpses The fee that is sent to the sellers.
      */
-    function setSellerBpsesParams(uint256 tokenId, uint32[] calldata sellerBpses) external;
+    function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) external;
+
+    /**
+     * @notice Sets the fee that is sent to the curation for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param curationFundsBpses The fee that is sent to the curations.
+     */
+    function setCurationFundsBpsesParams(uint256 tokenId, uint32[] calldata curationFundsBpses) external;
 
 	/**
      * @notice Sets fee parameters for a NFT

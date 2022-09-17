@@ -944,8 +944,8 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 					[userAddress, bardsCurationToken.address, 100000, userAddress, transferMinter.address]
 				);
 				const mockCurationMetaData = abiCoder.encode(
-					['address[]', 'address[]', 'uint32[]', 'uint32', 'uint32'],
-					[[userAddress], [userAddress], [1000000], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
+					['address[]', 'uint256[]', 'uint32[]', 'uint32[]', 'uint32', 'uint32'],
+					[[userAddress], [], [1000000], [], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
 				);
 
 				await expect(
@@ -1006,7 +1006,6 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						collector: userAddress,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
-						allocationIds: [],
 						collectMetaData: [],
 						fromCuration: false
 					})
@@ -1029,7 +1028,6 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 				// 		collector: userAddress,
 				// 		curationId: FIRST_PROFILE_ID + 1,
 				// 		curationIds: [],
-				// 		allocationIds: [],
 				// 		collectMetaData: [],
 				// 		fromCuration: false
 				// 	})

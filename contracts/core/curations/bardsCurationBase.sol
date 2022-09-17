@@ -21,12 +21,12 @@ import '../../utils/DataTypes.sol';
 abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, BardsNFTBase {
 	/**
      * @notice The curation for a given NFT, if one exists
-     * @dev ERC-721 token id => Curation
+     * @notice ERC-721 token id => Curation
 	 */
     mapping(uint256 => DataTypes.CurationData) private _curationData;
 
 	/**
-     * @dev See {IBardsCurationBase-createCuration}
+     * @notice See {IBardsCurationBase-createCuration}
      */
 	function initializeCuration(DataTypes.InitializeCurationData memory _vars)
 		public
@@ -39,24 +39,29 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			// 	"Creating curation must be token owner or operator"
 			// );
 			(
-				address[] memory sellers,
 				address[] memory sellerFundsRecipients,
-				uint32[] memory sellerBpses,
+				uint256[] memory curationFundsRecipients,
+				uint32[] memory sellerFundsBpses,
+				uint32[] memory curationFundsBpses,
 				uint32 curationBps,
 				uint32 stakingBps
 			) = abi.decode(
 					_vars.curationData, 
-					(address[], address[], uint32[], uint32, uint32)
+					(address[], uint256[], uint32[], uint32[], uint32, uint32)
 				);
 
 			require(
-				sellers.length == sellerFundsRecipients.length && 
-				sellers.length == sellerBpses.length, 
-				"Sellers, sellerFundsRecipients, and sellerBpses must have same length."
+				sellerFundsBpses.length == sellerFundsRecipients.length, 
+				"sellerFundsRecipients and sellerFundsBpses must have same length."
 			);
 			require(
-				MathUtils.sum(MathUtils.uint32To256Array(sellerBpses)) == Constants.MAX_BPS, 
-				"The sum of Sellers fee bps must be equal to 1000000."
+				curationFundsRecipients.length == curationFundsBpses.length, 
+				"curationFundsRecipients and curationFundsBpses must have same length."
+			);
+			require(
+				MathUtils.sum(MathUtils.uint32To256Array(sellerFundsBpses)) + 
+				MathUtils.sum(MathUtils.uint32To256Array(curationFundsBpses)) == Constants.MAX_BPS, 
+				"The sum of sellerFundsBpses and curationFundsBpses must be equal to 1000000."
 			);
 			require(
 				curationBps + stakingBps <= Constants.MAX_BPS, 
@@ -64,31 +69,23 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			);
 
 			_curationData[_vars.tokenId] = DataTypes.CurationData({
-				sellers: sellers,
 				sellerFundsRecipients: sellerFundsRecipients,
-				sellerBpses: sellerBpses,
+				curationFundsRecipients: curationFundsRecipients,
+				sellerFundsBpses: sellerFundsBpses,
+				curationFundsBpses: curationFundsBpses,
 				curationBps: curationBps,
 				stakingBps: stakingBps
 			});
 			
-			emit Events.CurationInitialized(_vars.tokenId, _vars.curationData, block.timestamp);
+			emit Events.CurationInitialized(
+				_vars.tokenId, 
+				_vars.curationData, 
+				block.timestamp
+			);
 		}
 
 	/**
-     * @dev See {IBardsCurationBase-sellersOf}
-     */
-	function sellersOf(uint256 tokenId)
-		external
-		view
-		virtual
-		override
-		returns (address[] memory) {
-			address[] memory sellers = _curationData[tokenId].sellers;
-			return sellers;
-		}
-
-	/**
-     * @dev See {IBardsCurationBase-sellerFundsRecipientsOf}
+     * @notice See {IBardsCurationBase-sellerFundsRecipientsOf}
      */
 	function sellerFundsRecipientsOf(uint256 tokenId)
 		external
@@ -101,20 +98,48 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		}
 
 	/**
-     * @dev See {IBardsCurationBase-sellerBpsesOf}
+     * @notice See {IBardsCurationBase-sellerFundsRecipientsOf}
      */
-	function sellerBpsesOf(uint256 tokenId)
+	function curationFundsRecipientsOf(uint256 tokenId)
 		external
 		view
 		virtual
 		override
-		returns (uint32[] memory) {
-			uint32[] memory sellerBpses = _curationData[tokenId].sellerBpses;
-			return sellerBpses;
+		returns (uint256[] memory) {
+			uint256[] memory curationFundsRecipients = _curationData[tokenId].curationFundsRecipients;
+			return curationFundsRecipients;
 		}
 
 	/**
-     * @dev See {IBardsCurationBase-curationBpsOf}
+     * @notice See {IBardsCurationBase-sellerBpsesOf}
+     */
+	function sellerFundsBpsesOf(uint256 tokenId)
+		external
+		view
+		virtual
+		override
+		returns (uint32[] memory) 
+	{
+		uint32[] memory sellerFundsBpses = _curationData[tokenId].sellerFundsBpses;
+		return sellerFundsBpses;
+	}
+
+	/**
+     * @notice See {IBardsCurationBase-curationFundsBpsesOf}
+     */
+	function curationFundsBpsesOf(uint256 tokenId)
+		external
+		view
+		virtual
+		override
+		returns (uint32[] memory) 
+	{
+		uint32[] memory curationFundsBpses = _curationData[tokenId].curationFundsBpses;
+		return curationFundsBpses;
+	}
+
+	/**
+     * @notice See {IBardsCurationBase-curationBpsOf}
      */
     function curationBpsOf(uint256 tokenId) 
 		external 
@@ -128,7 +153,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
     	}
 
 	/**
-     * @dev See {IBardsCurationBase-stakingBpsOf}
+     * @notice See {IBardsCurationBase-stakingBpsOf}
      */
     function stakingBpsOf(uint256 tokenId) 
 		external 
@@ -142,7 +167,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
    	}
 
 	    /**
-     * @dev See {IBardsCurationBase-curationDataOf}
+     * @notice See {IBardsCurationBase-curationDataOf}
      */
     function curationDataOf(uint256 tokenId)
         external
@@ -157,43 +182,71 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
    		 }
 
 	/**
-     * @dev See {IBardsCurationBase-setSellersParams}.
-     */
-	function setSellersParams(uint256 tokenId, address[] calldata sellers) 
-		external 
-		virtual 
-		override {
-			_curationData[tokenId].sellers = sellers;
-
-			emit Events.CurationSellersUpdated(tokenId, sellers, block.timestamp);
-		}
-
-	/**
-     * @dev See {IBardsCurationBase-setSellerFundsRecipientsParams}.
+     * @notice See {IBardsCurationBase-setSellerFundsRecipientsParams}.
      */
 	function setSellerFundsRecipientsParams(uint256 tokenId, address[] calldata sellerFundsRecipients) 
 		external 
 		virtual 
-		override {
-			_curationData[tokenId].sellerFundsRecipients = sellerFundsRecipients;
+		override 
+	{
+		_curationData[tokenId].sellerFundsRecipients = sellerFundsRecipients;
 
-			emit Events.CurationSellerFundsRecipientsUpdated(tokenId, sellerFundsRecipients, block.timestamp);
-		}
+		emit Events.CurationSellerFundsRecipientsUpdated(tokenId, sellerFundsRecipients, block.timestamp);
+	}
 
 	/**
-     * @dev See {IBardsCurationBase-setSellerBpsesParams}.
+     * @notice See {IBardsCurationBase-setCurationFundsRecipientsParams}.
      */
-	function setSellerBpsesParams(uint256 tokenId, uint32[] calldata sellerBpses) 
+	function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) 
 		external 
 		virtual 
-		override {
-			_curationData[tokenId].sellerBpses = sellerBpses;
+		override 
+	{
+		_curationData[tokenId].curationFundsRecipients = curationFundsRecipients;
 
-			emit Events.CurationSellerBpsesUpdated(tokenId, sellerBpses, block.timestamp);
-		}
+		emit Events.CurationFundsRecipientsUpdated(
+			tokenId, 
+			curationFundsRecipients, 
+			block.timestamp
+		);
+	}
 
 	/**
-     * @dev See {IBardsCurationBase-setCurationFeeParams}.
+     * @notice See {IBardsCurationBase-setSellerFundsBpsesParams}.
+     */
+	function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) 
+		external 
+		virtual 
+		override 
+	{
+		_curationData[tokenId].sellerFundsBpses = sellerFundsBpses;
+
+		emit Events.CurationSellerFundsBpsesUpdated(
+			tokenId, 
+			sellerFundsBpses, 
+			block.timestamp
+		);
+	}
+
+	/**
+     * @notice See {IBardsCurationBase-setCurationFundsBpsesParams}.
+     */
+	function setCurationFundsBpsesParams(uint256 tokenId, uint32[] calldata curationFundsBpses) 
+		external 
+		virtual 
+		override 
+	{
+		_curationData[tokenId].curationFundsBpses = curationFundsBpses;
+
+		emit Events.CurationFundsBpsesUpdated(
+			tokenId, 
+			curationFundsBpses, 
+			block.timestamp
+		);
+	}
+
+	/**
+     * @notice See {IBardsCurationBase-setCurationFeeParams}.
      */
 	function setCurationBpsParams(uint256 tokenId, uint32 curationBps) 
 		external 
@@ -207,7 +260,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		}
 
 	/**
-     * @dev See {IBardsCurationBase-setStakingBpsParams}.
+     * @notice See {IBardsCurationBase-setStakingBpsParams}.
      */
 	function setStakingBpsParams(uint256 tokenId, uint32 stakingBps) 
 		external 
@@ -221,7 +274,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		}
 
 	/**
-     * @dev See {IBardsCurationBase-setBpsParams}.
+     * @notice See {IBardsCurationBase-setBpsParams}.
      */
 	function setBpsParams(uint256 tokenId, uint32 curationBps, uint32 stakingBps) 
 		external 
@@ -237,7 +290,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		}
 
 	/**
-	 * @dev see {IBardsCurationBase-getCurationFeeAmount}
+	 * @notice see {IBardsCurationBase-getCurationFeeAmount}
 	 */
 	function getCurationFeeAmount(uint256 tokenId, uint256 amount)
         external 
@@ -249,7 +302,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		}
 
 	/**
-	 * @dev see {IBardsCurationBase-getCurationFeeAmount}
+	 * @notice see {IBardsCurationBase-getCurationFeeAmount}
 	 */
 	function getStakingFeeAmount(uint256 tokenId, uint256 amount) 
 		external 

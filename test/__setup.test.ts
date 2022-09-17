@@ -364,8 +364,8 @@ before(async function () {
 		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, emptyMinter.address]
 	);
 	mockCurationMetaData = abiCoder.encode(
-		['address[]', 'address[]', 'uint32[]', 'uint32', 'uint32'],
-		[[ZERO_ADDRESS], [ZERO_ADDRESS], [1000000], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
+		['address[]', 'uint256[]', 'uint32[]', 'uint32[]', 'uint32', 'uint32'],
+		[[userAddress], [], [1000000], [], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
 	);
 });
 

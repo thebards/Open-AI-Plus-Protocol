@@ -103,7 +103,6 @@ makeSuiteCleanRoom('Collecting', function () {
 						collector: userAddress,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
-						allocationIds: [],
 						collectMetaData: collectMetaData,
 						fromCuration: false
 					})
@@ -122,7 +121,6 @@ makeSuiteCleanRoom('Collecting', function () {
 						collector: userAddress,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
-						allocationIds: [],
 						collectMetaData: collectMetaData,
 						fromCuration: false
 					},
@@ -155,7 +153,6 @@ makeSuiteCleanRoom('Collecting', function () {
 							collector: testWallet.address,
 							curationId: FIRST_PROFILE_ID + 1,
 							curationIds: [],
-							allocationIds: [],
 							collectMetaData: collectMetaData,
 							fromCuration: false,
 							sig: {
@@ -188,7 +185,6 @@ makeSuiteCleanRoom('Collecting', function () {
 						collector: testWallet.address,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
-						allocationIds: [],
 						collectMetaData: collectMetaData,
 						fromCuration: false,
 						sig: {
@@ -220,7 +216,6 @@ makeSuiteCleanRoom('Collecting', function () {
 						collector: testWallet.address,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
-						allocationIds: [],
 						collectMetaData: collectMetaData,
 						fromCuration: false,
 						sig: {
@@ -254,7 +249,6 @@ makeSuiteCleanRoom('Collecting', function () {
 						collector: testWallet.address,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
-						allocationIds: [],
 						collectMetaData: collectMetaData,
 						fromCuration: false,
 						sig: {

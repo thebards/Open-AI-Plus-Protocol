@@ -225,7 +225,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
 				// .to.be.revertedWithCustomError(
 				// 	errorsLib,
 				// 	ERRORS.SIGNATURE_INVALID
@@ -301,7 +301,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
 				// .to.be.revertedWithCustomError(
 				// 	errorsLib,
 				// 	ERRORS.SIGNATURE_INVALID
@@ -374,7 +374,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 							deadline: MAX_UINT256,
 						},
 					})
-				).to.be.rejectedWith(ERRORS.SIGNATURE_INVALID);
+				).to.be.revertedWith(ERRORS.SIGNATURE_INVALID);
 				// .to.be.revertedWithCustomError(
 				// 	errorsLib,
 				// 	ERRORS.SIGNATURE_INVALID

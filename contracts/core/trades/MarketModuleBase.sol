@@ -236,8 +236,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
         uint256 _tokenId,
         uint256 _amount,
         address _payoutCurrency,
-        uint256[] memory _curationIds,
-        address[] memory _allocationIds
+        uint256[] memory _curationIds
     ) internal returns (uint256){
         if (_amount == 0) return _amount;
 
@@ -247,8 +246,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
         // Store the initial amount
         uint256 amountRemaining = _amount;
 
-        // Store the variables that cache each recipient, amount, and curationBps.
-        address recipient;
+        // Store the variables that cache each amount, and curationBps.
         uint256 amount;
         uint32 curationBps;
 
@@ -268,13 +266,12 @@ abstract contract MarketModuleBase is ContractRegistrar {
             bardsStaking().collect(
                 _payoutCurrency, 
                 amount, 
-                _allocationIds[i]
+                bardsHub().getAllocationIdById(_curationIds[i])
             );
 
             emit Events.CurationFeePayout(
                 _tokenContract, 
                 _tokenId, 
-                recipient, 
                 amount, 
                 block.timestamp
             );
@@ -315,21 +312,21 @@ abstract contract MarketModuleBase is ContractRegistrar {
      * @param _tokenId, The Token ID to get royalty information from
      * @param _amount The sale amount to pay out.
      * @param _payoutCurrency The currency to pay out
-     * @param _sellerFundsRecipients The addresses where funds are sent after the trade.
-     * @param _sellerBpses The fee that is sent to the sellers.
+     * @param curationId The curattion ID where funds are split after the trade.
      */
     function _handleSellersSplitPayout(
         address _tokenContract,
         uint256 _tokenId,
         uint256 _amount,
         address _payoutCurrency,
-        address[] memory _sellerFundsRecipients,
-        uint32[] memory _sellerBpses
+        uint256 curationId
     ) internal returns (uint256){
         if (_amount == 0) return _amount;
 
+        DataTypes.CurationData memory curationData = IBardsCurationBase(_tokenContract).curationDataOf(curationId);
+
         // Store the number of recipients
-        uint256 numRecipients = _sellerFundsRecipients.length;
+        uint256 numRecipients = curationData.sellerFundsRecipients.length;
 
         // Store the initial amount
         uint256 amountRemaining = _amount;
@@ -341,8 +338,8 @@ abstract contract MarketModuleBase is ContractRegistrar {
         // Payout each royalty
         for (uint256 i = 0; i < numRecipients; ) {
             // Cache the recipient and amount
-            recipient = _sellerFundsRecipients[i];
-            amount = (_amount * _sellerBpses[i]) / Constants.MAX_BPS;
+            recipient = curationData.sellerFundsRecipients[i];
+            amount = (_amount * curationData.sellerFundsBpses[i]) / Constants.MAX_BPS;
 
             // Ensure that we aren't somehow paying out more than we have
             require(amountRemaining >= amount, "insolvent");
@@ -350,7 +347,44 @@ abstract contract MarketModuleBase is ContractRegistrar {
             // Transfer to the recipient
             _handlePayout(recipient, amount, _payoutCurrency, 50000);
 
-            emit Events.SellFeePayout(_tokenContract, _tokenId, recipient, amount, block.timestamp);
+            emit Events.SellFeePayout(
+                _tokenContract, 
+                _tokenId, 
+                recipient, 
+                amount, 
+                block.timestamp
+            );
+
+            // Cannot underflow as remaining amount is ensured to be greater than or equal to _amount
+            unchecked {
+                amountRemaining -= amount;
+                ++i;
+            }
+        }
+
+        numRecipients = curationData.curationFundsRecipients.length;
+        uint256 curationRecipient;
+        for (uint256 i = 0; i < numRecipients; ) {
+            // Cache the recipient and amount
+            curationRecipient = curationData.curationFundsRecipients[i];
+            amount = (_amount * curationData.curationFundsBpses[i]) / Constants.MAX_BPS;
+
+            // Ensure that we aren't somehow paying out more than we have
+            require(amountRemaining >= amount, "insolvent");
+
+            // Transfer to the recipient
+            bardsStaking().collect(
+                _payoutCurrency,
+                amount,
+                bardsHub().getAllocationIdById(curationId)
+            );
+
+            emit Events.CurationFeePayout(
+                _tokenContract, 
+                _tokenId, 
+                amount, 
+                block.timestamp
+            );
 
             // Cannot underflow as remaining amount is ensured to be greater than or equal to _amount
             unchecked {

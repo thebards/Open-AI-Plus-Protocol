@@ -91,7 +91,6 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
 		address tokenContract,
         uint256 tokenId,
         uint256[] memory curationIds,
-        address[] memory allocationIds,
         bytes memory collectMetaData
     ) 
         external 
@@ -100,6 +99,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
     {
         // Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
         address _collector = collector;
+        uint256 _curationId = curationId;
         // The price and currency of NFT.
         DataTypes.FixPriceMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
 
@@ -119,7 +119,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
         uint256 curationFee;
         if (tokenContract == HUB) {
             // The fee split setting of curation.
-		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(curationId);
+		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(_curationId);
             // collect curation
             curationFee = remainingProfit.mul(uint256(curationData.curationBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
@@ -128,14 +128,13 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 tokenId,
                 curationFee,
                 marketData.currency,
-                curationIds,
-                allocationIds
+                curationIds
             );
             // collect staking
             uint256 stakingFee = remainingProfit.mul(uint256(curationData.stakingBps)).div(Constants.MAX_BPS);
             remainingProfit -= stakingFee;
             _handleStakingPayout(
-                curationId,
+                _curationId,
                 marketData.currency,
                 stakingFee
             );
@@ -146,9 +145,9 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 tokenId,
                 remainingProfit,
                 marketData.currency,
-                curationData.sellerFundsRecipients,
-                curationData.sellerBpses
+                _curationId
             );
+
         } else {
             // using default curation and staking bps setting.
             // payout curation
@@ -159,8 +158,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 tokenId,
                 curationFee,
                 marketData.currency,
-                curationIds,
-                allocationIds
+                curationIds
             );
 
             _handlePayout(

@@ -33,7 +33,6 @@ interface IMarketModule {
      * @param tokenContract The address of content NFT contract.
      * @param tokenId The token ID of content NFT contract.
      * @param curationIds the list of curation id, who act curators.
-     * @param allocationIds The list of allocation id.
      * @param collectMetaData The meta data of collect.
      */
     function collect(
@@ -42,7 +41,6 @@ interface IMarketModule {
         address tokenContract,
         uint256 tokenId,
         uint256[] memory curationIds,
-        address[] memory allocationIds,
         bytes memory collectMetaData
     ) external returns (address, uint256);
 	

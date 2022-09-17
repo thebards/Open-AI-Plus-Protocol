@@ -268,7 +268,6 @@ library CurationHelpers {
             curation.tokenContractPointed,
             curation.tokenIdPointed,
             _vars.curationIds,
-            _vars.allocationIds,
             _vars.collectMetaData
         );
 

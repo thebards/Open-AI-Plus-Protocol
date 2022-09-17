@@ -155,6 +155,22 @@ interface IBardsHub {
 		external;
 
     /**
+     * @notice Sets the mapping between curation Id and its allocation ID.
+     *
+     * @param vars A SetAllocationIdData struct, including the regular parameters
+     */
+    function setAllocationId(DataTypes.SetAllocationIdData calldata vars) 
+		external;
+
+    /**
+     * @notice Sets the mapping between curation Id and its allocation ID via signature with the specified parameters.
+     *
+     * @param vars A SetAllocationIdWithSigData struct, including the regular parameters and an EIP712Signature struct.
+     */
+    function setAllocationIdWithSig(DataTypes.SetAllocationIdWithSigData calldata vars) 
+		external;
+
+    /**
      * @notice Sets the mapping between wallet and its main profile identity via signature with the specified parameters.
      *
      * @param vars A SetDefaultProfileWithSigData struct, including the regular parameters and an EIP712Signature struct.
@@ -444,6 +460,16 @@ interface IBardsHub {
         view
         returns (DataTypes.CurationStruct memory);
 
-
+    /**
+     * @notice Returns the allocation Id.
+     *
+     * @param curationId The token ID of the curation to query.
+     *
+     * @return allocationId The allocation ID associated with the queried curation.
+     */
+    function getAllocationIdById(uint256 curationId)
+        external
+        view
+        returns (address);
 
 }

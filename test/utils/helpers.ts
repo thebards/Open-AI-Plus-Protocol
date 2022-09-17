@@ -217,6 +217,21 @@ export async function getSetDefaultProfileWithSigParts(
 	return await getSig(msgParams);
 }
 
+export async function getSetAllocationIdWithSigParts(
+	curationId: BigNumberish,
+	allocationId: string,
+	nonce: number,
+	deadline: string
+): Promise<{ v: number; r: string; s: string }> {
+	const msgParams = buildSetAllocationIdWithSigParams(
+		curationId,
+		allocationId,
+		nonce,
+		deadline
+	);
+	return await getSig(msgParams);
+}
+
 export async function getCollectWithSigParts(
 	curationId: BigNumberish,
 	collectMetaData: Bytes | string,
@@ -384,6 +399,29 @@ const buildSetDefaultProfileWithSigParams = (
 	value: {
 		wallet: wallet,
 		profileId: profileId,
+		nonce: nonce,
+		deadline: deadline
+	},
+});
+
+const buildSetAllocationIdWithSigParams = (
+	curationId: BigNumberish,
+	allocationId: string,
+	nonce: number,
+	deadline: string
+) => ({
+	types: {
+		SetAllocationIdWithSig: [
+			{ name: 'curationId', type: 'uint256' },
+			{ name: 'allocationId', type: 'address' },
+			{ name: 'nonce', type: 'uint256' },
+			{ name: 'deadline', type: 'uint256' },
+		],
+	},
+	domain: domain(),
+	value: {
+		curationId: curationId,
+		allocationId: allocationId,
 		nonce: nonce,
 		deadline: deadline
 	},

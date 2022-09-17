@@ -283,6 +283,61 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
+    function setAllocationId(
+        DataTypes.SetAllocationIdData calldata vars
+    )
+        external
+        override
+        whenNotPaused
+    {
+        _validateCallerIsCurationOwnerOrApproved(vars.curationId);
+        _allocationIdById[vars.curationId] = vars.allocationId;
+        
+        emit Events.AllocationIdSet(
+            vars.curationId,
+            vars.allocationId,
+            block.timestamp
+        );
+    }
+
+    /// @inheritdoc IBardsHub
+    function setAllocationIdWithSig(
+        DataTypes.SetAllocationIdWithSigData calldata vars
+    )
+        external
+        override
+        whenNotPaused
+    {
+        address owner = ownerOf(vars.curationId);
+        unchecked {
+            _validateRecoveredAddress(
+                _calculateDigest(
+                    keccak256(
+                        abi.encode(
+                            SET_ALLOCATION_ID_WITH_SIG_TYPEHASH,
+                            vars.curationId,
+                            vars.allocationId,
+                            sigNonces[owner]++,
+                            vars.sig.deadline
+                        )
+                    ),
+                    name()
+                ),
+                owner,
+                vars.sig
+            );
+        }
+
+        _allocationIdById[vars.curationId] = vars.allocationId;
+        
+        emit Events.AllocationIdSet(
+            vars.curationId,
+            vars.allocationId,
+            block.timestamp
+        );
+    }
+
+    /// @inheritdoc IBardsHub
     function setMarketModule(DataTypes.SetMarketModuleData calldata vars)
         external
         override
@@ -510,7 +565,6 @@ contract BardsHub is
                 collector: vars.collector,
                 curationId: vars.curationId,
                 curationIds: vars.curationIds,
-                allocationIds: vars.allocationIds,
                 collectMetaData: vars.collectMetaData,
                 fromCuration: vars.fromCuration
             }),
@@ -602,6 +656,16 @@ contract BardsHub is
         returns (uint256)
     {
         return _defaultProfileByAddress[wallet];
+    }
+
+    /// @inheritdoc IBardsHub
+    function getAllocationIdById(uint256 curationId)
+        external
+        view
+        override
+        returns (address)
+    {
+        return _allocationIdById[curationId];
     }
 
     /// @inheritdoc IBardsHub
