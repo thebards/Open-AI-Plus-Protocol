@@ -135,6 +135,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
         internal
         returns (uint256)
     {
+        console.log(1);
         // Ensure ETH/ERC-20 payment from collector is valid and take custody
         _handleIncomingTransfer(
             collector, 
@@ -143,6 +144,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
             stakingAddress
         );
 
+        console.log(2);
         // Payout respective parties, ensuring royalties are honored
         (uint256 remainingProfit, ) = _handleRoyaltyPayout(
             tokenContract, 
@@ -152,6 +154,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
             Constants.USE_ALL_GAS_FLAG
         );
 
+        console.log(3);
         // Payout protocol fee
         uint256 protocolFee = getFeeAmount(remainingProfit);
         address protocolTreasury = getTreasury();
@@ -205,9 +208,11 @@ abstract contract MarketModuleBase is ContractRegistrar {
         address _to
     ) 
     internal {
-        // if (msg.sender == HUB){
-        //     revert Errors.NoAllowance();
-        // }
+        if (_buyer == _to){
+            return;
+        }
+        require(_buyer != _to, "Buyer is same with seller.");
+
         if (_currency == address(0)) {
             require(msg.value >= _amount, "_handleIncomingTransfer msg value less than expected amount");
         } else {
@@ -216,7 +221,7 @@ abstract contract MarketModuleBase is ContractRegistrar {
             // full amount to the market, resulting in potentally locked funds
             IERC20 token = IERC20(_currency);
             uint256 beforeBalance = token.balanceOf(_to);
-            TokenUtils.transfer(IERC20(_currency), _buyer, _amount, _to);
+            TokenUtils.transfer(token, _buyer, _amount, _to);
             // IERC20(_currency).safeTransferFrom(_buyer, _to, _amount);
             uint256 afterBalance = token.balanceOf(_to);
             require(beforeBalance + _amount == afterBalance, "_handleIncomingTransfer token transfer call did not transfer expected amount");

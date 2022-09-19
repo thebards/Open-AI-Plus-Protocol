@@ -16,7 +16,8 @@ import {
 	getSetMarketModuleWithSigParts,
 	getSetCurationContentURIWithSigParts,
 	getCreateCurationWithSigParts,
-	deriveChannelKey
+	deriveChannelKey,
+	toBN
 } from '../utils/Helpers';
 import {
 	abiCoder,
@@ -114,7 +115,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 				).to.not.be.reverted;
 
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, false)
+					bardsHub.connect(governance).whitelistMinterModule(emptyMinter.address, false)
 				).to.not.be.reverted;
 
 				await expect(
@@ -193,10 +194,10 @@ makeSuiteCleanRoom('Create Curations', function () {
 					})
 				).to.not.be.reverted;
 
-				const curation = await bardsHub.getCuration(FIRST_PROFILE_ID);
+				const curation = await bardsHub.getCuration(FIRST_PROFILE_ID + 1);
 
-				expect(curation.tokenContractPointed).to.eq(ZERO_ADDRESS);
-				expect(curation.tokenIdPointed).to.eq(0);
+				expect(curation.tokenContractPointed).to.eq(bardsHub.address);
+				expect(curation.tokenIdPointed).to.eq(toBN(2));
 				expect(curation.contentURI).to.eq(MOCK_PROFILE_CONTENT_URI);
 				expect(curation.marketModule).to.eq(fixPriceMarketModule.address);
 				expect(curation.minterMarketModule).to.eq(ZERO_ADDRESS);
@@ -207,7 +208,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					bardsHub.connect(governance).whitelistMarketModule(fixPriceMarketModule.address, true)
 				).to.not.be.reverted;
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, true)
+					bardsHub.connect(governance).whitelistMinterModule(emptyMinter.address, true)
 				).to.not.be.reverted;
 
 				await expect(
@@ -448,7 +449,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 				).to.not.be.reverted;
 
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, false)
+					bardsHub.connect(governance).whitelistMinterModule(emptyMinter.address, false)
 				).to.not.be.reverted;
 
 				const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
@@ -588,9 +589,9 @@ makeSuiteCleanRoom('Create Curations', function () {
 					})
 				).to.not.be.reverted;
 
-				const pub = await bardsHub.getCuration(FIRST_PROFILE_ID);
-				expect(pub.tokenContractPointed).to.eq(ZERO_ADDRESS);
-				expect(pub.tokenIdPointed).to.eq(0);
+				const pub = await bardsHub.getCuration(FIRST_PROFILE_ID + 1);
+				expect(pub.tokenContractPointed).to.eq(bardsHub.address);
+				expect(pub.tokenIdPointed).to.eq(2);
 				expect(pub.contentURI).to.eq(MOCK_PROFILE_CONTENT_URI);
 				expect(pub.marketModule).to.eq(fixPriceMarketModule.address);
 				expect(pub.minterMarketModule).to.eq(ZERO_ADDRESS);

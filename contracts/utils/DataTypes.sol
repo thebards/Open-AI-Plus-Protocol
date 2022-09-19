@@ -159,7 +159,7 @@ library DataTypes {
     }
 
     /**
-     * @notice Contains the curation BPS and staking BPSfor every Curation.
+     * @notice Contains the curation BPS and staking BPS for every Curation.
      *
 	 * @param sellerFundsRecipients The addresses where funds are sent after the trade.
 	 * @param curationFundsRecipients The curation Id where funds are sent after the trade.
@@ -266,6 +266,22 @@ library DataTypes {
 
     /**
      * @notice A struct containing the paramters required for the `collect` function.
+     * 
+     * @param curationId The token ID of the curation being collected's parent profile.
+     * @param curationIds A array of curation IDs sharing trade fees.
+     * @param collectMetaData The meta data for collecting.
+     * @param fromCuration Whether to mint from scratch in curation.
+     * 
+     */
+    struct SimpleDoCollectData {
+        uint256 curationId;
+        uint256[] curationIds;
+        bytes collectMetaData;
+        bool fromCuration;
+    }
+
+    /**
+     * @notice A struct containing the paramters required for the `_collect` function.
      * 
      * @param collector The address executing the collect.
      * @param curationId The token ID of the curation being collected's parent profile.

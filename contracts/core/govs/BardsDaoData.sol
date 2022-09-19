@@ -51,17 +51,35 @@ contract BardsDaoData is IBardsDaoData {
     }
 
     /// @inheritdoc IBardsDaoData
-    function setGovernance(address newGovernance) external override onlyGov {
+    function setGovernance(
+        address newGovernance
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
         _setGovernance(newGovernance);
     }
 
     /// @inheritdoc IBardsDaoData
-    function setTreasury(address newTreasury) external override onlyGov {
+    function setTreasury(
+        address newTreasury
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
         _setTreasury(newTreasury);
     }
 
     /// @inheritdoc IBardsDaoData
-    function setProtocolFee(uint32 newProtocolFee) external override onlyGov {
+    function setProtocolFee(
+        uint32 newProtocolFee
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
         _setProtocolFee(newProtocolFee);
     }
 

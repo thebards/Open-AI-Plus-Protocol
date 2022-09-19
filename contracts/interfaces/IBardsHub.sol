@@ -83,7 +83,7 @@ interface IBardsHub {
      * @param mintModule The mint module contract address to add or remove from the whitelist.
      * @param whitelist Whether or not the mint module should be whitelisted.
      */
-    function whitelistMintModule(address mintModule, bool whitelist) 
+    function whitelistMinterModule(address mintModule, bool whitelist) 
 		external;
 
 	/**
@@ -269,13 +269,13 @@ interface IBardsHub {
     /**
      * @notice Collects a given curation, executing market module logic and transfering curation to the caller.
      *
-     * @param vars A CollectWithSigData struct containing the regular parameters as well as the collector's address and
+     * @param vars A SimpleDoCollectData struct containing the regular parameters as well as the collector's address and
      * an EIP712Signature struct.
      *
      * @return (addresss, uint256) An  address and integer pair representing the minted token ID.
      */
     function collect(
-      DataTypes.DoCollectData calldata vars
+      DataTypes.SimpleDoCollectData calldata vars
     ) external returns (address, uint256);
 
     /**

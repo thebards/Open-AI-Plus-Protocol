@@ -19,7 +19,8 @@ import {
 
 import {
 	revertToSnapshot,
-	takeSnapshot
+	takeSnapshot,
+	toBCT
 } from './utils/Helpers';
 
 import {
@@ -93,12 +94,13 @@ export let userTwo: Signer;
 export let userThree: Signer;
 export let governance: Signer;
 export let royaltyEnginer: Signer;
+export let daoTreasury: Signer;
 export let deployerAddress: string;
 export let userAddress: string;
 export let userTwoAddress: string;
 export let userThreeAddress: string;
 export let governanceAddress: string;
-export let treasuryAddress: string;
+export let daoTreasuryAddress: string;
 export let royaltyEngineAddress: string;
 export let testWallet: Wallet;
 export let bardsHub: BardsHub;
@@ -149,6 +151,7 @@ before(async function () {
 	userThree = accounts[4];
 	governance = accounts[3];
 	royaltyEnginer = accounts[4];
+	daoTreasury = accounts[5];
 
 	deployerAddress = await deployer.getAddress();
 	userAddress = await user.getAddress();
@@ -156,7 +159,7 @@ before(async function () {
 	userThreeAddress = await userThree.getAddress();
 	governanceAddress = await governance.getAddress();
 	royaltyEngineAddress = await royaltyEnginer.getAddress();
-	treasuryAddress = await accounts[4].getAddress();
+	daoTreasuryAddress = await daoTreasury.getAddress();
 
 	// libs
 	const curationHelpers = await new CurationHelpers__factory(deployer).deploy();
@@ -193,7 +196,7 @@ before(async function () {
 	// bards Dao Data
 	bardsDaoData = await new BardsDaoData__factory(deployer).deploy(
 		governanceAddress,
-		treasuryAddress,
+		daoTreasuryAddress,
 		PROTOCOL_FEE,
 		DEFAULT_CURATION_BPS,
 		DEFAULT_STAKING_BPS
@@ -276,10 +279,18 @@ before(async function () {
 	cloneMinter = await new CloneMinter__factory(deployer).deploy(
 		bardsHub.address
 	)
+	await bardsHub.connect(governance).registerContract(
+		utils.id('CloneMinter'),
+		cloneMinter.address
+	);
 	// Empty minter
 	emptyMinter = await new EmptyMinter__factory(deployer).deploy(
 		bardsHub.address
 	)
+	await bardsHub.connect(governance).registerContract(
+		utils.id('EmptyMinter'),
+		emptyMinter.address
+	);
 
 	// market and mint module
 	freeMarketModule = await new FreeMarketModule__factory(deployer).deploy(
@@ -291,8 +302,6 @@ before(async function () {
 		bardsHub.address,
 		royaltyEngine.address
 	);
-
-
 
 	await expect(
 		bardsStaking.syncAllContracts()
@@ -344,16 +353,20 @@ before(async function () {
 	errorsLib = await new Errors__factory(deployer).deploy();
 
 	await expect(
-		bardsHub.connect(governance).whitelistMintModule(transferMinter.address, true)
+		bardsHub.connect(governance).whitelistMinterModule(transferMinter.address, true)
 	).to.not.be.reverted;
 
 	await expect(
-		bardsHub.connect(governance).whitelistMintModule(emptyMinter.address, true)
+		bardsHub.connect(governance).whitelistMinterModule(emptyMinter.address, true)
+	).to.not.be.reverted;
+
+	await expect(
+		bardsHub.connect(governance).whitelistMinterModule(cloneMinter.address, true)
 	).to.not.be.reverted;
 
 	mockMarketModuleInitData = abiCoder.encode(
 		['address', 'address', 'uint256', 'address', 'address'],
-		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, emptyMinter.address]
+		[ZERO_ADDRESS, bardsCurationToken.address, toBCT(10), ZERO_ADDRESS, emptyMinter.address]
 	);
 	mockFreeMarketModuleInitData = abiCoder.encode(
 		['address', 'address'],
@@ -361,7 +374,7 @@ before(async function () {
 	);
 	mockMinterMarketModuleInitData = abiCoder.encode(
 		['address', 'address', 'uint256', 'address', 'address'],
-		[ZERO_ADDRESS, bardsCurationToken.address, 100000, ZERO_ADDRESS, emptyMinter.address]
+		[ZERO_ADDRESS, bardsCurationToken.address, toBCT(10), ZERO_ADDRESS, emptyMinter.address]
 	);
 	mockCurationMetaData = abiCoder.encode(
 		['address[]', 'uint256[]', 'uint32[]', 'uint32[]', 'uint32', 'uint32'],

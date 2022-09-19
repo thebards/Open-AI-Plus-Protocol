@@ -952,7 +952,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 					bardsHub.connect(governance).whitelistMarketModule(fixPriceMarketModule.address, true)
 				).to.not.be.reverted;
 				await expect(
-					bardsHub.connect(governance).whitelistMintModule(transferMinter.address, true)
+					bardsHub.connect(governance).whitelistMinterModule(transferMinter.address, true)
 				).to.not.be.reverted;
 
 				await expect(
@@ -1003,7 +1003,6 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 
 				await expect(
 					bardsHub.collect({
-						collector: userAddress,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
 						collectMetaData: [],

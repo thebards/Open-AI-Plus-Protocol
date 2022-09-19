@@ -47,8 +47,8 @@ library CurationHelpers {
         _curationById[_vars.profileId].curationType = _vars.curationType;
         _curationById[_vars.profileId].handle = _vars.handle;
         _curationById[_vars.profileId].contentURI = _vars.contentURI;
-        _curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
-		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
+        _curationById[_vars.profileId].tokenContractPointed = _vars.tokenContractPointed;
+		_curationById[_vars.profileId].tokenIdPointed = _vars.tokenIdPointed;
 		_isProfileById[_vars.profileId] = true;
 
         bytes memory marketModuleReturnData;
@@ -61,8 +61,8 @@ library CurationHelpers {
                 _vars.marketModuleInitData,
                 _marketModuleWhitelisted
             );
-            _curationById[_vars.curationId].marketModule = _vars.marketModule;
         }
+
 		bytes memory minterMarketModuleReturnData;
         if (_vars.minterMarketModule != address(0)) {
             _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
@@ -74,7 +74,6 @@ library CurationHelpers {
 				_vars.minterMarketModuleInitData,
                 _marketModuleWhitelisted
             );
-            _curationById[_vars.curationId].minterMarketModule = _vars.minterMarketModule;
         }
 
         _emitProfileCreated(
@@ -186,7 +185,7 @@ library CurationHelpers {
         mapping(address => bool) storage _marketModuleWhitelisted
     ) external {
 
-        _curationById[_vars.profileId].curationType = _vars.curationType;
+        _curationById[_vars.curationId].curationType = _vars.curationType;
         _curationById[_vars.curationId].contentURI = _vars.contentURI;
 		_curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
@@ -194,22 +193,19 @@ library CurationHelpers {
 
         bytes memory marketModuleReturnData;
         if (_vars.marketModule != address(0)) {
-            _curationById[_vars.profileId].marketModule = _vars.marketModule;
             marketModuleReturnData = _initMarketModule(
-				_vars.tokenContractPointed, // Creator is always the profile's owner
+				_vars.tokenContractPointed, 
                 _vars.tokenIdPointed,
                 _vars.marketModule,
                 _vars.marketModuleInitData,
                 _marketModuleWhitelisted
             );
             _curationById[_vars.curationId].marketModule = _vars.marketModule;
-
         }
 		bytes memory minterMarketModuleReturnData;
         if (_vars.minterMarketModule != address(0)) {
-            _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
 			minterMarketModuleReturnData = _initMarketModule(
-				_vars.tokenContractPointed, // Creator is always the profile's owner
+				_vars.tokenContractPointed,
                 _vars.tokenIdPointed,
 				_vars.minterMarketModule,
 				_vars.minterMarketModuleInitData,
@@ -240,7 +236,7 @@ library CurationHelpers {
      */
     function collect(
         address collector,
-        DataTypes.DoCollectData memory _vars,
+        DataTypes.SimpleDoCollectData memory _vars,
         mapping(uint256 => DataTypes.CurationStruct) storage _curationById
     ) 
         external
@@ -289,7 +285,10 @@ library CurationHelpers {
         address marketModule,
         bytes memory marketModuleInitData,
         mapping(address => bool) storage _marketModuleWhitelisted
-    ) private returns (bytes memory) {
+    ) 
+        private 
+        returns (bytes memory) 
+    {
         if (!_marketModuleWhitelisted[marketModule]) revert Errors.MarketModuleNotWhitelisted();
         return IMarketModule(marketModule).initializeModule(
             tokenContract, 

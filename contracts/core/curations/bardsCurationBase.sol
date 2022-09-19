@@ -31,7 +31,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	function initializeCuration(DataTypes.InitializeCurationData memory _vars)
 		public
 		override
-		{
+	{
 			// address tokenOwner = IERC721(_vars.tokenContract).ownerOf(_vars.tokenId);
 
 			// require(

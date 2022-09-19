@@ -599,7 +599,7 @@ export const deriveChannelKey = (): ChannelKey => {
 
 export interface CollectReturningPairStruct {
 	sender?: Signer;
-	vars: DataTypes.DoCollectDataStruct | DataTypes.DoCollectWithSigDataStruct;
+	vars: DataTypes.SimpleDoCollectDataStruct | DataTypes.DoCollectWithSigDataStruct;
 }
 
 export async function collectReturningTokenPair({
@@ -608,7 +608,9 @@ export async function collectReturningTokenPair({
 }: CollectReturningPairStruct): Promise<[string, BigNumber]> {
 	let tokenPair: [string, BigNumber];
 	if ('sig' in vars) {
-		tokenPair = await bardsHub.connect(sender).callStatic.collectWithSig(vars);
+		tokenPair = await bardsHub
+			.connect(sender)
+			.callStatic.collectWithSig(vars);
 		await expect(bardsHub.connect(sender).collectWithSig(vars)).to.not.be.reverted;
 	} else {
 		tokenPair = await bardsHub
@@ -617,4 +619,45 @@ export async function collectReturningTokenPair({
 		await expect(bardsHub.connect(sender).collect(vars)).to.not.be.reverted;
 	}
 	return tokenPair;
+}
+
+export async function approveToken(
+	spender: string,
+	tokensToApprove: BigNumber
+){
+	const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
+
+	const { v, r, s } = await getBCTPermitWithSigParts(
+		testWallet.address,
+		spender,
+		tokensToApprove,
+		nonce,
+		MAX_UINT256
+	);
+
+	await bardsCurationToken.callStatic.permit({
+		owner: testWallet.address,
+		spender: spender,
+		value: tokensToApprove,
+		sig: {
+			v,
+			r,
+			s,
+			deadline: MAX_UINT256
+		},
+	})
+
+	await expect(
+		bardsCurationToken.permit({
+			owner: testWallet.address,
+			spender: spender,
+			value: tokensToApprove,
+			sig: {
+				v,
+				r,
+				s,
+				deadline: MAX_UINT256
+			},
+		})
+	).to.not.be.reverted;
 }

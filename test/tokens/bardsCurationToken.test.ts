@@ -21,7 +21,8 @@ import {
 	deriveChannelKey,
 	toBCT,
 	getBCTPermitWithSigParts,
-	toBN
+	toBN,
+	approveToken
 } from '../utils/Helpers';
 import {
 	abiCoder,
@@ -57,29 +58,31 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 		it('should permit some token allowance', async function () {
 			// Allow to transfer tokens
 			const tokensToApprove = toBCT('1000')
-			const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
+			// const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
 
-			const { v, r, s } = await getBCTPermitWithSigParts(
-				testWallet.address,
-				userAddress,
-				tokensToApprove,
-				nonce,
-				MAX_UINT256
-			);
+			// const { v, r, s } = await getBCTPermitWithSigParts(
+			// 	testWallet.address,
+			// 	userAddress,
+			// 	tokensToApprove,
+			// 	nonce,
+			// 	MAX_UINT256
+			// );
 
-			await expect(
-				bardsCurationToken.permit({
-					owner: testWallet.address,
-					spender: userAddress,
-					value: tokensToApprove,
-					sig: {
-						v,
-						r,
-						s,
-						deadline: MAX_UINT256
-					},
-				})
-			).to.not.be.reverted;
+			// await expect(
+			// 	bardsCurationToken.permit({
+			// 		owner: testWallet.address,
+			// 		spender: userAddress,
+			// 		value: tokensToApprove,
+			// 		sig: {
+			// 			v,
+			// 			r,
+			// 			s,
+			// 			deadline: MAX_UINT256
+			// 		},
+			// 	})
+			// ).to.not.be.reverted;
+
+			await approveToken(userAddress, tokensToApprove);
 
 			// Allowance updated
 			expect(
@@ -99,29 +102,31 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 		it('should permit max token allowance', async function () {
 			// Allow to transfer tokens
 			const tokensToApprove = MaxUint256;
-			const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
+			// const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
 
-			const { v, r, s } = await getBCTPermitWithSigParts(
-				testWallet.address,
-				userAddress,
-				tokensToApprove,
-				nonce,
-				MAX_UINT256
-			);
+			// const { v, r, s } = await getBCTPermitWithSigParts(
+			// 	testWallet.address,
+			// 	userAddress,
+			// 	tokensToApprove,
+			// 	nonce,
+			// 	MAX_UINT256
+			// );
 
-			await expect(
-				bardsCurationToken.permit({
-					owner: testWallet.address,
-					spender: userAddress,
-					value: tokensToApprove,
-					sig: {
-						v,
-						r,
-						s,
-						deadline: MAX_UINT256
-					},
-				})
-			).to.not.be.reverted;
+			// await expect(
+			// 	bardsCurationToken.permit({
+			// 		owner: testWallet.address,
+			// 		spender: userAddress,
+			// 		value: tokensToApprove,
+			// 		sig: {
+			// 			v,
+			// 			r,
+			// 			s,
+			// 			deadline: MAX_UINT256
+			// 		},
+			// 	})
+			// ).to.not.be.reverted;
+
+			await approveToken(userAddress, tokensToApprove);
 
 			// Allowance updated
 			expect(
@@ -142,29 +147,30 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			// Allow to transfer tokens
 			// Allow to transfer tokens
 			const tokensToApprove = toBCT('1000')
-			const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
+			// const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
 
-			const { v, r, s } = await getBCTPermitWithSigParts(
-				testWallet.address,
-				userAddress,
-				tokensToApprove,
-				nonce,
-				MAX_UINT256
-			);
+			// const { v, r, s } = await getBCTPermitWithSigParts(
+			// 	testWallet.address,
+			// 	userAddress,
+			// 	tokensToApprove,
+			// 	nonce,
+			// 	MAX_UINT256
+			// );
 
-			await expect(
-				bardsCurationToken.permit({
-					owner: testWallet.address,
-					spender: userAddress,
-					value: tokensToApprove,
-					sig: {
-						v,
-						r,
-						s,
-						deadline: MAX_UINT256
-					},
-				})
-			).to.not.be.reverted;
+			// await expect(
+			// 	bardsCurationToken.permit({
+			// 		owner: testWallet.address,
+			// 		spender: userAddress,
+			// 		value: tokensToApprove,
+			// 		sig: {
+			// 			v,
+			// 			r,
+			// 			s,
+			// 			deadline: MAX_UINT256
+			// 		},
+			// 	})
+			// ).to.not.be.reverted;
+			await approveToken(userAddress, tokensToApprove);
 
 			// Should not transfer more than approved
 			const tooManyTokens = toBCT('1001')
@@ -249,29 +255,30 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 		it('should deny transfer from if permit was denied', async function () {
 			// Allow to transfer tokens
 			const tokensToApprove = toBN('0');
-			const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
+			// const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
 
-			const { v, r, s } = await getBCTPermitWithSigParts(
-				testWallet.address,
-				userAddress,
-				tokensToApprove,
-				nonce,
-				MAX_UINT256
-			);
+			// const { v, r, s } = await getBCTPermitWithSigParts(
+			// 	testWallet.address,
+			// 	userAddress,
+			// 	tokensToApprove,
+			// 	nonce,
+			// 	MAX_UINT256
+			// );
 
-			await expect(
-				bardsCurationToken.permit({
-					owner: testWallet.address,
-					spender: userAddress,
-					value: tokensToApprove,
-					sig: {
-						v,
-						r,
-						s,
-						deadline: MAX_UINT256
-					},
-				})
-			).to.not.be.reverted;
+			// await expect(
+			// 	bardsCurationToken.permit({
+			// 		owner: testWallet.address,
+			// 		spender: userAddress,
+			// 		value: tokensToApprove,
+			// 		sig: {
+			// 			v,
+			// 			r,
+			// 			s,
+			// 			deadline: MAX_UINT256
+			// 		},
+			// 	})
+			// ).to.not.be.reverted;
+			await approveToken(userAddress, tokensToApprove);
 
 			// Allowance updated
 			const allowance = await bardsCurationToken.allowance(testWallet.address, userAddress)

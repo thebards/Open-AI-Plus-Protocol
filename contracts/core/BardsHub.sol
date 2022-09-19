@@ -123,7 +123,7 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function whitelistMintModule(address mintModule, bool whitelist)
+    function whitelistMinterModule(address mintModule, bool whitelist)
         external
         override
         onlyGov
@@ -143,17 +143,24 @@ contract BardsHub is
     )
         external
         override
-    onlyGov{
+        onlyGov
+    {
         require(_contractAddress != address(0), "Contract address must be set");
         _registry[_id] = _contractAddress;
-        emit Events.ContractRegistered(_id, _contractAddress, block.timestamp);
+        _isRegisteredAddress[_contractAddress] = true;
+        emit Events.ContractRegistered(
+            _id, 
+            _contractAddress, 
+            block.timestamp
+        );
     }
 
     /// @inheritdoc IBardsHub
     function unsetContract(bytes32 _id) 
         external 
         override 
-    onlyGov {
+        onlyGov 
+    {
         _registry[_id] = address(0);
         emit Events.ContractRegistered(_id, address(0), block.timestamp);
     }
@@ -163,7 +170,8 @@ contract BardsHub is
         public 
         view 
         override 
-    returns (address) {
+        returns (address) 
+    {
         return _registry[_id];
     }
 
@@ -518,7 +526,7 @@ contract BardsHub is
 
     /// @inheritdoc IBardsHub
     function collect(
-        DataTypes.DoCollectData calldata vars
+        DataTypes.SimpleDoCollectData calldata vars
     ) 
         external 
         override 
@@ -561,8 +569,7 @@ contract BardsHub is
         }
         return CurationHelpers.collect(
             vars.collector,
-            DataTypes.DoCollectData({
-                collector: vars.collector,
+            DataTypes.SimpleDoCollectData({
                 curationId: vars.curationId,
                 curationIds: vars.curationIds,
                 collectMetaData: vars.collectMetaData,
@@ -751,22 +758,31 @@ contract BardsHub is
             uint256 curationId = ++_curationCounter;
             _mint(_vars.to, curationId);
             _vars.curationId = curationId;
+            // Not refer to other NFT contract.
             if (_vars.tokenContractPointed == address(0)){
                 _vars.tokenContractPointed = address(this);
                 _vars.tokenIdPointed = curationId;
+            } else {
+                // Get the owner of the specified token
+                address tokenOwner = IERC721(_vars.tokenContractPointed).ownerOf(_vars.tokenIdPointed);
+                // Ensure the caller is the owner or an approved operator
+                require(_isRegisteredAddress[msg.sender] == true || msg.sender == tokenOwner || IERC721(_vars.tokenContractPointed).isApprovedForAll(tokenOwner, msg.sender), "ONLY_TOKEN_OWNER_OR_OPERATOR");
             }
+            console.log('9.9');
             CurationHelpers.createCuration(
                 _vars,
                 _curationById,
                 _isMintedByIdById,
                 _marketModuleWhitelisted
             );
+            console.log('9.91');
             initializeCuration(
                 DataTypes.InitializeCurationData(
                     curationId,
                     _vars.curationMetaData
                 )
             );
+            console.log('9.95');
             return curationId;
         }
     }
@@ -852,7 +868,7 @@ contract BardsHub is
         internal 
         view 
     {
-        if (_isApprovedOrOwner(msg.sender, curationId)) {
+        if (_isRegisteredAddress[msg.sender] == true || _isApprovedOrOwner(msg.sender, curationId)) {
             return;
         }
         revert Errors.NotOwnerOrApproved();

@@ -5,6 +5,7 @@ pragma solidity ^0.8.9;
 import '../../interfaces/minters/IProgrammableMinter.sol';
 import '../govs/ContractRegistrar.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import "hardhat/console.sol";
 
 /**
  * @title TransferMinter
@@ -29,19 +30,19 @@ contract TransferMinter is ContractRegistrar, IProgrammableMinter {
 		override
 		returns (address, uint256)
 	{	
-		(   
+		(
 			address tokenContract,
 			uint256 tokenId,
 			address seller,
-			address collector,
-			bytes memory collectMetaData
+			address collector
         ) = abi.decode(
             metaData, 
-            (address, uint256, address, address, bytes)
+            (address, uint256, address, address)
         );
 		if (seller == collector){
 			return (tokenContract, tokenId);
 		}
+
 		IERC721(tokenContract).safeTransferFrom(seller, collector, tokenId);
 		return (tokenContract, tokenId);
 	}

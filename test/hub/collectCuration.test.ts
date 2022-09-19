@@ -100,7 +100,6 @@ makeSuiteCleanRoom('Collecting', function () {
 
 				await expect(
 					bardsHub.collect({
-						collector: userAddress,
 						curationId: FIRST_PROFILE_ID + 1,
 						curationIds: [],
 						collectMetaData: collectMetaData,

@@ -13,6 +13,7 @@ import '../trades/MarketModuleBase.sol';
 import '../../utils/DataTypes.sol';
 import '../../utils/Errors.sol';
 import '../../utils/Constants.sol';
+import "hardhat/console.sol";
 
 /**
  * @title FixPriceMarketModule
@@ -113,13 +114,20 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             tokenId
         );
 
-        // Transfer remaining ETH/ERC-20 to seller
-        // 1) when the NFT if minted by TheBards HUB, distribute profits proportionally to stakeholders.
-        // 2) or, pay directly to the designated seller.
+        // Transfer remaining ETH/ERC-20 to stakeholders.
         uint256 curationFee;
-        if (tokenContract == HUB) {
+        if (_curationId != 0) {
+            // curation meta data
+            DataTypes.CurationStruct memory curationStruct = bardsHub().getCuration(_curationId);
+            require(curationStruct.tokenContractPointed == tokenContract && curationStruct.tokenIdPointed == tokenId, "When Collecting in fix price market, NFT and curation mismatch");
+
+            console.log(4);
+            // 1) tokenContract == HUB, deal curation.
+            // 2) tokenContract != HUB, deal token curated, but using curationBps and stakingBps in curation.
+
             // The fee split setting of curation.
-		    DataTypes.CurationData memory curationData = IBardsCurationBase(tokenContract).curationDataOf(_curationId);
+		    DataTypes.CurationData memory curationData = IBardsCurationBase(HUB).curationDataOf(_curationId);
+
             // collect curation
             curationFee = remainingProfit.mul(uint256(curationData.curationBps)).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
@@ -130,6 +138,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 marketData.currency,
                 curationIds
             );
+            console.log(5);
             // collect staking
             uint256 stakingFee = remainingProfit.mul(uint256(curationData.stakingBps)).div(Constants.MAX_BPS);
             remainingProfit -= stakingFee;
@@ -139,6 +148,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 stakingFee
             );
 
+            console.log(6);
             // payout for sellers
             _handleSellersSplitPayout(
                 tokenContract, 
@@ -149,8 +159,12 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             );
 
         } else {
+            // Just listed on the Decentralized Market, not curated.
             // using default curation and staking bps setting.
+
+            require(tokenContract != HUB, "Collecting non-HUB NFTs");
             // payout curation
+            console.log(7);
             curationFee = remainingProfit.mul(uint256(getDefaultCurationBps())).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
@@ -161,6 +175,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 curationIds
             );
 
+            console.log(8);
             _handlePayout(
                 marketData.treasury, 
                 remainingProfit, 
@@ -169,12 +184,14 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             );
         }
         
+        console.log(9);
         (
             address retTokenContract,
             uint256 retTokenId
         ) = IProgrammableMinter(marketData.minter).mint(
             collectMetaData
         );
+        console.log(10);
 
         delete _marketMetaData[tokenContract][tokenId];
 

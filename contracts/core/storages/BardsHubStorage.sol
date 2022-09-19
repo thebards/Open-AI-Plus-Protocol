@@ -48,6 +48,7 @@ abstract contract BardsHubStorage {
 
 	// Track contract ids to contract address
     mapping(bytes32 => address) internal _registry;
+    mapping(address => bool) internal _isRegisteredAddress;
 
 	// address -> profile id
 	mapping(address => uint256) internal _defaultProfileByAddress;

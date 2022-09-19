@@ -9,6 +9,7 @@ export const ERRORS = {
 	SIGNATURE_EXPIRED: 'SignatureExpired',
 	ZERO_SPENDER: 'ZeroSpender',
 	PRICE_ZERO: 'PriceZero',
+	MARKET_ZERO_ADDRESS: 'MarketZeroAddress',
 	SIGNATURE_INVALID: 'SignatureInvalid',
 	NOT_OWNER_OR_APPROVED: 'NotOwnerOrApproved',
 	NOT_HUB: 'NotHub',

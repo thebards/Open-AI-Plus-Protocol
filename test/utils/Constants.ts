@@ -10,10 +10,10 @@ export const DOMAIN_SALT = '0x51f3d585afe6dfeb2af01bba0889a36c1db03beec88c6a4d0c
 
 export const FIRST_PROFILE_ID = 1;
 export const CURRENCY_MINT_AMOUNT = parseEther('100');
-export const BPS_MAX = 1000000;
-export const PROTOCOL_FEE = 5000;
-export const DEFAULT_CURATION_BPS = 100000;
-export const DEFAULT_STAKING_BPS = 100000;
+export const BPS_MAX = 1000000;  // 100%
+export const PROTOCOL_FEE = 5000; // 0.5%
+export const DEFAULT_CURATION_BPS = 100000; // 10%
+export const DEFAULT_STAKING_BPS = 100000;  // 10%
 export const BARDS_HUB_NFT_NAME = 'TheBards HUB';
 export const BARDS_HUB_NFT_SYMBOL = 'TBH';
 export const BARDS_CURATION_TOKEN_NAME = 'Bards Curation Token';

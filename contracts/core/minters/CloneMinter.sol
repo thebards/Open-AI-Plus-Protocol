@@ -6,6 +6,7 @@ import '../../interfaces/minters/IProgrammableMinter.sol';
 import '../govs/ContractRegistrar.sol';
 import '../../interfaces/IBardsHub.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import "hardhat/console.sol";
 
 /**
  * @title CloneMinter
@@ -31,18 +32,45 @@ contract CloneMinter is ContractRegistrar, IProgrammableMinter {
 		returns (address, uint256)
 	{	
 		IBardsHub hub = bardsHub();
-		uint256 tokenId;
+		uint256 tokenId; 
 		(
-			DataTypes.CreateCurationData memory vars,
-			bool isProfile
+			uint256 cloneFromCuration,
+			address to,
+			string memory handle,
+			bytes memory marketModuleInitData,
+			bytes memory minterMarketModuleInitData,
+			bytes memory curationMetaData
 		) = abi.decode(
 			metaData,
-			(DataTypes.CreateCurationData, bool)
+			(uint256, address, string, bytes, bytes, bytes)
 		);
-		if (isProfile == true){
-			tokenId = hub.createProfile(vars);
+
+		DataTypes.CurationStruct memory curCuration = hub.getCuration(cloneFromCuration);
+
+		address curTokenContractPointed = curCuration.tokenContractPointed != HUB? curCuration.tokenContractPointed: address(0);
+
+		DataTypes.CreateCurationData memory createCurationData = DataTypes.CreateCurationData({
+				to: to,
+				curationType: curCuration.curationType,
+				profileId: hub.defaultProfile(to),
+				curationId: 0,
+				tokenContractPointed: curTokenContractPointed,
+				tokenIdPointed: curCuration.tokenIdPointed,
+				handle: handle,
+				contentURI: curCuration.contentURI,
+				marketModule: curCuration.marketModule,
+				marketModuleInitData: marketModuleInitData,
+				minterMarketModule: curCuration.minterMarketModule,
+				minterMarketModuleInitData: minterMarketModuleInitData,
+				curationMetaData: curationMetaData
+		});
+
+		if (curCuration.curationType == DataTypes.CurationType.Profile){
+			tokenId = hub.createProfile(createCurationData);
 		} else {
-			tokenId = hub.createCuration(vars);
+			console.log('9.5');
+			tokenId = hub.createCuration(createCurationData);
+			console.log('9.8');
 		}
 		
 		return (address(hub), tokenId);

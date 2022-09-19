@@ -4,8 +4,10 @@ pragma solidity ^0.8.9;
 
 import "../interfaces/tokens/IBardsCurationToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 library TokenUtils {
+    using SafeERC20 for IERC20;
     /**
      * @dev Transfer tokens from an address to anther.
      * @param _ierc20 Token to transfer
@@ -24,7 +26,8 @@ library TokenUtils {
         if (_amount > 0) {
             address fromAddress = (_from == address(0))? address(this): _from;
             address toAddress = (_to == address(0))? address(this): _to;
-            require(_ierc20.transferFrom(fromAddress, toAddress, _amount), "!transfer");
+            // require(_ierc20.transferFrom(fromAddress, toAddress, _amount), "!transfer");
+            _ierc20.safeTransferFrom(fromAddress, toAddress, _amount);
         }
     }
 

@@ -64,8 +64,9 @@ contract FreeMarketModule is MarketModuleBase, IMarketModule {
             (address, address)
         );
 
-        if (minter != address(0) && !bardsHub().isMintModuleWhitelisted(minter))
+        if (minter != address(0) && !bardsHub().isMintModuleWhitelisted(minter)) {
             revert Errors.MinterModuleNotWhitelisted();
+        }
 		
         _marketMetaData[tokenContract][tokenId].seller = seller;
         _marketMetaData[tokenContract][tokenId].minter = minter;
