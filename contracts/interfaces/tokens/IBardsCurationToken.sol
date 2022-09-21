@@ -16,31 +16,38 @@ interface IBardsCurationToken is IERC20 {
     function burn(uint256 amount) external;
 
     /**
-     * @dev Mint new tokens.
+     * @notice burn tokens from.
+     * @param _from Address to burn tokens
+     * @param _amount Amount of tokens to mint
+     */
+    function burnFrom(address _from, uint256 _amount) external;
+
+    /**
+     * @notice Mint new tokens.
      * @param _to Address to send the newly minted tokens
      * @param _amount Amount of tokens to mint
      */
     function mint(address _to, uint256 _amount) external;
 
     /**
-     * @dev Add a new minter.
+     * @notice Add a new minter.
      * @param _account Address of the minter
      */
     function addMinter(address _account) external;
 
     /**
-     * @dev Remove a minter.
+     * @notice Remove a minter.
      * @param _account Address of the minter
      */
     function removeMinter(address _account) external;
 
     /**
-     * @dev Renounce to be a minter.
+     * @notice Renounce to be a minter.
      */
     function renounceMinter() external;
 
     /**
-     * @dev Return if the `_account` is a minter or not.
+     * @notice Return if the `_account` is a minter or not.
      * @param _account Address to check
      * @return True if the `_account` is minter
      */

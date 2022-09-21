@@ -123,14 +123,14 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function whitelistMinterModule(address mintModule, bool whitelist)
+    function whitelistMinterModule(address minterModule, bool whitelist)
         external
         override
         onlyGov
     {
-        _mintModuleWhitelisted[mintModule] = whitelist;
-        emit Events.MintModuleWhitelisted(
-            mintModule,
+        _minterModuleWhitelisted[minterModule] = whitelist;
+        emit Events.MinterModuleWhitelisted(
+            minterModule,
             whitelist,
             block.timestamp
         );
@@ -637,13 +637,13 @@ contract BardsHub is
     }
 
     /// @inheritdoc IBardsHub
-    function isMintModuleWhitelisted(address mintModule)
+    function isMinterModuleWhitelisted(address minterModule)
         external
         view
         override
         returns (bool)
     {
-        return _mintModuleWhitelisted[mintModule];
+        return _minterModuleWhitelisted[minterModule];
     }
 
     /// @inheritdoc IBardsHub
@@ -768,21 +768,18 @@ contract BardsHub is
                 // Ensure the caller is the owner or an approved operator
                 require(_isRegisteredAddress[msg.sender] == true || msg.sender == tokenOwner || IERC721(_vars.tokenContractPointed).isApprovedForAll(tokenOwner, msg.sender), "ONLY_TOKEN_OWNER_OR_OPERATOR");
             }
-            console.log('9.9');
             CurationHelpers.createCuration(
                 _vars,
                 _curationById,
                 _isMintedByIdById,
                 _marketModuleWhitelisted
             );
-            console.log('9.91');
             initializeCuration(
                 DataTypes.InitializeCurationData(
                     curationId,
                     _vars.curationMetaData
                 )
             );
-            console.log('9.95');
             return curationId;
         }
     }

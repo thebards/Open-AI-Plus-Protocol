@@ -84,6 +84,28 @@ contract BardsDaoData is IBardsDaoData {
     }
 
     /// @inheritdoc IBardsDaoData
+    function setDefaultCurationBps(
+        uint32 newDefaultCurationBps
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
+        _setDefaultCurationBps(newDefaultCurationBps);
+    }
+
+    /// @inheritdoc IBardsDaoData
+    function setDefaultStakingBps(
+        uint32 newDefaultStakingBps
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
+        _setDefaultStakingBps(newDefaultStakingBps);
+    }
+
+    /// @inheritdoc IBardsDaoData
     function getGovernance() external view override returns (address) {
         return _governance;
     }
@@ -153,8 +175,8 @@ contract BardsDaoData is IBardsDaoData {
 
     function _setDefaultStakingBps(uint32 newDefaultStakingBps) internal {
         if (newDefaultStakingBps >= Constants.MAX_BPS / 2) revert Errors.InitParamsInvalid();
-        uint32 prevDefaultStakingBps = _protocolFeeSetting.feeBps;
+        uint32 prevDefaultStakingBps = _protocolFeeSetting.defaultStakingBps;
         _protocolFeeSetting.defaultStakingBps = newDefaultStakingBps;
-        emit Events.ProtocolFeeSet(prevDefaultStakingBps, newDefaultStakingBps, block.timestamp);
+        emit Events.DefaultStakingFeeSet(prevDefaultStakingBps, newDefaultStakingBps, block.timestamp);
     }
 }

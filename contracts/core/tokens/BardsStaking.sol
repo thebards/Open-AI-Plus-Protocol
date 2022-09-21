@@ -60,18 +60,82 @@ contract BardsStaking is
         uint32 _defaultStakingReserveRatio,
         uint32 _stakingTaxPercentage,
         uint256 _minimumStaking,
-        address _stakingAddress
+        address _stakingAddress,
+        uint32 _rebateAlphaNumerator,
+        uint32 _rebateAlphaDenominator,
+        uint32 _thawingPeriod
     ) {
+        _initialize(
+            _HUB,
+            _bondingCurve,
+            _bardsShareTokenImpl,
+            _defaultStakingReserveRatio,
+            _stakingTaxPercentage,
+            _minimumStaking,
+            _stakingAddress,
+            _rebateAlphaNumerator,
+            _rebateAlphaDenominator,
+            _thawingPeriod
+        );
+    }
+
+    /// @inheritdoc IBardsStaking
+    function initialize(
+        address _HUB,
+        address _bondingCurve,
+        address _bardsShareTokenImpl,
+        uint32 _defaultStakingReserveRatio,
+        uint32 _stakingTaxPercentage,
+        uint256 _minimumStaking,
+        address _stakingAddress,
+        uint32 _rebateAlphaNumerator,
+        uint32 _rebateAlphaDenominator,
+        uint32 _thawingPeriod
+    ) 
+        public
+        override
+        onlyGov
+    {
+        _initialize(
+            _HUB,
+            _bondingCurve,
+            _bardsShareTokenImpl,
+            _defaultStakingReserveRatio,
+            _stakingTaxPercentage,
+            _minimumStaking,
+            _stakingAddress,
+            _rebateAlphaNumerator,
+            _rebateAlphaDenominator,
+            _thawingPeriod
+        );
+    }
+
+    function _initialize(
+        address _HUB,
+        address _bondingCurve,
+        address _bardsShareTokenImpl,
+        uint32 _defaultStakingReserveRatio,
+        uint32 _stakingTaxPercentage,
+        uint256 _minimumStaking,
+        address _stakingAddress,
+        uint32 _rebateAlphaNumerator,
+        uint32 _rebateAlphaDenominator,
+        uint32 _thawingPeriod
+    ) 
+        internal
+    {
 		if (_HUB == address(0)) revert Errors.InitParamsInvalid();
         require(_bondingCurve != address(0), "Bonding curve must be set");
         bondingCurve = _bondingCurve;
 		ContractRegistrar._initialize(_HUB);
-        // Settings
+        // Settings 
 		_setBardsShareTokenImpl(_bardsShareTokenImpl);
         _setDefaultReserveRatio(_defaultStakingReserveRatio);
         _setStakingTaxPercentage(_stakingTaxPercentage);
         _setMinimumStaking(_minimumStaking);
         _setStakingAddress(_stakingAddress);
+        _setRebateRatio(_rebateAlphaNumerator, _rebateAlphaDenominator);
+        _setThawingPeriod(_thawingPeriod);
     }
 
     /// @inheritdoc IBardsStaking
@@ -209,7 +273,16 @@ contract BardsStaking is
         override 
         returns (uint256, uint256) 
     {
+        require(_tokens > 0, "Cannot deposit zero tokens");
+
+        // Ensure minimum stake
+        require(
+            _stakingPools[_curationId].tokens.add(_tokens) >= minimumStaking,
+            "!minimumStaking"
+        );
+
         address delegator = msg.sender;
+        
         TokenUtils.transfer(bardsCurationToken(), delegator, _tokens, stakingAddress);
 
         return _stake(_curationId, _tokens, delegator);
@@ -232,9 +305,6 @@ contract BardsStaking is
         internal
         returns (uint256, uint256) 
     {
-        // Need to deposit some funds
-        require(_tokens > 0, "Cannot deposit zero tokens");
-
         // Exchange BCT tokens for BST of the curation staking pool
         (uint256 shareOut, uint256 stakingTax) = tokensToShare(_curationId, _tokens);
 
@@ -264,7 +334,7 @@ contract BardsStaking is
         // NOTE: This needs to happen after _updateRewards snapshot as that function
         // is using balanceOf(stakingAddress)
         IBardsCurationToken _bardsCurationToken = bardsCurationToken();
-        TokenUtils.burnTokens(_bardsCurationToken, stakingTax);
+        TokenUtils.burnTokens(_bardsCurationToken, stakingAddress, stakingTax);
 
         uint256 remainingTokens = _tokens.sub(stakingTax);
 
@@ -276,6 +346,7 @@ contract BardsStaking is
         // Update the individual delegation
         DataTypes.Delegation storage delegation = stakingPool.delegators[_delegator];
         delegation.shares = delegation.shares.add(shareOut);
+        delegation.lastWithdrawFeesEpoch = epochManager().currentEpoch();
 
         // reset the current epoch totalShare of MultiCurrencyFees.
         stakingPool.fees[epochManager().currentEpoch()].totalShare = getStakingPoolShare(_curationId);
@@ -323,26 +394,24 @@ contract BardsStaking is
     {
         // Validations
         require(_shares > 0, "Cannot burn zero share");
+
         require(
             getDelegatorShare(_delegator, _curationId) >= _shares,
             "Cannot burn more share than you own"
         );
         // Get the amount of tokens to refund based on returned signal
         uint256 tokensOut = shareToTokens(_curationId, _shares);
-
         // Trigger update rewards calculation
         _updateRewardsWithStaking(_curationId);
-
         // Update curation pool
         DataTypes.CurationStakingPool storage stakingPool = _stakingPools[_curationId];
+        stakingPool.tokens = stakingPool.tokens.sub(tokensOut);
         // Update the individual delegation
         DataTypes.Delegation storage delegation = stakingPool.delegators[_delegator];
-
         // Withdraw tokens if available
         if (getWithdraweableBCTTokens(_curationId, _delegator) > 0) {
             _withdrawStaked(_delegator, _curationId, 0);
         }
-
         uint256 currentEpoch = epochManager().currentEpoch();
         // Withdraw fees of available currencies between lastWithdrawFeesEpoch and currentEpoch, which excluding currentEpoch.
         _withdrawFees(
@@ -350,16 +419,14 @@ contract BardsStaking is
             _shares,
             delegation.lastWithdrawFeesEpoch, 
             currentEpoch, 
-            _delegator
+            _delegator 
         );
-
         // burn share
         IBardsShareToken(stakingPool.bst).burnFrom(_delegator, _shares);
         // update the delegation
         delegation.shares = delegation.shares.sub(_shares);
         delegation.tokensLockedUntil = currentEpoch.add(thawingPeriod);
         delegation.lastWithdrawFeesEpoch = currentEpoch;
-
         // reset the current epoch totalShare of MultiCurrencyFees.
         stakingPool.fees[currentEpoch].totalShare = getStakingPoolShare(_curationId);
 
@@ -411,7 +478,6 @@ contract BardsStaking is
         // Withdraw Fees, clear tmp pool
         stakingPool.fees[0].withdraw(stakingAddress, _delegator);
         stakingPool.fees[0].clear();
-
     }
 
     /// @inheritdoc IBardsStaking
@@ -964,8 +1030,8 @@ contract BardsStaking is
     function _setBardsShareTokenImpl(address _newBardsShareTokenImpl) 
         private 
     {
-        require(_newBardsShareTokenImpl != address(0), "Token master must be non-empty");
-        require(Address.isContract(_newBardsShareTokenImpl), "Token master must be a contract");
+        require(_newBardsShareTokenImpl != address(0), "Token Impl must be non-empty");
+        require(Address.isContract(_newBardsShareTokenImpl), "Token Impl must be a contract");
 
 		address prevBardsShareTokenImpl = bardsShareTokenImpl;
         bardsShareTokenImpl = _newBardsShareTokenImpl;
@@ -1356,7 +1422,7 @@ contract BardsStaking is
         // When all allocations processed then burn unclaimed fees and prune rebate pool
         if (rebatePool.unclaimedAllocationsCount == 0) {
             IBardsCurationToken bct = bardsCurationToken();
-            TokenUtils.burnTokens(bct, rebatePool.unclaimedFees(address(bct)));
+            TokenUtils.burnTokens(bct, stakingAddress, rebatePool.unclaimedFees(address(bct)));
             delete rebates[alloc.closedAtEpoch];
         }
     }

@@ -3,6 +3,7 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "hardhat/console.sol";
 
 contract BancorFormula {
     using SafeMath for uint256;
@@ -247,13 +248,13 @@ contract BancorFormula {
 
         // special case if the ratio = 100%
         if (_reserveRatio == MAX_RATIO) return _reserveBalance.mul(_sellAmount) / _supply;
-
         uint256 result;
         uint8 precision;
         uint256 baseD = _supply - _sellAmount;
         (result, precision) = power(_supply, baseD, MAX_RATIO, _reserveRatio);
         uint256 temp1 = _reserveBalance.mul(result);
         uint256 temp2 = _reserveBalance << precision;
+        
         return (temp1 - temp2) / result;
     }
 
@@ -422,7 +423,6 @@ contract BancorFormula {
         } else {
             baseLog = generalLog(base);
         }
-
         uint256 baseLogTimesExp = (baseLog * _expN) / _expD;
         if (baseLogTimesExp < OPT_EXP_MAX_VAL) {
             return (optimalExp(baseLogTimesExp), MAX_PRECISION);

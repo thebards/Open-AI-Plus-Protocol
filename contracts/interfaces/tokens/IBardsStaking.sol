@@ -15,6 +15,33 @@ import '../../utils/DataTypes.sol';
 interface IBardsStaking {
 
     /**
+     * @notice initialize the contract.
+     * 
+     * @param _HUB The address of HUB;
+     * @param _bondingCurve The address of bonding curve;
+     * @param _bardsShareTokenImpl The address of bards share token;
+     * @param _defaultStakingReserveRatio The default staking reserve ratio;
+     * @param _stakingTaxPercentage The percentage of staking tax;
+     * @param _minimumStaking The minimum staking;
+     * @param _stakingAddress The fund address of staking;
+     * @param _rebateAlphaNumerator The alphaNumerator of rebating;
+     * @param _rebateAlphaDenominator The alphaDenominator of rebating;
+     * @param _thawingPeriod The thawing period;
+     */
+    function initialize(
+        address _HUB,
+        address _bondingCurve,
+        address _bardsShareTokenImpl,
+        uint32 _defaultStakingReserveRatio,
+        uint32 _stakingTaxPercentage,
+        uint256 _minimumStaking,
+        address _stakingAddress,
+        uint32 _rebateAlphaNumerator,
+        uint32 _rebateAlphaDenominator,
+        uint32 _thawingPeriod
+    ) external;
+
+    /**
      * @notice Set the address of tokens.
      * 
      * @param _stakingAddress The address of staking tokens;

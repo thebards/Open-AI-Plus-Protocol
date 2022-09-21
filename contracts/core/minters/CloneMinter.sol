@@ -68,9 +68,7 @@ contract CloneMinter is ContractRegistrar, IProgrammableMinter {
 		if (curCuration.curationType == DataTypes.CurationType.Profile){
 			tokenId = hub.createProfile(createCurationData);
 		} else {
-			console.log('9.5');
 			tokenId = hub.createCuration(createCurationData);
-			console.log('9.8');
 		}
 		
 		return (address(hub), tokenId);

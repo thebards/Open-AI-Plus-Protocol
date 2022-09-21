@@ -51,7 +51,7 @@ library CurationHelpers {
 		_curationById[_vars.profileId].tokenIdPointed = _vars.tokenIdPointed;
 		_isProfileById[_vars.profileId] = true;
 
-        bytes memory marketModuleReturnData;
+        bytes memory marketModuleReturnData = _vars.marketModuleInitData;
         if (_vars.marketModule != address(0)) {
             _curationById[_vars.profileId].marketModule = _vars.marketModule;
             marketModuleReturnData = _initMarketModule(
@@ -63,7 +63,7 @@ library CurationHelpers {
             );
         }
 
-		bytes memory minterMarketModuleReturnData;
+		bytes memory minterMarketModuleReturnData = _vars.minterMarketModuleInitData;
         if (_vars.minterMarketModule != address(0)) {
             _curationById[_vars.profileId].minterMarketModule = _vars.minterMarketModule;
             // mint module is also a market module, whose minter is different.
@@ -78,8 +78,8 @@ library CurationHelpers {
 
         _emitProfileCreated(
             _vars.profileId, 
-            _vars, 
-            marketModuleReturnData, 
+            _vars,
+            marketModuleReturnData,
             minterMarketModuleReturnData
         );
     }

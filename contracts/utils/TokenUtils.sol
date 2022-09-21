@@ -74,12 +74,13 @@ library TokenUtils {
      */
     function burnTokens(
         IBardsCurationToken _bardsCurationToken, 
+        address _from,
         uint256 _amount
     ) 
         internal 
     {
         if (_amount > 0) {
-            _bardsCurationToken.burn(_amount);
+            _bardsCurationToken.burnFrom(_from, _amount);
         }
     }
 }

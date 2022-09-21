@@ -80,10 +80,10 @@ interface IBardsHub {
      * @notice Adds or removes a mint module from the whitelist. This function can only be called by the current
      * governance address.
      *
-     * @param mintModule The mint module contract address to add or remove from the whitelist.
+     * @param minterModule The mint module contract address to add or remove from the whitelist.
      * @param whitelist Whether or not the mint module should be whitelisted.
      */
-    function whitelistMinterModule(address mintModule, bool whitelist) 
+    function whitelistMinterModule(address minterModule, bool whitelist) 
 		external;
 
 	/**
@@ -348,11 +348,11 @@ interface IBardsHub {
     /**
      * @notice Returns whether or not a mint module is whitelisted.
      *
-     * @param mintModule The address of the mint module to check.
+     * @param minterModule The address of the mint module to check.
      *
      * @return bool True if the the mint module is whitelisted, false otherwise.
      */
-    function isMintModuleWhitelisted(address mintModule) 
+    function isMinterModuleWhitelisted(address minterModule) 
 		external 
 		view 
 		returns (bool);

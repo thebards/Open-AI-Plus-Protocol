@@ -5,12 +5,16 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import './DataTypes.sol';
 import './TokenUtils.sol';
+import "hardhat/console.sol";
 
 library MultiCurrencyFeesUtils {
     using SafeMath for uint256;
     using MultiCurrencyFeesUtils for DataTypes.MultiCurrencyFees;
 
 	function clear(DataTypes.MultiCurrencyFees storage _fees) internal {
+		if (_fees.currencies.length == 0){
+			return;
+		}
 		_fees.totalShare = 0;
 		uint256 j = _fees.currencies.length - 1;
 		while(j >= 0){
@@ -52,7 +56,7 @@ library MultiCurrencyFeesUtils {
 	) 
 		internal 
 	{
-		for(uint256 i= 0; i < _fees.currencies.length; i++){
+		for(uint256 i = 0; i < _fees.currencies.length; i++){
             address _currency = _fees.currencies[i];
 			TokenUtils.transfer(IERC20(_currency), _from, _fees.fees[_currency], _to);
 		}

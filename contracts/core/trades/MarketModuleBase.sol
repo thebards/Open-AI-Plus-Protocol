@@ -135,7 +135,6 @@ abstract contract MarketModuleBase is ContractRegistrar {
         internal
         returns (uint256)
     {
-        console.log(1);
         // Ensure ETH/ERC-20 payment from collector is valid and take custody
         _handleIncomingTransfer(
             collector, 
@@ -144,7 +143,6 @@ abstract contract MarketModuleBase is ContractRegistrar {
             stakingAddress
         );
 
-        console.log(2);
         // Payout respective parties, ensuring royalties are honored
         (uint256 remainingProfit, ) = _handleRoyaltyPayout(
             tokenContract, 
@@ -154,7 +152,6 @@ abstract contract MarketModuleBase is ContractRegistrar {
             Constants.USE_ALL_GAS_FLAG
         );
 
-        console.log(3);
         // Payout protocol fee
         uint256 protocolFee = getFeeAmount(remainingProfit);
         address protocolTreasury = getTreasury();

@@ -33,6 +33,20 @@ interface IBardsDaoData {
      */
     function setProtocolFee(uint32 newProtocolFee) external;
 
+    /**
+     * @notice Sets the Default Curation Bps. This function can only be called by governance.
+     *
+     * @param newDefaultCurationBps The new default curation Bps to set.
+     */
+    function setDefaultCurationBps(uint32 newDefaultCurationBps) external;
+
+    /**
+     * @notice Sets the default staking Bps. This function can only be called by governance.
+     *
+     * @param newDefaultStakingBps The new default staking Bps to set.
+     */
+    function setDefaultStakingBps(uint32 newDefaultStakingBps) external;
+
     /// ************************
     /// *****VIEW FUNCTIONS*****
     /// ************************

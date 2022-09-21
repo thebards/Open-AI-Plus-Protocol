@@ -285,12 +285,12 @@ library Events {
     /**
      * @notice Emitted when a mint module is added to or removed from the whitelist.
      *
-     * @param mintModule The address of the mint module.
+     * @param minterModule The address of the mint module.
      * @param whitelisted Whether or not the follow module is being added to the whitelist.
      * @param timestamp The current block timestamp.
      */
-    event MintModuleWhitelisted(
-        address indexed mintModule,
+    event MinterModuleWhitelisted(
+        address indexed minterModule,
         bool indexed whitelisted,
         uint256 timestamp
     );

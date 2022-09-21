@@ -55,6 +55,16 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
 
     }
 
+    function burnFrom(
+        address _from, 
+        uint256 _amount
+    ) 
+        public 
+        override 
+    {
+        _burn(_from, _amount);
+    }
+
     function permit(
         DataTypes.BCTPermitWithSigData calldata _vars
     ) external {

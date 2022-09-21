@@ -71,7 +71,7 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
 
         if (!isCurrencyWhitelisted(currency)) revert Errors.CurrencyNotWhitelisted();
         if (price == 0) revert Errors.ZeroPrice();
-        if (minter != address(0) && !bardsHub().isMintModuleWhitelisted(minter))
+        if (minter != address(0) && !bardsHub().isMinterModuleWhitelisted(minter))
             revert Errors.MinterModuleNotWhitelisted();
 		
         _marketMetaData[tokenContract][tokenId].seller = seller;
@@ -121,7 +121,6 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             DataTypes.CurationStruct memory curationStruct = bardsHub().getCuration(_curationId);
             require(curationStruct.tokenContractPointed == tokenContract && curationStruct.tokenIdPointed == tokenId, "When Collecting in fix price market, NFT and curation mismatch");
 
-            console.log(4);
             // 1) tokenContract == HUB, deal curation.
             // 2) tokenContract != HUB, deal token curated, but using curationBps and stakingBps in curation.
 
@@ -138,7 +137,6 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 marketData.currency,
                 curationIds
             );
-            console.log(5);
             // collect staking
             uint256 stakingFee = remainingProfit.mul(uint256(curationData.stakingBps)).div(Constants.MAX_BPS);
             remainingProfit -= stakingFee;
@@ -148,7 +146,6 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 stakingFee
             );
 
-            console.log(6);
             // payout for sellers
             _handleSellersSplitPayout(
                 tokenContract, 
@@ -164,7 +161,6 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
 
             require(tokenContract != HUB, "Collecting non-HUB NFTs");
             // payout curation
-            console.log(7);
             curationFee = remainingProfit.mul(uint256(getDefaultCurationBps())).div(Constants.MAX_BPS);
             remainingProfit -= curationFee;
             _handleCurationsPayout(
@@ -175,7 +171,6 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
                 curationIds
             );
 
-            console.log(8);
             _handlePayout(
                 marketData.treasury, 
                 remainingProfit, 
@@ -184,14 +179,12 @@ contract FixPriceMarketModule is MarketModuleBase, IMarketModule {
             );
         }
         
-        console.log(9);
         (
             address retTokenContract,
             uint256 retTokenId
         ) = IProgrammableMinter(marketData.minter).mint(
             collectMetaData
         );
-        console.log(10);
 
         delete _marketMetaData[tokenContract][tokenId];
 
