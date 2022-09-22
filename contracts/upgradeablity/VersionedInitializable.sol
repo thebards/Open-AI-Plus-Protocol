@@ -3,11 +3,12 @@
 pragma solidity ^0.8.9;
 
 import {Errors} from '../utils/Errors.sol';
+import "hardhat/console.sol";
 
 /**
  * @title VersionedInitializable
  *
- * @dev Helper contract to implement initializer functions. To use it, replace
+ * @notice Helper contract to implement initializer functions. To use it, replace
  * the constructor with a function that has the `initializer` modifier.
  * WARNING: Unlike constructors, initializer functions must be manually
  * invoked. This applies both to deploying an Initializable contract, as well
@@ -25,15 +26,16 @@ abstract contract VersionedInitializable {
     address private immutable originalImpl;
 
     /**
-     * @dev Indicates that the contract has been initialized.
+     * @notice Indicates that the contract has been initialized.
      */
     uint256 private lastInitializedRevision = 0;
 
     /**
-     * @dev Modifier to use in the initializer function of a contract.
+     * @notice Modifier to use in the initializer function of a contract.
      */
     modifier initializer() {
         uint256 revision = getRevision();
+
         if (address(this) == originalImpl) revert Errors.CannotInitImplementation();
         if (revision <= lastInitializedRevision) revert Errors.Initialized();
         lastInitializedRevision = revision;
@@ -45,7 +47,7 @@ abstract contract VersionedInitializable {
     }
 
     /**
-     * @dev returns the revision number of the contract
+     * @notice returns the revision number of the contract
      * Needs to be defined in the inherited class as a constant.
      **/
     function getRevision() internal pure virtual returns (uint256);

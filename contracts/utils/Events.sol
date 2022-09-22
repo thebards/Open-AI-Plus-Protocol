@@ -797,16 +797,18 @@ library Events {
      * @notice Emitted when `delegator` undelegated `tokens` from `curationId`.
      * Tokens get locked for withdrawal after a period of time.
      * 
-     * @param curationId Curation Id
      * @param delegator delegator
+     * @param curationId Curation Id
      * @param shares shares to be burnt
+     * @param tokens tokens to be locked
      * @param until A time tokens unlock for withdrawal.
      * @param timestamp The current block timestamp.
      */
     event StakeDelegatedLocked(
-        uint256 indexed curationId,
         address indexed delegator,
+        uint256 indexed curationId,
         uint256 shares,
+        uint256 tokens,
         uint256 until,
         uint256 timestamp
     );

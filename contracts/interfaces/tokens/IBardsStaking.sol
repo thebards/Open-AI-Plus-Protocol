@@ -119,7 +119,7 @@ interface IBardsStaking {
      * @param _curationId curation Id
      * @param _tokens Amount of tokens to stake
      */
-    function stake(uint256 _curationId, uint256 _tokens) external returns(uint256, uint256);
+    function stake(uint256 _curationId, uint256 _tokens) external returns (uint256 shareOut, uint256 stakingTax) ;
 
     /**
      * @notice Unstake shares from the curation stake, lock them until thawing period expires.
@@ -274,6 +274,18 @@ interface IBardsStaking {
         external 
         view 
         returns (DataTypes.SimpleAllocation memory);
+
+    /**
+     * @notice Get the reserveRatio of curation.
+     *
+     * @param _curationId The curation ID
+     * 
+     * @return reserveRatio The reserveRatio of curation.
+     */
+    function getReserveRatioOfCuration(uint256 _curationId) 
+        external
+        view
+        returns (uint32 reserveRatio);
 
     /**
      * @notice Returns amount of staked BCT tokens ready to be withdrawn after thawing period.

@@ -21,6 +21,8 @@ export const BARDS_CURATION_TOKEN_SYMBOL = 'BCT';
 export const MOCK_PROFILE_HANDLE = 'thebards.bpp';
 export const MOCK_PROFILE_HANDLE2 = 'thebards2.bpp';
 export const MOCK_PROFILE_CONTENT_URI = 'https://thebards.xyz';
+export const ISSUANCE_RATE_PERIODS = 4 // blocks required to issue 5% rewards
+export const ISSUANCE_RATE_PER_BLOCK = toBN('1012272234429039270') // % increase every block
 
 export const DEFAULTS = {
 	epochs: {
@@ -29,11 +31,10 @@ export const DEFAULTS = {
 	staking: {
 		minimumStake: toBCT('10'),
 		reserveRatio: toBN('500000'),
-		stakingTaxPercentage: 0,
+		stakingTaxPercentage: toBN('0'),
 		channelDisputeEpochs: 1,
 		maxAllocationEpochs: 5,
-		thawingPeriod: 20, // in blocks
-		delegationUnbondingPeriod: 1, // in epochs
+		thawingPeriod: 1, // in epochs
 		alphaNumerator: 85,
 		alphaDenominator: 100,
 	},

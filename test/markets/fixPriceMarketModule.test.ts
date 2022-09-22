@@ -12,7 +12,6 @@ import {
 	DEFAULT_CURATION_BPS,
 	DEFAULT_STAKING_BPS,
 	MOCK_PROFILE_HANDLE2,
-	MAX_NUM
 } from '../utils/Constants';
 import {
 	DataTypes
@@ -161,7 +160,7 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 				})
 			).to.be.rejectedWith('Buyer is same with seller.');
 		});
-		
+
 	});
 
 	context('Stories', function () {

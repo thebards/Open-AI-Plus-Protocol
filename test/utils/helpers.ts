@@ -1,14 +1,16 @@
 import hre, { ethers } from 'hardhat';
-import { providers, utils, BigNumber, Signer, Wallet, BigNumberish, Bytes } from 'ethers'
-import { formatUnits, getAddress } from 'ethers/lib/utils'
+import { providers, utils, BigNumber, Signer, Wallet, Contract, BigNumberish, Bytes, logger } from 'ethers'
+import { BytesLike, keccak256, RLP, toUtf8Bytes, formatUnits, getAddress } from 'ethers/lib/utils';
 import { expect } from 'chai';
+import { TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
 
 import { 
 	BARDS_HUB_NFT_NAME, 
 	BARDS_CURATION_TOKEN_NAME,
 	HARDHAT_CHAINID, 
 	DOMAIN_SALT,
-	MAX_UINT256
+	MAX_UINT256,
+	BPS_MAX
 } from "./Constants";
 
 import {
@@ -17,11 +19,13 @@ import {
 	testWallet,
 	user,
 	CurationType,
-	bardsCurationToken
+	bardsCurationToken,
+	bardsStaking,
+	userTwoAddress
 } from '../__setup.test';
 
 import { 
-	BardsHub__factory 
+	BardsHub__factory, BardsStaking 
 } from '../../typechain-types';
 
 import { 
@@ -36,7 +40,6 @@ import { Address } from 'defender-relay-client';
 
 const { hexlify, parseUnits, randomBytes } = utils
 
-
 export const toBN = (value: string | number): BigNumber => BigNumber.from(value)
 export const toBCT = (value: string | number): BigNumber => {
 	return parseUnits(typeof value === 'number' ? value.toString() : value, '18')
@@ -44,6 +47,8 @@ export const toBCT = (value: string | number): BigNumber => {
 export const formatBCT = (value: BigNumber): string => formatUnits(value, '18')
 export const randomHexBytes = (n = 32): string => hexlify(randomBytes(n))
 export const randomAddress = (): string => getAddress(randomHexBytes(20))
+export const toFloat = (n: BigNumber) => parseFloat(formatBCT(n));
+export const toRound = (n: number) => n.toFixed(12)
 
 let snapshotId: string = '0x1';
 export async function takeSnapshot() {
@@ -56,6 +61,116 @@ export async function revertToSnapshot() {
 
 export function getChainId(): number {
 	return hre.network.config.chainId || HARDHAT_CHAINID;
+}
+
+export async function waitForTx(
+	tx: Promise<TransactionResponse> | TransactionResponse,
+	skipCheck = false
+): Promise<TransactionReceipt> {
+	if (!skipCheck) await expect(tx).to.not.be.reverted;
+	return await (await tx).wait();
+}
+
+export function matchEvent(
+	receipt: TransactionReceipt,
+	name: string,
+	expectedArgs?: any[],
+	eventContract: Contract = eventsLib,
+	emitterAddress?: string
+) {
+	const events = receipt.logs;
+
+	if (events != undefined) {
+		// match name from list of events in eventContract, when found, compute the sigHash
+		let sigHash: string | undefined;
+		for (let contractEvent of Object.keys(eventContract.interface.events)) {
+			if (contractEvent.startsWith(name) && contractEvent.charAt(name.length) == '(') {
+				sigHash = keccak256(toUtf8Bytes(contractEvent));
+				break;
+			}
+		}
+		// Throw if the sigHash was not found
+		if (!sigHash) {
+			logger.throwError(
+				`Event "${name}" not found in provided contract (default: Events libary). \nAre you sure you're using the right contract?`
+			);
+		}
+
+		// Find the given event in the emitted logs
+		let invalidParamsButExists = false;
+		for (let emittedEvent of events) {
+			// If we find one with the correct sighash, check if it is the one we're looking for
+			if (emittedEvent.topics[0] == sigHash) {
+				// If an emitter address is passed, validate that this is indeed the correct emitter, if not, continue
+				if (emitterAddress) {
+					if (emittedEvent.address != emitterAddress) continue;
+				}
+				const event = eventContract.interface.parseLog(emittedEvent);
+				// If there are expected arguments, validate them, otherwise, return here
+				if (expectedArgs) {
+					if (expectedArgs.length != event.args.length) {
+						logger.throwError(
+							`Event "${name}" emitted with correct signature, but expected args are of invalid length`
+						);
+					}
+					invalidParamsButExists = false;
+					// Iterate through arguments and check them, if there is a mismatch, continue with the loop
+					for (let i = 0; i < expectedArgs.length; i++) {
+						// Parse empty arrays as empty bytes
+						if (expectedArgs[i].constructor == Array && expectedArgs[i].length == 0) {
+							expectedArgs[i] = '0x';
+						}
+
+						// Break out of the expected args loop if there is a mismatch, this will continue the emitted event loop
+						if (BigNumber.isBigNumber(event.args[i])) {
+							if (!event.args[i].eq(BigNumber.from(expectedArgs[i]))) {
+								invalidParamsButExists = true;
+								break;
+							}
+						} else if (event.args[i].constructor == Array) {
+							let params = event.args[i];
+							let expected = expectedArgs[i];
+							if (expected != '0x' && params.length != expected.length) {
+								invalidParamsButExists = true;
+								break;
+							}
+							for (let j = 0; j < params.length; j++) {
+								if (BigNumber.isBigNumber(params[j])) {
+									if (!params[j].eq(BigNumber.from(expected[j]))) {
+										invalidParamsButExists = true;
+										break;
+									}
+								} else if (params[j] != expected[j]) {
+									invalidParamsButExists = true;
+									break;
+								}
+							}
+							if (invalidParamsButExists) break;
+						} else if (event.args[i] != expectedArgs[i]) {
+							invalidParamsButExists = true;
+							break;
+						}
+					}
+					// Return if the for loop did not cause a break, so a match has been found, otherwise proceed with the event loop
+					if (!invalidParamsButExists) {
+						return;
+					}
+				} else {
+					return;
+				}
+			}
+		}
+		// Throw if the event args were not expected or the event was not found in the logs
+		if (invalidParamsButExists) {
+			logger.throwError(`Event "${name}" found in logs but with unexpected args`);
+		} else {
+			logger.throwError(
+				`Event "${name}" not found emitted by "${emitterAddress}" in given transaction log`
+			);
+		}
+	} else {
+		logger.throwError('No events were emitted');
+	}
 }
 
 export async function getTimestamp(): Promise<any> {
@@ -660,4 +775,76 @@ export async function approveToken(
 			},
 		})
 	).to.not.be.reverted;
+}
+
+export async function calcBondingCurve(
+	supply: BigNumber,
+	reserveBalance: BigNumber,
+	reserveRatio: number,
+	depositAmount: BigNumber,
+) {
+	// Handle the initialization of the bonding curve
+	if (supply.eq(0)) {
+		const minDeposit = await bardsStaking.minimumStaking()
+		if (depositAmount.lt(minDeposit)) {
+			throw new Error('deposit must be above minimum')
+		}
+		const defaultReserveRatio = await bardsStaking.defaultStakingReserveRatio()
+		const minSupply = toBCT('1')
+		return (
+			(await calcBondingCurve(
+				minSupply,
+				minDeposit,
+				defaultReserveRatio,
+				depositAmount.sub(minDeposit),
+			)) + toFloat(minSupply)
+		)
+	}
+	// Calculate bonding curve in the test
+	return (
+		toFloat(supply) *
+		((1 + toFloat(depositAmount) / toFloat(reserveBalance)) ** (reserveRatio / BPS_MAX) - 1)
+	)
+}
+
+export const chunkify = (total: BigNumber, maxChunks = 10): Array<BigNumber> => {
+	const chunks: BigNumber[] = []
+	while (total.gt(0) && maxChunks > 0) {
+		const m = 1000000
+		const p = Math.floor(Math.random() * m)
+		const n = total.mul(p).div(m)
+		chunks.push(n)
+		total = total.sub(n)
+		maxChunks--
+	}
+	if (total.gt(0)) {
+		chunks.push(total)
+	}
+	return chunks
+}
+
+export async function stakingReturningPair(
+	stakingContract: BardsStaking = bardsStaking,
+	sender: Signer,
+	curationId: BigNumber,
+	tokens: BigNumber
+): Promise<[BigNumber, BigNumber]> {
+	let stakingOutPair: [BigNumber, BigNumber] = await stakingContract
+		.connect(sender)
+		.callStatic.stake(curationId, tokens);
+	await expect(stakingContract.connect(sender).stake(curationId, tokens)).to.not.be.reverted;
+	return stakingOutPair;
+}
+
+export async function unstakingReturningPair(
+	stakingContract: BardsStaking = bardsStaking,
+	sender: Signer,
+	curationId: BigNumber,
+	shares: BigNumber
+): Promise<BigNumber> {
+	let shareOut = await stakingContract
+		.connect(sender)
+		.callStatic.unstake(curationId, shares);
+	await expect(stakingContract.connect(sender).unstake(curationId, shares)).to.not.be.reverted;
+	return shareOut;
 }

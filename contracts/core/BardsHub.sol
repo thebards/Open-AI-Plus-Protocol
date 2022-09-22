@@ -20,9 +20,9 @@ import './govs/BardsPausable.sol';
  */
 contract BardsHub is
     BardsCurationBase,
-    BardsHubStorage,
-    BardsPausable,
     VersionedInitializable,
+    BardsPausable,
+    BardsHubStorage,
     IBardsHub
 {
     uint256 internal constant REVISION = 1;
@@ -49,7 +49,11 @@ contract BardsHub is
         string calldata name,
         string calldata symbol,
         address newGovernance
-    ) external override initializer {
+    ) 
+        external 
+        override 
+        initializer 
+    {
         super._initialize(name, symbol);
         _setState(DataTypes.ProtocolState.Paused);
         _setGovernance(newGovernance);

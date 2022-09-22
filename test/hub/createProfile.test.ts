@@ -32,7 +32,6 @@ import {
 	mockMarketModuleInitData,
 	mockMinterMarketModuleInitData,
 	bardsCurationToken,
-	treasuryAddress,
 	transferMinter
 } from '../__setup.test';
 import { DataTypes } from '../../typechain-types/contracts/core/BardsHub';

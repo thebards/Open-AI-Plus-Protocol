@@ -271,7 +271,7 @@ contract BardsStaking is
     ) 
         external 
         override 
-        returns (uint256, uint256) 
+        returns (uint256 shareOut, uint256 stakingTax) 
     {
         require(_tokens > 0, "Cannot deposit zero tokens");
 
@@ -282,7 +282,6 @@ contract BardsStaking is
         );
 
         address delegator = msg.sender;
-        
         TokenUtils.transfer(bardsCurationToken(), delegator, _tokens, stakingAddress);
 
         return _stake(_curationId, _tokens, delegator);
@@ -295,7 +294,7 @@ contract BardsStaking is
      * @param _tokens Amount of tokens to stake
      * @param _delegator Address of the delegator
      * 
-     * @return Amount of shares issued of the staking pool
+     * @return shareOut, stakingTax shares issued of the staking pool
      */
     function _stake(
         uint256 _curationId,
@@ -431,9 +430,10 @@ contract BardsStaking is
         stakingPool.fees[currentEpoch].totalShare = getStakingPoolShare(_curationId);
 
         emit Events.StakeDelegatedLocked(
-            _curationId, 
-            _delegator, 
-            _shares, 
+            _delegator,
+            _curationId,  
+            _shares,
+            tokensOut,
             delegation.tokensLockedUntil, 
             block.timestamp
         );
@@ -905,8 +905,21 @@ contract BardsStaking is
         override
         returns (uint256)
     {
-        address bst = _stakingPools[_curationId].bst;
-        return (bst == address(0)) ? 0 : IBardsShareToken(bst).balanceOf(_delegator);
+        return _stakingPools[_curationId].delegators[_delegator].shares;
+        // address bst = _stakingPools[_curationId].bst;
+        // return (bst == address(0)) ? 0 : IBardsShareToken(bst).balanceOf(_delegator);
+    }
+
+    /// @inheritdoc IBardsStaking
+    function getReserveRatioOfCuration(
+        uint256 _curationId
+    )
+        public
+        view
+        override
+        returns (uint32 reserveRatio)
+    {
+        return _stakingPools[_curationId].reserveRatio;
     }
 
     /// @inheritdoc IBardsStaking

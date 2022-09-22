@@ -62,7 +62,7 @@ import {
 	CloneMinter,
 	CloneMinter__factory,
 	EmptyMinter,
-	EmptyMinter__factory
+	EmptyMinter__factory,
 } from '../typechain-types';
 
 import { BardsHubLibraryAddresses} from "../typechain-types/factories/contracts/core/BardsHub__factory";
@@ -174,11 +174,6 @@ before(async function () {
 
 	bardsHubImpl = await new BardsHub__factory(hubLibs, deployer).deploy();
 	
-	bardsHubImpl.initialize(
-		BARDS_HUB_NFT_NAME,
-		BARDS_HUB_NFT_SYMBOL,
-		governanceAddress
-	);
 	let data = bardsHubImpl.interface.encodeFunctionData('initialize', [
 		BARDS_HUB_NFT_NAME,
 		BARDS_HUB_NFT_SYMBOL,
@@ -192,7 +187,7 @@ before(async function () {
 	
 	// Connect the hub proxy to the LensHub factory and the user for ease of use.
 	bardsHub = BardsHub__factory.connect(proxy.address, user);
-
+	
 	// bards Dao Data
 	bardsDaoData = await new BardsDaoData__factory(deployer).deploy(
 		governanceAddress,
@@ -250,8 +245,12 @@ before(async function () {
 		DEFAULTS.staking.reserveRatio,
 		DEFAULTS.staking.stakingTaxPercentage,
 		DEFAULTS.staking.minimumStake,
-		testWallet.address
+		testWallet.address,
+		DEFAULTS.staking.alphaNumerator,
+		DEFAULTS.staking.alphaDenominator,
+		DEFAULTS.staking.thawingPeriod
 	);
+	
 	await bardsHub.connect(governance).registerContract(
 		utils.id('BardsStaking'),
 		bardsStaking.address

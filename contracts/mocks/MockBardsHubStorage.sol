@@ -2,17 +2,15 @@
 
 pragma solidity ^0.8.9;
 
-import {DataTypes} from '../../utils/DataTypes.sol';
+import {DataTypes} from '../utils/DataTypes.sol';
 
 /**
  * @title BardsHubStorage
  * @author TheBards Protocol
  *
- * @notice This is an abstract contract that *only* contains storage for the BardsHub contract. This
- * *must* be inherited last (bar interfaces) in order to preserve the BardsHub storage layout. Adding
- * storage variables should be done solely at the bottom of this contract.
+ * @notice This is an mock storage
  */
-abstract contract BardsHubStorage {
+abstract contract MockBardsHubStorage {
 	bytes32 internal constant SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH =
         keccak256(
             'SetDefaultProfileWithSig(address wallet,uint256 profileId,uint256 nonce,uint256 deadline)'
@@ -50,7 +48,7 @@ abstract contract BardsHubStorage {
 	mapping(address => uint256) internal _defaultProfileByAddress;
 	// whitelists
 	mapping(address => bool) internal _marketModuleWhitelisted;
-	mapping (address => bool) internal _minterModuleWhitelisted;
+	mapping(address => bool) internal _minterModuleWhitelisted;
 	mapping(address => bool) internal _profileCreatorWhitelisted;
     mapping(address => bool) internal _currencyWhitelisted;
 
@@ -68,4 +66,5 @@ abstract contract BardsHubStorage {
     uint256 internal _curationCounter;
     address internal _governance;
     address internal _emergencyAdmin;
+	uint256 internal _additionalValue;
 }
