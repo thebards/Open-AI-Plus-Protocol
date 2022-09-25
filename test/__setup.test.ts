@@ -20,7 +20,7 @@ import {
 import {
 	revertToSnapshot,
 	takeSnapshot,
-	toBCT
+	toBCT,
 } from './utils/Helpers';
 
 import {
@@ -63,6 +63,7 @@ import {
 	CloneMinter__factory,
 	EmptyMinter,
 	EmptyMinter__factory,
+	CodeUtils__factory,
 } from '../typechain-types';
 
 import { BardsHubLibraryAddresses} from "../typechain-types/factories/contracts/core/BardsHub__factory";
@@ -163,14 +164,16 @@ before(async function () {
 
 	// libs
 	const curationHelpers = await new CurationHelpers__factory(deployer).deploy();
-	hubLibs = {
-		'contracts/utils/CurationHelpers.sol:CurationHelpers': curationHelpers.address
-	};
-
+	const codeUtils = await new CodeUtils__factory(deployer).deploy();
 	const cobbs = await new LibCobbDouglas__factory(deployer).deploy();
+	hubLibs = {
+		'contracts/utils/CurationHelpers.sol:CurationHelpers': curationHelpers.address,
+		'contracts/utils/CodeUtils.sol:CodeUtils': codeUtils.address
+	};
 	bardsStakingLibs = {
-		'contracts/utils/Cobbs.sol:LibCobbDouglas': cobbs.address
-	}
+		'contracts/utils/Cobbs.sol:LibCobbDouglas': cobbs.address,
+		'contracts/utils/CodeUtils.sol:CodeUtils': codeUtils.address
+	};
 
 	bardsHubImpl = await new BardsHub__factory(hubLibs, deployer).deploy();
 	
@@ -187,7 +190,7 @@ before(async function () {
 	
 	// Connect the hub proxy to the LensHub factory and the user for ease of use.
 	bardsHub = BardsHub__factory.connect(proxy.address, user);
-	
+
 	// bards Dao Data
 	bardsDaoData = await new BardsDaoData__factory(deployer).deploy(
 		governanceAddress,

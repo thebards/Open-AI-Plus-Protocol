@@ -58,7 +58,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -81,7 +81,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -104,7 +104,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -127,7 +127,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -159,7 +159,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: faultMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithoutReason;
 			});
@@ -179,7 +179,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -206,7 +206,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -242,7 +242,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					},
 				})
 			).to.eq(FIRST_PROFILE_ID);
@@ -281,7 +281,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					},
 				})
 			).to.eq(secondProfileId);
@@ -319,7 +319,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					},
 				})
 			).to.eq(FIRST_PROFILE_ID);
@@ -341,7 +341,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					},
 				})
 			).to.eq(secondProfileId);
@@ -362,7 +362,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					},
 				})
 			).to.eq(thirdProfileId);
@@ -383,7 +383,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -403,7 +403,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 
@@ -421,7 +421,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.be.revertedWithCustomError(
 				errorsLib,
@@ -442,7 +442,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -472,7 +472,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: fixPriceMarketModule.address,
 					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -492,7 +492,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 			expect(await bardsHub.ownerOf(FIRST_PROFILE_ID)).to.eq(userTwoAddress);

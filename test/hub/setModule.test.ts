@@ -1,4 +1,3 @@
-import { zeroPad } from '@ethersproject/bytes';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { 
@@ -22,14 +21,10 @@ import {
 	governance,
 	userAddress,
 	userTwo,
-	userTwoAddress,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
-	mockMinterMarketModuleInitData,
 	errorsLib,
 	fixPriceMarketModule,
-	bardsCurationToken,
-	transferMinter,
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Setting Market Module', function () {
@@ -49,7 +44,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -188,7 +183,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});

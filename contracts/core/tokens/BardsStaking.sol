@@ -16,6 +16,7 @@ import '../../utils/Rebates.sol';
 import '../../utils/MultiCurrencyFeesUtils.sol';
 import '../../utils/TokenUtils.sol';
 import '../../utils/MathUtils.sol';
+import '../../utils/CodeUtils.sol';
 import '../../interfaces/tokens/IBardsShareToken.sol';
 import '../../interfaces/tokens/IBardsCurationToken.sol';
 import '../govs/ContractRegistrar.sol';
@@ -239,7 +240,7 @@ contract BardsStaking is
 
     /// @inheritdoc IBardsStaking
     function isSeller(
-        address _allocationID,
+        uint256 _allocationId,
         address _seller
     ) 
         public 
@@ -247,17 +248,10 @@ contract BardsStaking is
         override 
         returns (bool)
     {
-        DataTypes.Allocation storage _alloc = allocations[_allocationID];
-        (   
-            address[] memory sellers,
-            ,
-            uint32[] memory sellerBpses,
-        ) = abi.decode(
-            _alloc.recipientsMeta,
-            (address[], address[], uint32[], uint32)
-        );
-        for(uint256 i = 0; i < sellers.length; i ++){
-            if (sellers[i] == _seller && sellerBpses[i] > 0){
+        DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(allocations[_allocationId].recipientsMeta);
+
+        for(uint256 i = 0; i < curationData.sellerFundsRecipients.length; i ++){
+            if (curationData.sellerFundsRecipients[i] == _seller && curationData.sellerFundsBpses[i] > 0){
                 return true;
             }
         }
@@ -325,9 +319,6 @@ contract BardsStaking is
             }
         }
 
-        // Trigger update rewards calculation snapshot
-        _updateRewardsWithStaking(_curationId);
-
         // Transfer tokens from the delegator to this contract
         // Burn the staking tax
         // NOTE: This needs to happen after _updateRewards snapshot as that function
@@ -349,6 +340,9 @@ contract BardsStaking is
 
         // reset the current epoch totalShare of MultiCurrencyFees.
         stakingPool.fees[epochManager().currentEpoch()].totalShare = getStakingPoolShare(_curationId);
+
+        // Trigger update rewards calculation snapshot
+        _updateRewardsWithStaking(_curationId);
 
         emit Events.CurationPoolStaked(
             _delegator, 
@@ -400,15 +394,14 @@ contract BardsStaking is
         );
         // Get the amount of tokens to refund based on returned signal
         uint256 tokensOut = shareToTokens(_curationId, _shares);
-        // Trigger update rewards calculation
-        _updateRewardsWithStaking(_curationId);
+
         // Update curation pool
         DataTypes.CurationStakingPool storage stakingPool = _stakingPools[_curationId];
         stakingPool.tokens = stakingPool.tokens.sub(tokensOut);
         // Update the individual delegation
         DataTypes.Delegation storage delegation = stakingPool.delegators[_delegator];
         // Withdraw tokens if available
-        if (getWithdraweableBCTTokens(_curationId, _delegator) > 0) {
+        if (getWithdrawableBCTTokens(_curationId, _delegator) > 0) {
             _withdrawStaked(_delegator, _curationId, 0);
         }
         uint256 currentEpoch = epochManager().currentEpoch();
@@ -429,6 +422,8 @@ contract BardsStaking is
         // reset the current epoch totalShare of MultiCurrencyFees.
         stakingPool.fees[currentEpoch].totalShare = getStakingPoolShare(_curationId);
 
+        // Trigger update rewards calculation
+        _updateRewardsWithStaking(_curationId);
         emit Events.StakeDelegatedLocked(
             _delegator,
             _curationId,  
@@ -488,34 +483,34 @@ contract BardsStaking is
         override 
         whenNotPaused 
     {
-        _allocate(msg.sender, _createAllocationData);
+        _allocate(_createAllocationData);
     }
 
     /// @inheritdoc IBardsStaking
-    function closeAllocation(address _allocationID, uint256 _stakeToCuration) 
+    function closeAllocation(uint256 _allocationId, uint256 _stakeToCuration) 
         external 
         override 
         whenNotPaused 
     {
-        _closeAllocation(_allocationID, _stakeToCuration);
+        _closeAllocation(_allocationId, _stakeToCuration);
     }
 
     /// @inheritdoc IBardsStaking
-    function closeAllocationMany(address[] calldata _allocationIDs, uint256[] calldata _stakeToCurations)
+    function closeAllocationMany(uint256[] calldata _allocationIds, uint256[] calldata _stakeToCurations)
         external
         override
         whenNotPaused 
     {
-        require(_allocationIDs.length == _stakeToCurations.length, 'length not match');
+        require(_allocationIds.length == _stakeToCurations.length, 'length not match');
 
-        for (uint256 i = 0; i < _allocationIDs.length; i++) {
-            _closeAllocation(_allocationIDs[i], _stakeToCurations[i]);
+        for (uint256 i = 0; i < _allocationIds.length; i++) {
+            _closeAllocation(_allocationIds[i], _stakeToCurations[i]);
         }
     }
 
     /// @inheritdoc IBardsStaking
     function closeAndAllocate(
-        address _closingAllocationID,
+        uint256 _closingAllocationID,
         uint256 _stakeToCuration,
         DataTypes.CreateAllocateData calldata _createAllocationData
     ) 
@@ -524,31 +519,49 @@ contract BardsStaking is
         whenNotPaused 
     {
         _closeAllocation(_closingAllocationID, _stakeToCuration);
-        _allocate(msg.sender, _createAllocationData);
+        _allocate(_createAllocationData);
     }
 
     /// @inheritdoc IBardsStaking
     function collect(
         address _currency, 
         uint256 _tokens, 
-        address _allocationID
+        uint256 _allocationId
     ) 
         external 
         override
     {
+        _collect(
+            _currency,
+            _tokens,
+            _allocationId
+        );
+    }
+
+    /**
+     * @notice The internal function of collect.
+     */
+    function _collect(
+        address _currency, 
+        uint256 _tokens, 
+        uint256 _allocationId
+    ) 
+        internal 
+    {
         // Allocation identifier validation
-        require(_allocationID != address(0), "!alloc");
+        require(_allocationId != 0, "!alloc");
 
         // Allocation must exist
-        DataTypes.AllocationState allocState = _getAllocationState(_allocationID);
+        DataTypes.AllocationState allocState = _getAllocationState(_allocationId);
         require(allocState != DataTypes.AllocationState.Null, "!collect");
 
         // Get allocation
-        DataTypes.Allocation storage alloc = allocations[_allocationID];
+        DataTypes.Allocation storage alloc = allocations[_allocationId];
         uint256 tradeFees = _tokens;
 
         // Process trade fees only if non-zero amount
         if (tradeFees > 0) {
+
             // Add funds to the allocation
             alloc.collectedFees.tryInsertCurrencyFees(_currency, tradeFees);
 
@@ -565,7 +578,7 @@ contract BardsStaking is
             alloc.curationId,
             epochManager().currentEpoch(),
             _tokens,
-            _allocationID,
+            _allocationId,
             msg.sender,
             _currency,
             block.timestamp
@@ -593,32 +606,32 @@ contract BardsStaking is
 
     /// @inheritdoc IBardsStaking
     function claim(
-        address _allocationID, 
+        uint256 _allocationId, 
         uint256 _stakeToCuration
     ) 
         external 
         override 
         whenNotPaused 
     {
-        _claim(_allocationID, _stakeToCuration);
+        _claim(_allocationId, _stakeToCuration);
     }
 
     /// @inheritdoc IBardsStaking
     function claimMany(
-        address[] calldata _allocationIDs, 
+        uint256[] calldata _allocationIds, 
         uint256 _stakeToCuration
     )
         external
         override
         whenNotPaused
     {
-        for (uint256 i = 0; i < _allocationIDs.length; i++) {
-            _claim(_allocationIDs[i], _stakeToCuration);
+        for (uint256 i = 0; i < _allocationIds.length; i++) {
+            _claim(_allocationIds[i], _stakeToCuration);
         }
     }
 
     /// @inheritdoc IBardsStaking
-    function getWithdraweableBCTTokens(uint256 _curationId, address _delegator)
+    function getWithdrawableBCTTokens(uint256 _curationId, address _delegator)
         public
         view
         returns (uint256)
@@ -632,6 +645,19 @@ contract BardsStaking is
             return _delegation.tokensLocked;
         }
         return 0;
+    }
+
+    /// @inheritdoc IBardsStaking
+    function getFeesCollectedInAllocation(
+        uint256 _allocationId, 
+        address _currency
+    )
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return allocations[_allocationId].collectedFees.fees[_currency];
     }
 
     /// @inheritdoc IBardsStaking
@@ -655,18 +681,18 @@ contract BardsStaking is
     }
 
     /// @inheritdoc IBardsStaking
-    function isAllocation(address _allocationID) external view override returns (bool) {
-        return _getAllocationState(_allocationID) != DataTypes.AllocationState.Null;
+    function isAllocation(uint256 _allocationId) external view override returns (bool) {
+        return _getAllocationState(_allocationId) != DataTypes.AllocationState.Null;
     }
 
     /// @inheritdoc IBardsStaking
-    function getAllocationState(address _allocationID)
+    function getAllocationState(uint256 _allocationId)
         external
         view
         override
         returns (DataTypes.AllocationState)
     {
-        return _getAllocationState(_allocationID);
+        return _getAllocationState(_allocationId);
     }
 
     /// @inheritdoc IBardsStaking
@@ -712,7 +738,7 @@ contract BardsStaking is
         DataTypes.Delegation storage delegation = stakingPool.delegators[_delegator];
 
         // Validation
-        uint256 tokensToWithdraw = getWithdraweableBCTTokens(_curationId, _delegator);
+        uint256 tokensToWithdraw = getWithdrawableBCTTokens(_curationId, _delegator);
         require(tokensToWithdraw > 0, "!tokens");
 
         // Reset lock
@@ -873,21 +899,21 @@ contract BardsStaking is
 
     /**
      * @dev Return the simple allocation by ID.
-     * @param _allocationID Address used as allocation identifier
+     * @param _allocationId Address used as allocation identifier
      * @return SimpleAllocation data
      */
-    function getSimpleAllocation(address _allocationID)
+    function getSimpleAllocation(uint256 _allocationId)
         external
         view
         override
         returns (DataTypes.SimpleAllocation memory)
     {
-        DataTypes.Allocation storage alloc = allocations[_allocationID];
+        DataTypes.Allocation storage alloc = allocations[_allocationId];
         return DataTypes.SimpleAllocation(
             alloc.curator,
             alloc.curationId,
             alloc.recipientsMeta,
-            alloc.tokens,
+            _stakingPools[alloc.curationId].tokens,
             alloc.createdAtEpoch,
             alloc.closedAtEpoch,
             alloc.effectiveAllocationStake,
@@ -1171,81 +1197,45 @@ contract BardsStaking is
     }
 
     /**
-     * @notice Caller must prove that they own the private key for the allocationID adddress
-     * The proof is an Ethereum signed message of KECCAK256(indexerAddress,allocationID)
-     * 
-     * @param curator The Address of curator
-     * @param _createAllocationData Data of struct CreateAllocationData
-     */
-    function _proveAllocation(
-        address curator,
-        DataTypes.CreateAllocateData calldata _createAllocationData
-    )
-        private
-        pure
-        returns (bool)
-    {
-        bytes32 messageHash = keccak256(abi.encodePacked(curator, _createAllocationData.allocationID));
-        bytes32 digest = ECDSA.toEthSignedMessageHash(messageHash);
-        return ECDSA.recover(digest, _createAllocationData.proof) == _createAllocationData.allocationID;
-    }
-
-    /**
      * @notice Allocate available tokens to a curation.
      * 
-     * @param curator The Address of curator
      * @param _createAllocationData Data of struct CreateAllocationData
      */
     function _allocate(
-        address curator,
         DataTypes.CreateAllocateData calldata _createAllocationData 
     ) 
         private 
     {
+        address curator = _createAllocationData.curator;
         // Check allocation
         require(
-            _createAllocationData.allocationID != address(0), 
+            _createAllocationData.allocationId != 0,
             "!alloc"
         );
+        
         require(
-            _getAllocationState(_createAllocationData.allocationID) == DataTypes.AllocationState.Null, 
+            _getAllocationState(_createAllocationData.allocationId) == DataTypes.AllocationState.Null, 
             "!null"
-        );
-
-        // Caller must prove that they own the private key for the allocationID adddress
-        require(_proveAllocation(curator, _createAllocationData), "!proof");
-
-        // Allocating zero-tokens still needs to comply with stake requirements
-        require(
-            _stakingPools[_createAllocationData.curationId].tokens >= minimumStaking,
-            "!minimumStaking"
         );
 
         // Creates an allocation
         // Allocation identifiers are not reused
-        allocations[_createAllocationData.allocationID].curationId = _createAllocationData.curationId;
-        allocations[_createAllocationData.allocationID].recipientsMeta = _createAllocationData.recipientsMeta;
-        allocations[_createAllocationData.allocationID].tokens = _createAllocationData.tokens;
-        allocations[_createAllocationData.allocationID].createdAtEpoch = epochManager().currentEpoch();
-        allocations[_createAllocationData.allocationID].closedAtEpoch = 0;
+        allocations[_createAllocationData.allocationId].curator = _createAllocationData.curator;
+        allocations[_createAllocationData.allocationId].curationId = _createAllocationData.curationId;
+        allocations[_createAllocationData.allocationId].recipientsMeta = _createAllocationData.recipientsMeta;
+        // allocations[_createAllocationData.allocationId].tokens = _stakingPools[_createAllocationData.curationId].tokens;
+        allocations[_createAllocationData.allocationId].createdAtEpoch = epochManager().currentEpoch();
+        allocations[_createAllocationData.allocationId].closedAtEpoch = 0;
         // Initialize effective allocation
-        allocations[_createAllocationData.allocationID].effectiveAllocationStake = 0;
+        allocations[_createAllocationData.allocationId].effectiveAllocationStake = 0;
         // Initialize accumulated rewards per stake allocated
-        allocations[_createAllocationData.allocationID].accRewardsPerAllocatedToken = (_createAllocationData.tokens > 0) ? _updateRewardsWithAllocation(_createAllocationData.curationId) : 0;
-
-        // // -- Rewards Distribution --
-        // // Process non-zero-allocation rewards tracking
-        // if (_createAllocationData.tokens > 0) {
-        //     // Mark allocated tokens as used
-        //     _stakingPools[_createAllocationData.curationId].tokensAllocated.add(alloc.tokens);
-        // }
+        allocations[_createAllocationData.allocationId].accRewardsPerAllocatedToken = 
+            (_stakingPools[_createAllocationData.curationId].tokens > 0) ? _updateRewardsWithAllocation(_createAllocationData.curationId) : 0;
 
         emit Events.AllocationCreated(
             _createAllocationData.curationId,
-            0,
-            _createAllocationData.tokens,
-            _createAllocationData.allocationID,
-            _createAllocationData.metadata,
+            _createAllocationData.allocationId,
+            epochManager().currentEpoch(),
             block.timestamp
         );
     }
@@ -1254,26 +1244,27 @@ contract BardsStaking is
      * @notice curator or operator can close an allocation.
      * Stakeholders (delegators or seller) are also allowed but only after maxAllocationEpochs passed
      * 
-     * @param _allocationID _allocationID
+     * @param _allocationId _allocationId
      * @param _epochs epochs
      */
     function _canCloseAllocation(
-        address _allocationID,
+        uint256 _allocationId,
         uint256 _epochs
     )
         private
         view
         returns (bool)
     {
-        DataTypes.Allocation storage _alloc = allocations[_allocationID];
+        DataTypes.Allocation storage _alloc = allocations[_allocationId];
 
         // Stakeholders (delegators or seller) are also allowed but only after maxAllocationEpochs passed
         bool isCurator = _isAuth(_alloc.curator);
         if (_epochs > maxAllocationEpochs) {
             require(
+                HUB == msg.sender ||
                 isCurator || 
                 isDelegator(_alloc.curationId, msg.sender) || 
-                isSeller(_allocationID, msg.sender), 
+                isSeller(_allocationId, msg.sender), 
                 "!auth-or-del-or-sel");
         } else {
             require(isCurator, "!auth");
@@ -1283,29 +1274,32 @@ contract BardsStaking is
 
     /**
      * @notice Close an allocation and free the staked tokens.
-     * @param _allocationID The allocation identifier
+     * @param _allocationId The allocation identifier
      */
-    function _closeAllocation(address _allocationID, uint256 _stakeToCuration) 
+    function _closeAllocation(uint256 _allocationId, uint256 _stakeToCuration) 
         private 
     {
         // Allocation must exist and be active
-        DataTypes.AllocationState allocState = _getAllocationState(_allocationID);
+        DataTypes.AllocationState allocState = _getAllocationState(_allocationId);
         require(allocState == DataTypes.AllocationState.Active, "!active");
 
         // Get allocation
-        DataTypes.Allocation storage alloc = allocations[_allocationID];
+        DataTypes.Allocation storage alloc = allocations[_allocationId];
 
         // Validate that an allocation cannot be closed before one epoch
         alloc.closedAtEpoch = epochManager().currentEpoch();
         uint256 epochs = MathUtils.diffOrZero(alloc.closedAtEpoch, alloc.createdAtEpoch);
         require(epochs > 0, "<epochs");
 
-        // Validate that not any caller can close an allocation
-        bool isCurator = _canCloseAllocation(_allocationID, epochs);
+        // Curator or operator can close an allocation
+        // Anyone is allowed to close ONLY under two concurrent conditions
+        // - After maxAllocationEpochs passed
+        // - When the allocation is for non-zero amount of tokens
+        bool isCurator = _canCloseAllocation(_allocationId, epochs);
 
         // -- Rebate Pool --
         // Calculate effective allocation for the amount of epochs it remained allocated
-        alloc.effectiveAllocationStake = _getEffectiveAllocation(maxAllocationEpochs, alloc.tokens, epochs);
+        alloc.effectiveAllocationStake = _getEffectiveAllocation(maxAllocationEpochs, _stakingPools[alloc.curationId].tokens, epochs);
 
         // Account collected fees and effective allocation in rebate pool for the epoch
         DataTypes.RebatePool storage rebatePool = rebates[alloc.closedAtEpoch];
@@ -1318,18 +1312,21 @@ contract BardsStaking is
         }
 
         // -- Rewards Distribution --
-
         // Process non-zero-allocation rewards tracking
-        if (alloc.tokens > 0) {
-            // Distribute rewards
-            _distributeRewards(_allocationID, _stakeToCuration);
+        if (_stakingPools[alloc.curationId].tokens > 0) {
+            if (isCurator){
+                // Distribute rewards
+                _distributeRewards(_allocationId, _stakeToCuration);
+            }
+            else
+                _updateRewardsWithAllocation(alloc.curationId);
         }
 
         emit Events.AllocationClosed(
             alloc.curationId,
             alloc.closedAtEpoch,
-            alloc.tokens,
-            _allocationID,
+            _stakingPools[alloc.curationId].tokens,
+            _allocationId,
             alloc.effectiveAllocationStake,
             msg.sender,
             _stakeToCuration,
@@ -1340,31 +1337,23 @@ contract BardsStaking is
 
     /**
      * @dev Claim tokens from the rebate pool.
-     * @param _allocationID Allocation from where we are claiming tokens
+     * @param _allocationId Allocation from where we are claiming tokens
      * @param _stakeToCuration Restake to othe curation.
      */
-    function _claim(address _allocationID, uint256 _stakeToCuration)
+    function _claim(uint256 _allocationId, uint256 _stakeToCuration)
         private 
     {
         // Funds can only be claimed after a period of time passed since allocation was closed
-        DataTypes.AllocationState allocState = _getAllocationState(_allocationID);
+        DataTypes.AllocationState allocState = _getAllocationState(_allocationId);
         require(allocState == DataTypes.AllocationState.Finalized, "!finalized");
 
         // Get allocation
-        DataTypes.Allocation storage alloc = allocations[_allocationID];
+        DataTypes.Allocation storage alloc = allocations[_allocationId];
 
         // Only the curator or operator can decide if to restake
-        _stakeToCuration = _isAuth(alloc.curator) ? _stakeToCuration : 0;
+        uint256 _stakeToCuration = _isAuth(alloc.curator) ? _stakeToCuration : 0;
 
-        (   
-            address[] memory sellers,
-            address[] memory sellerFundsRecipients,
-            uint32[] memory sellerBpses,
-            uint32 stakingBps
-        ) = abi.decode(
-            alloc.recipientsMeta, 
-            (address[], address[], uint32[], uint32)
-        );
+        DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(alloc.recipientsMeta);
 
         // Process rebate reward
         DataTypes.RebatePool storage rebatePool = rebates[alloc.closedAtEpoch];
@@ -1374,45 +1363,45 @@ contract BardsStaking is
             uint256 delegationRewards;
             uint256 remainingRewards;
             address curCurrency;
-            uint256 _reward;
 
             for(uint256 i = 0; i < alloc.collectedFees.currencies.length; i++){
                 curCurrency = alloc.collectedFees.currencies[i];
-                tokensToClaim = rebatePool.redeem(curCurrency, alloc.collectedFees.fees[curCurrency], alloc.effectiveAllocationStake);
+                // For BCT, rebating to curator
+                if (curCurrency == address(bardsCurationToken()))
+                    tokensToClaim = rebatePool.redeem(curCurrency, alloc.collectedFees.fees[curCurrency], alloc.effectiveAllocationStake);
+                else
+                    tokensToClaim = alloc.collectedFees.fees[curCurrency];
                 if (tokensToClaim <= 0){
                     continue;
                 }
                 // Add delegation rewards to the delegation pool
-                delegationRewards = _collectDelegationRewardsAndFees(alloc.curationId, curCurrency, tokensToClaim, stakingBps);
+                delegationRewards = _collectDelegationRewardsAndFees(alloc.curationId, curCurrency, tokensToClaim, curationData.stakingBps);
                 remainingRewards = tokensToClaim.sub(delegationRewards);
 
                 // When there are tokens to claim from the rebate pool, transfer or restake
-                // Send the split rewards
-                for(uint256 j = 0; j < sellers.length; j++){
-                    _reward = uint256(sellerBpses[j]).mul(remainingRewards).div(Constants.MAX_BPS);
-                    if (_reward <= 0){
-                        continue;
-                    }
-                    // restake
-                    if (curCurrency == address(bardsCurationToken()) && 
-                            sellers[j] == alloc.curator && 
-                                _stakeToCuration != 0){
-                        _stake(_stakeToCuration, _reward, alloc.curator);
-                        continue;
-                    }
-                    
-                    // Transfer funds to the beneficiary
-                    TokenUtils.transfer(
-                        IERC20(curCurrency),
-                        stakingAddress,
-                        _reward,
-                        sellerFundsRecipients[j]
-                    );
-                }
+                // Send the split rewards to sellers
+                _splitToSellers(
+                    alloc.curator,
+                    curCurrency,
+                    remainingRewards,
+                    _stakeToCuration,
+                    curationData.sellerFundsRecipients,
+                    curationData.sellerFundsBpses
+                );
+
+                // Send the split rewards to curations
+                _splitToCurations(
+                    curCurrency,
+                    remainingRewards,
+                    curationData.curationFundsRecipients,
+                    curationData.curationFundsBpses
+                );
+
                 uint256 _closeAtEpoch = alloc.closedAtEpoch;
+
                 emit Events.RebateClaimed(
                     alloc.curationId,
-                    _allocationID,
+                    _allocationId,
                     curCurrency,
                     epochManager().currentEpoch(),
                     _closeAtEpoch,
@@ -1425,11 +1414,11 @@ contract BardsStaking is
         }
         
         // Purge allocation data
-        allocations[_allocationID].tokens = 0;
-        allocations[_allocationID].createdAtEpoch = 0; // This avoid collect(), close() and claim() to be called
-        allocations[_allocationID].closedAtEpoch = 0;
-        allocations[_allocationID].effectiveAllocationStake = 0;
-        allocations[_allocationID].accRewardsPerAllocatedToken = 0;
+        // allocations[_allocationId].tokens = 0;
+        allocations[_allocationId].createdAtEpoch = 0; // This avoid collect(), close() and claim() to be called
+        allocations[_allocationId].closedAtEpoch = 0;
+        allocations[_allocationId].effectiveAllocationStake = 0;
+        allocations[_allocationId].accRewardsPerAllocatedToken = 0;
 
         // -- Interactions --
         // When all allocations processed then burn unclaimed fees and prune rebate pool
@@ -1441,17 +1430,81 @@ contract BardsStaking is
     }
 
     /**
+     * @notice Send the split rewards to sellers
+     */
+    function _splitToSellers(
+        address _curator,
+        address _currency,
+        uint256 _tokens,
+        uint256 _stakeToCuration,
+        address[] memory _sellerFundsRecipients,
+        uint32[] memory _sellerFundsBpses
+    )
+        internal
+    {
+        uint256 _rewards;
+        for(uint256 j = 0; j < _sellerFundsRecipients.length; j++){
+            _rewards = uint256(_sellerFundsBpses[j]).mul(_tokens).div(Constants.MAX_BPS);
+            if (_rewards <= 0){
+                continue;
+            }
+            // restake
+            if (_currency == address(bardsCurationToken()) && 
+                    _sellerFundsRecipients[j] == _curator && 
+                        _stakeToCuration != 0){
+                _stake(_stakeToCuration, _rewards, _curator);
+                continue;
+            }
+            
+            // Transfer funds to the beneficiary
+            TokenUtils.transfer(
+                IERC20(_currency),
+                stakingAddress,
+                _rewards,
+                _sellerFundsRecipients[j]
+            );
+        }
+    }
+
+    /**
+     * @notice Send the split rewards to curations
+     */
+    function _splitToCurations(
+        address _currency,
+        uint256 _tokens,
+        uint256[] memory _curationFundsRecipients,
+        uint32[] memory curationFundsBpses
+    )
+        internal
+    {
+        uint256 _rewards;
+        for(uint256 j = 0; j < _curationFundsRecipients.length; j++){
+            _rewards = uint256(curationFundsBpses[j]).mul(_tokens).div(Constants.MAX_BPS);
+            if (_rewards <= 0){
+                continue;
+            }
+            
+            // Transfer funds to the beneficiary
+            _collect(
+                _currency,
+                _rewards,
+                bardsHub().getAllocationIdById(_curationFundsRecipients[j])
+            );
+        }
+    }
+
+    /**
      * @notice Return the current state of an allocation
      * 
-     * @param _allocationID Allocation identifier
+     * @param _allocationId Allocation identifier
      * @return AllocationState
      */
-    function _getAllocationState(address _allocationID) 
+    function _getAllocationState(uint256 _allocationId) 
         private 
         view 
         returns (DataTypes.AllocationState) 
     {
-        DataTypes.Allocation storage alloc = allocations[_allocationID];
+        DataTypes.Allocation storage alloc = allocations[_allocationId];
 
         if (alloc.curationId == 0) {
             return DataTypes.AllocationState.Null;
@@ -1497,10 +1550,13 @@ contract BardsStaking is
      * @notice Assign rewards for the closed allocation to creators and delegators.
      * TODO support re-stake
      * 
-     * @param _allocationID Allocation
+     * @param _allocationId Allocation
      * @param _stakeToCuration _stakeToCuration
      */
-    function _distributeRewards(address _allocationID, uint256 _stakeToCuration) 
+    function _distributeRewards(
+        uint256 _allocationId, 
+        uint256 _stakeToCuration
+    ) 
         private 
     {
         IRewardsManager rewardsManager = rewardsManager();
@@ -1510,53 +1566,46 @@ contract BardsStaking is
 
         // Automatically triggers update of rewards snapshot as allocation will change
         // after this call. Take rewards mint tokens for the Staking contract to distribute
-        // between indexer and delegators
-        uint256 totalRewards = rewardsManager.takeRewards(_allocationID);
+        // between curator and delegators
+        uint256 totalRewards = rewardsManager.takeRewards(_allocationId);
         if (totalRewards == 0) {
             return;
         }
 
-        (   
-            address[] memory sellers,
-            address[] memory sellerFundsRecipients,
-            uint32[] memory sellerBpses,
-            uint32 stakingBps
-        ) = abi.decode(
-            allocations[_allocationID].recipientsMeta, 
-            (address[], address[], uint32[], uint32)
-        );
+        DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(allocations[_allocationId].recipientsMeta);
 
         IBardsCurationToken bct = bardsCurationToken();
 
         // Calculate delegation rewards and add them to the delegation pool
         uint256 delegationRewards = _collectDelegationRewardsAndFees(
-            allocations[_allocationID].curationId, 
+            allocations[_allocationId].curationId, 
             address(bct), 
             totalRewards, 
-            stakingBps
+            curationData.stakingBps
         );
         uint256 remainingRewards = totalRewards.sub(delegationRewards);
 
         unchecked {
-            // Send the split rewards
-            uint256 _reward;
-            address _curator = allocations[_allocationID].curator;
-            for(uint256 i = 0; i < sellers.length; i++){
-                _reward = uint256(sellerBpses[i]).mul(remainingRewards).div(Constants.MAX_BPS);
-                if(_reward <= 0){
-                    continue;
-                }
-                if (sellers[i] == allocations[_allocationID].curator && _stakeToCuration != 0){
-                    _stake(_stakeToCuration, _reward, _curator);
-                    continue;
-                }
-                TokenUtils.transfer(
-                    bct,
-                    stakingAddress, 
-                    _reward, 
-                    sellerFundsRecipients[i]
-                );
-            }
+            // Send the split rewards to sellers.
+            address _curator = allocations[_allocationId].curator;
+
+            // Send the split rewards to sellers
+            _splitToSellers(
+                _curator,
+                address(bct),
+                remainingRewards,
+                _stakeToCuration,
+                curationData.sellerFundsRecipients,
+                curationData.sellerFundsBpses
+            );
+
+            // Send the split rewards to curations
+            _splitToCurations(
+                address(bct),
+                remainingRewards,
+                curationData.curationFundsRecipients,
+                curationData.curationFundsBpses
+            );
         }
         
     }

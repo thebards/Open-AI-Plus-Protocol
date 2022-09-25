@@ -12,6 +12,7 @@ import {
 	deployer,
 	governanceAddress,
 	errorsLib,
+	hubLibs,
 } from '../__setup.test';
 
 import {
@@ -25,7 +26,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
 	const valueToSet = 123;
 
 	it('Should fail to initialize an implementation with the same revision', async function () {
-		const newImpl = await new MockBardsHubWithBadRevision__factory(deployer).deploy();
+		const newImpl = await new MockBardsHubWithBadRevision__factory(hubLibs, deployer).deploy();
 		const proxyHub = TransparentUpgradeableProxy__factory.connect(bardsHub.address, deployer);
 		const hub = MockBardsHubWithBadRevision__factory.connect(proxyHub.address, user);
 
@@ -57,7 +58,7 @@ makeSuiteCleanRoom('Upgradeability', function () {
 		expect(prevNextSlot).to.eq(formattedZero);
 		
 		// new hub
-		const newImpl = await new MockBardsHub__factory(deployer).deploy();
+		const newImpl = await new MockBardsHub__factory(hubLibs, deployer).deploy();
 		await proxyHub.upgradeTo(newImpl.address);
 		await expect(
 			MockBardsHub__factory.connect(proxyHub.address, user).setAdditionalValue(valueToSet)

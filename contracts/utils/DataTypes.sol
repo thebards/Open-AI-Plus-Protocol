@@ -85,25 +85,33 @@ library DataTypes {
     /**
      * @notice A struct containing the parameters required for the `SetAllocationIdData()` function. 
      *
-     * @param allocationId The address of the allocation.
-     * @param curationId The token ID of the curation .
+     * @param curationId The token ID of the curation.
+     * @param allocationId The allocation id.
+     * @param curationMetaData The encoding of curation Data.
+     * @param stakeToCuration The curation Id restake to
      */
     struct SetAllocationIdData {
-        address allocationId;
         uint256 curationId;
+        uint256 allocationId;
+        bytes curationMetaData;
+        uint256 stakeToCuration; 
     }
 
     /**
      * @notice A struct containing the parameters required for the `setAllocationIdWithSig()` function. Parameters are
      * the same as the regular `setAllocationId()` function, with an added EIP712Signature.
      *
+     * @param curationId The token ID of the curation.
      * @param allocationId The address of the allocation.
-     * @param curationId The token ID of the curation .
+     * @param curationMetaData The encoding of curation Data.
+     * @param stakeToCuration The curation Id restake to
      * @param sig The EIP712Signature struct containing the profile owner's signature.
      */
     struct SetAllocationIdWithSigData {
-        address allocationId;
         uint256 curationId;
+        uint256 allocationId;
+        bytes curationMetaData;
+        uint256 stakeToCuration;
         EIP712Signature sig;
     }
 
@@ -248,6 +256,7 @@ library DataTypes {
         string contentURI;
         address marketModule;
         address minterMarketModule;
+        uint256 allocationId;
     }
 
     /**
@@ -493,7 +502,6 @@ library DataTypes {
      * @param curator The address of curator.
      * @param curationId curation Id
      * @param recipientsMeta The snapshot of recipients from curationData.
-     * @param tokens Tokens allocated to a curation, currency => tokens
      * @param createdAtEpoch Epoch when it was created
      * @param closedAtEpoch Epoch when it was closed
      * @param collectedFees Collected fees for the allocation
@@ -504,7 +512,7 @@ library DataTypes {
         address curator;
         uint256 curationId;
         bytes recipientsMeta;
-        uint256 tokens;
+        // uint256 tokens;
         uint256 createdAtEpoch;
         uint256 closedAtEpoch;
         MultiCurrencyFees collectedFees;
@@ -542,7 +550,7 @@ library DataTypes {
      * Only one rebate pool exists per epoch
      * 
      * @param fees total trade fees in the rebate pool
-     * @param effectiveAllocatedStake total effective allocation of stake
+     * @param effectiveAllocationStake total effective allocation of stake
      * @param claimedRewards total claimed rewards from the rebate pool
      * @param unclaimedAllocationsCount amount of unclaimed allocations
      * @param alphaNumerator numerator of `alpha` in the cobb-douglas function
@@ -550,7 +558,7 @@ library DataTypes {
      */
     struct RebatePool {
         MultiCurrencyFees fees;
-        mapping (address => uint256) effectiveAllocatedStake;
+        mapping (address => uint256) effectiveAllocationStake;
         MultiCurrencyFees claimedRewards;
         uint32 unclaimedAllocationsCount;
         uint32 alphaNumerator;
@@ -560,24 +568,16 @@ library DataTypes {
     /**
      * @notice The struct for creating allocate
      * 
+     * @param allocationId The allocation Id.
      * @param curator The address of curator.
      * @param curationId Curation Id.
      * @param recipientsMeta The snapshot of recipients from curationData.
-     * @param currency The currency of tokens.
-     * @param tokens Amount of tokens to allocate.
-     * @param allocationId The allocationID will work to identify collected funds related to this allocation
-     * @param metadata Metadata related to the allocation
-     * @param proof A 65-bytes Ethereum signed message of `keccak256(curatorAddress,allocationID)`
      * 
      */
     struct CreateAllocateData {
+        uint256 allocationId;
         address curator;
         uint256 curationId;
         bytes recipientsMeta;
-        address currency;
-        uint256 tokens;
-        address allocationID;
-        bytes32 metadata;
-        bytes proof;
     }
 }

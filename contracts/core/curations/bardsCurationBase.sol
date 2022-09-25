@@ -10,6 +10,7 @@ import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
 import '../../utils/MathUtils.sol';
 import '../../utils/DataTypes.sol';
+import '../../utils/CodeUtils.sol';
 
 /**
  * @title BardsCurationBase
@@ -38,43 +39,34 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 			// 	msg.sender == tokenOwner || IERC721(_vars._tokenContract).isApprovedForAll(tokenOwner, msg.sender),
 			// 	"Creating curation must be token owner or operator"
 			// );
-			(
-				address[] memory sellerFundsRecipients,
-				uint256[] memory curationFundsRecipients,
-				uint32[] memory sellerFundsBpses,
-				uint32[] memory curationFundsBpses,
-				uint32 curationBps,
-				uint32 stakingBps
-			) = abi.decode(
-					_vars.curationData, 
-					(address[], uint256[], uint32[], uint32[], uint32, uint32)
-				);
+
+			DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(_vars.curationData);
 
 			require(
-				sellerFundsBpses.length == sellerFundsRecipients.length, 
+				curationData.sellerFundsBpses.length == curationData.sellerFundsRecipients.length, 
 				"sellerFundsRecipients and sellerFundsBpses must have same length."
 			);
 			require(
-				curationFundsRecipients.length == curationFundsBpses.length, 
+				curationData.curationFundsRecipients.length == curationData.curationFundsBpses.length, 
 				"curationFundsRecipients and curationFundsBpses must have same length."
 			);
 			require(
-				MathUtils.sum(MathUtils.uint32To256Array(sellerFundsBpses)) + 
-				MathUtils.sum(MathUtils.uint32To256Array(curationFundsBpses)) == Constants.MAX_BPS, 
+				MathUtils.sum(MathUtils.uint32To256Array(curationData.sellerFundsBpses)) + 
+				MathUtils.sum(MathUtils.uint32To256Array(curationData.curationFundsBpses)) == Constants.MAX_BPS, 
 				"The sum of sellerFundsBpses and curationFundsBpses must be equal to 1000000."
 			);
 			require(
-				curationBps + stakingBps <= Constants.MAX_BPS, 
+				curationData.curationBps + curationData.stakingBps <= Constants.MAX_BPS, 
 				"curationBps + stakingBps <= 100%"
 			);
 
 			_curationData[_vars.tokenId] = DataTypes.CurationData({
-				sellerFundsRecipients: sellerFundsRecipients,
-				curationFundsRecipients: curationFundsRecipients,
-				sellerFundsBpses: sellerFundsBpses,
-				curationFundsBpses: curationFundsBpses,
-				curationBps: curationBps,
-				stakingBps: stakingBps
+				sellerFundsRecipients: curationData.sellerFundsRecipients,
+				curationFundsRecipients: curationData.curationFundsRecipients,
+				sellerFundsBpses: curationData.sellerFundsBpses,
+				curationFundsBpses: curationData.curationFundsBpses,
+				curationBps: curationData.curationBps,
+				stakingBps: curationData.stakingBps
 			});
 			
 			emit Events.CurationInitialized(

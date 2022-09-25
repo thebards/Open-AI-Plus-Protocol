@@ -37,7 +37,7 @@ abstract contract MockBardsHubStorage {
         );
     bytes32 internal constant SET_ALLOCATION_ID_WITH_SIG_TYPEHASH =
         keccak256(
-            'SetAllocationIdWithSig(uint256 curationId,address allocationId,uint256 nonce,uint256 deadline)'
+            'SetAllocationIdWithSig(uint256 curationId,uint256 allocationId,uint256 nonce,uint256 deadline)'
         );
 
 	// Track contract ids to contract address

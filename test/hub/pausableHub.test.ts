@@ -12,11 +12,9 @@ import {
 } from '../utils/Constants';
 import { ERRORS } from '../utils/Errors';
 import {
-	cancelWithPermitForAll,
 	getSetMarketModuleWithSigParts,
 	getSetCurationContentURIWithSigParts,
 	getCreateCurationWithSigParts,
-	deriveChannelKey
 } from '../utils/Helpers';
 import {
 	abiCoder,
@@ -26,8 +24,6 @@ import {
 	makeSuiteCleanRoom,
 	testWallet,
 	governance,
-	userTwoAddress,
-	userTwo,
 	userAddress,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
@@ -222,7 +218,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -257,7 +253,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -282,7 +278,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 			});
@@ -302,7 +298,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -353,7 +349,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -428,7 +424,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -467,7 +463,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -533,7 +529,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -581,7 +577,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 			});
@@ -601,7 +597,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -635,7 +631,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -687,7 +683,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -715,7 +711,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -760,7 +756,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -788,7 +784,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -810,7 +806,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -835,7 +831,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 			});
@@ -855,7 +851,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -969,7 +965,7 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -987,16 +983,13 @@ makeSuiteCleanRoom('Pausable Hub', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
 				await expect(
 					bardsHub.connect(governance).setState(ProtocolState.Paused)
 				).to.not.be.reverted;
-
-				const channelKey = deriveChannelKey();
-				const allocationID = channelKey.address;
 
 				// await bardsCurationToken.transfer(userAddress, 1000000);
 				// console.log(await bardsCurationToken.balanceOf(userAddress));

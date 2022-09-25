@@ -5,11 +5,13 @@ pragma solidity ^0.8.9;
 import './curations/BardsCurationBase.sol';
 import './storages/BardsHubStorage.sol';
 import '../interfaces/IBardsHub.sol';
-import {DataTypes} from '../utils/DataTypes.sol';
+import '../utils/DataTypes.sol';
+import '../interfaces/tokens/IBardsStaking.sol';
 import '../upgradeablity/VersionedInitializable.sol';
 import '../utils/CurationHelpers.sol';
 import '../utils/Errors.sol';
 import './govs/BardsPausable.sol';
+import "hardhat/console.sol";
 
 
 /**
@@ -192,8 +194,10 @@ contract BardsHub is
     {
         if (!_profileCreatorWhitelisted[msg.sender])
             revert Errors.ProfileCreatorNotWhitelisted();
+
         unchecked {
             uint256 profileId = ++_curationCounter;
+            uint256 allocationId = ++_allocationCounter;
             _mint(vars.to, profileId);
             vars.profileId = profileId;
             vars.tokenContractPointed = address(this);
@@ -213,6 +217,17 @@ contract BardsHub is
                     curationData: vars.curationMetaData
                 })
             ); 
+
+            // init allocation
+            _curationById[profileId].allocationId = allocationId;
+            _getBardsStaking().allocate(
+                DataTypes.CreateAllocateData({
+                    curator: msg.sender,
+                    curationId: profileId,
+                    recipientsMeta: vars.curationMetaData,
+                    allocationId: allocationId
+                })
+            );
             return profileId;
         }
     }
@@ -303,11 +318,29 @@ contract BardsHub is
         whenNotPaused
     {
         _validateCallerIsCurationOwnerOrApproved(vars.curationId);
-        _allocationIdById[vars.curationId] = vars.allocationId;
+        if (vars.allocationId == 0)
+            revert Errors.ZeroAllocationId();
+        if (_existsAllocationId(vars.allocationId))
+            revert Errors.AllocationExists();
+
+        // init allocation
+        _getBardsStaking().closeAndAllocate(
+            _curationById[vars.curationId].allocationId,
+            vars.stakeToCuration,
+            DataTypes.CreateAllocateData({
+                curator: msg.sender,
+                curationId: vars.curationId,
+                recipientsMeta: vars.curationMetaData,
+                allocationId: vars.allocationId
+            })
+        );
+        _curationById[vars.curationId].allocationId = vars.allocationId;
         
         emit Events.AllocationIdSet(
             vars.curationId,
             vars.allocationId,
+            vars.curationMetaData,
+            vars.stakeToCuration,
             block.timestamp
         );
     }
@@ -320,7 +353,12 @@ contract BardsHub is
         override
         whenNotPaused
     {
+        if (vars.allocationId == 0)
+            revert Errors.ZeroAllocationId();
+        if (_existsAllocationId(vars.allocationId))
+            revert Errors.AllocationExists();
         address owner = ownerOf(vars.curationId);
+
         unchecked {
             _validateRecoveredAddress(
                 _calculateDigest(
@@ -329,6 +367,8 @@ contract BardsHub is
                             SET_ALLOCATION_ID_WITH_SIG_TYPEHASH,
                             vars.curationId,
                             vars.allocationId,
+                            keccak256(vars.curationMetaData),
+                            vars.stakeToCuration,
                             sigNonces[owner]++,
                             vars.sig.deadline
                         )
@@ -340,11 +380,24 @@ contract BardsHub is
             );
         }
 
-        _allocationIdById[vars.curationId] = vars.allocationId;
-        
+        // init allocation
+        _getBardsStaking().closeAndAllocate(
+            _curationById[vars.curationId].allocationId,
+            vars.stakeToCuration,
+            DataTypes.CreateAllocateData({
+                curator: msg.sender,
+                curationId: vars.curationId,
+                recipientsMeta: vars.curationMetaData,
+                allocationId: vars.allocationId
+            })
+        );
+        _curationById[vars.curationId].allocationId = vars.allocationId;
+
         emit Events.AllocationIdSet(
             vars.curationId,
             vars.allocationId,
+            vars.curationMetaData,
+            vars.stakeToCuration,
             block.timestamp
         );
     }
@@ -482,7 +535,7 @@ contract BardsHub is
         override
         whenCurationEnabled
         returns (uint256)
-    {
+    { 
         address owner = ownerOf(vars.profileId);
         unchecked {
             _validateRecoveredAddress(
@@ -674,9 +727,9 @@ contract BardsHub is
         external
         view
         override
-        returns (address)
+        returns (uint256)
     {
-        return _allocationIdById[curationId];
+        return _curationById[curationId].allocationId;
     }
 
     /// @inheritdoc IBardsHub
@@ -760,8 +813,10 @@ contract BardsHub is
     {
         unchecked {
             uint256 curationId = ++_curationCounter;
+            uint256 allocationId = ++_allocationCounter;
             _mint(_vars.to, curationId);
             _vars.curationId = curationId;
+            
             // Not refer to other NFT contract.
             if (_vars.tokenContractPointed == address(0)){
                 _vars.tokenContractPointed = address(this);
@@ -783,6 +838,17 @@ contract BardsHub is
                     curationId,
                     _vars.curationMetaData
                 )
+            );
+
+            // init allocation
+            _curationById[curationId].allocationId = allocationId;
+            _getBardsStaking().allocate(
+                DataTypes.CreateAllocateData({
+                    curator: msg.sender,
+                    curationId: curationId,
+                    recipientsMeta: _vars.curationMetaData,
+                    allocationId: allocationId
+                })
             );
             return curationId;
         }
@@ -888,6 +954,14 @@ contract BardsHub is
         if (msg.sender != _governance) revert Errors.NotGovernance();
         // require(msg.sender == _governance, 'not_gov');
     }
+
+    function _existsAllocationId(uint256 allocationId) internal returns (bool) {
+        return _getBardsStaking().isAllocation(allocationId);
+    }
+
+    function _getBardsStaking() internal view returns (IBardsStaking) {
+        return IBardsStaking(_registry[keccak256("BardsStaking")]);
+    } 
 
     function getRevision() internal pure virtual override returns (uint256) {
         return REVISION;

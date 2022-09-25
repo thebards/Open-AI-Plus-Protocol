@@ -7,22 +7,16 @@ import {
 	FIRST_PROFILE_ID,
 	MOCK_PROFILE_HANDLE,
 	MOCK_PROFILE_CONTENT_URI,
-	DEFAULT_CURATION_BPS,
-	DEFAULT_STAKING_BPS
 } from '../utils/Constants';
 import { ERRORS } from '../utils/Errors';
 import {
 	cancelWithPermitForAll,
-	getSetMarketModuleWithSigParts,
-	getSetCurationContentURIWithSigParts,
 	getCreateCurationWithSigParts,
-	deriveChannelKey,
 	toBN
 } from '../utils/Helpers';
 import {
 	abiCoder,
 	bardsHub,
-	ProtocolState,
 	CurationType,
 	makeSuiteCleanRoom,
 	testWallet,
@@ -36,8 +30,7 @@ import {
 	errorsLib,
 	fixPriceMarketModule,
 	bardsCurationToken,
-	transferMinter,
-	emptyMinter
+	emptyMinter,
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Create Curations', function () {
@@ -57,7 +50,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -78,7 +71,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -101,7 +94,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -132,7 +125,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: fixPriceMarketModule.address,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -164,7 +157,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.be.revertedWithoutReason;
 			});
@@ -190,7 +183,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -225,7 +218,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: fixPriceMarketModule.address,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 			});
@@ -250,7 +243,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});

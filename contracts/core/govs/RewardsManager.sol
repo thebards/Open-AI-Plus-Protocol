@@ -79,7 +79,9 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
     function setTargetBondingRate(
         uint256 _targetBondingRate
     ) 
-        external 
+        external
+        override 
+        onlyGov
     {
         _setTargetBondingRate(_targetBondingRate);
     }
@@ -107,6 +109,8 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         uint256 _inflationChange
     ) 
         external 
+        override 
+        onlyGov
     {
         _setInflationChange(_inflationChange);
     }
@@ -367,8 +371,8 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
     }
 
 	/// @inheritdoc IRewardsManager
-    function getRewards(address _allocationID) external view override returns (uint256) {
-        DataTypes.SimpleAllocation memory alloc = bardsStaking().getSimpleAllocation(_allocationID);
+    function getRewards(uint256 _allocationId) external view override returns (uint256) {
+        DataTypes.SimpleAllocation memory alloc = bardsStaking().getSimpleAllocation(_allocationId);
 
         (uint256 accRewardsPerAllocatedToken, ) = getAccRewardsPerAllocatedToken(
             alloc.curationId
@@ -398,12 +402,12 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
     }
 
 	/// @inheritdoc IRewardsManager
-    function takeRewards(address _allocationID) external override returns (uint256) {
+    function takeRewards(uint256 _allocationId) external override returns (uint256) {
         // Only Staking contract is authorized as caller
         IBardsStaking bardStaking = bardsStaking();
         require(msg.sender == address(bardStaking), "Caller must be the bardStaking contract");
 
-        DataTypes.SimpleAllocation memory alloc = bardStaking.getSimpleAllocation(_allocationID);
+        DataTypes.SimpleAllocation memory alloc = bardStaking.getSimpleAllocation(_allocationId);
         uint256 accRewardsPerAllocatedToken = onCurationAllocationUpdate(
             alloc.curationId
         );
@@ -412,7 +416,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         if (isDenied(alloc.curationId)) {
             emit Events.RewardsDenied(
                 alloc.curationId, 
-                _allocationID, 
+                _allocationId, 
                 alloc.closedAtEpoch, 
                 block.timestamp
             );
@@ -434,7 +438,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 
         emit Events.RewardsAssigned(
             alloc.curationId, 
-            _allocationID, 
+            _allocationId, 
             alloc.closedAtEpoch, 
             rewards, 
             block.timestamp

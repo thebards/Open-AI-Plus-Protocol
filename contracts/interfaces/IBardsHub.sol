@@ -470,6 +470,6 @@ interface IBardsHub {
     function getAllocationIdById(uint256 curationId)
         external
         view
-        returns (address);
+        returns (uint256);
 
 }

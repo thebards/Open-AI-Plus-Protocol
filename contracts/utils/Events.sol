@@ -73,7 +73,9 @@ library Events {
      */
     event AllocationIdSet(
         uint256 curationId,
-        address allocationId,
+        uint256 allocationId,
+        bytes curationMetaData,
+        uint256 stakeToCuration,
         uint256 timestamp
     );
 
@@ -637,7 +639,7 @@ library Events {
      */
     event RewardsAssigned(
         uint256 indexed curationId,
-        address indexed allocationID,
+        uint256 indexed allocationId,
         uint256 epoch,
         uint256 amount,
         uint256 timestamp
@@ -648,7 +650,7 @@ library Events {
      */
     event RewardsDenied(
         uint256 indexed curationId, 
-        address indexed allocationID, 
+        uint256 indexed allocationId, 
         uint256 epoch,
         uint256 timestamp
     );
@@ -831,15 +833,12 @@ library Events {
     /**
      * @notice Emitted when hub allocated `tokens` amount to `curationId`
      * during `epoch`.
-     * `allocationID` indexer derived address used to identify the allocation.
-     * `metadata` additional information related to the allocation.
+     * `allocationId` indexer derived address used to identify the allocation.
      */
     event AllocationCreated(
         uint256 indexed curationId,
+        uint256 indexed allocationId,
         uint256 epoch,
-        uint256 tokens,
-        address indexed allocationID,
-        bytes32 metadata,
         uint256 timestamp
     );
 
@@ -852,7 +851,7 @@ library Events {
         uint256 indexed curationId,
         uint256 epoch,
         uint256 tokens,
-        address indexed allocationID,
+        uint256 indexed allocationId,
         uint256 effectiveAllocationStake,
         address sender,
         uint256 stakeToCuration,
@@ -868,7 +867,7 @@ library Events {
      */
     event RebateClaimed(
         uint256 indexed curationId,
-        address indexed allocationID,
+        uint256 indexed allocationId,
         address currency,
         uint256 epoch,
         uint256 forEpoch,
@@ -879,7 +878,7 @@ library Events {
     );
 
     /**
-     * @notice Emitted when `indexer` collected `tokens` amount in `epoch` for `allocationID`.
+     * @notice Emitted when `indexer` collected `tokens` amount in `epoch` for `allocationId`.
      * These funds are related to `subgraphDeploymentID`.
      * The `from` value is the sender of the collected funds.
      */
@@ -887,7 +886,7 @@ library Events {
         uint256 indexed curationId,
         uint256 epoch,
         uint256 tokens,
-        address indexed allocationID,
+        uint256 indexed allocationId,
         address from,
         address currency,
         uint256 timestamp

@@ -1,37 +1,22 @@
-import { zeroPad } from '@ethersproject/bytes';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { Address } from 'defender-relay-client';
 import { constants, utils, BytesLike, BigNumber, Signature, Event } from 'ethers'
-import { BardsStaking, BardsStaking__factory } from '../../typechain-types';
+import { BardsStaking, BardsStaking__factory, MockRebatePool, MockRebatePool__factory } from '../../typechain-types';
 const { AddressZero, MaxUint256 } = constants
 import {
 	MAX_UINT256,
 	ZERO_ADDRESS,
 	FIRST_PROFILE_ID,
-	MOCK_PROFILE_HANDLE,
-	MOCK_PROFILE_CONTENT_URI,
-	DEFAULT_CURATION_BPS,
-	DEFAULT_STAKING_BPS,
 	DEFAULTS,
-	ISSUANCE_RATE_PER_BLOCK,
-	ISSUANCE_RATE_PERIODS,
-	BPS_MAX
+	BPS_MAX,
+	MOCK_PROFILE_HANDLE,
+	MOCK_PROFILE_CONTENT_URI
 } from '../utils/Constants';
-import { ERRORS } from '../utils/Errors';
 import {
-	cancelWithPermitForAll,
-	getSetMarketModuleWithSigParts,
-	getSetCurationContentURIWithSigParts,
-	getCreateCurationWithSigParts,
-	deriveChannelKey,
 	toBCT,
-	getBCTPermitWithSigParts,
 	toBN,
 	getTimestamp,
-	latestBlock,
-	advanceBlockTo,
-	advanceToNextEpoch,
-	advanceBlock,
 	randomAddress,
 	approveToken,
 	waitForTx,
@@ -41,35 +26,27 @@ import {
 	stakingReturningPair,
 	unstakingReturningPair,
 	toFloat,
-	toRound
+	toRound,
+	cobbDouglas,
+	toFixed
 } from '../utils/Helpers';
 
 import {
-	abiCoder,
 	bardsHub,
-	ProtocolState,
-	CurationType,
-	makeSuiteCleanRoom,
 	testWallet,
 	governance,
 	userTwoAddress,
 	userTwo,
-	userAddress,
-	mockCurationMetaData,
-	mockMarketModuleInitData,
-	mockMinterMarketModuleInitData,
-	errorsLib,
-	fixPriceMarketModule,
 	bardsCurationToken,
-	transferMinter,
-	user,
 	epochManager,
-	eventsLib,
-	rewardsManager,
 	bardsShareToken,
 	bardsStakingLibs,
 	deployer,
-	bancorFormula
+	bancorFormula,
+	userAddress,
+	CurationType,
+	mockMarketModuleInitData,
+	mockCurationMetaData
 } from '../__setup.test';
 
 context('Bards Staking', () => {
@@ -187,6 +164,187 @@ context('Bards Staking', () => {
 		expect(afterTokenTotalSupply).eq(beforeTokenTotalSupply)
 	}
 
+	const shouldCollect = async (tokensToCollect: BigNumber) => {
+		const allocationId = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID)
+
+		// Before state
+		const beforeToken = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+		const beforeFees = await bardsStaking.getFeesCollectedInAllocation(allocationId, bardsCurationToken.address)
+
+		const receipt = await waitForTx(
+			bardsStaking.connect(userTwo).collect(
+				bardsCurationToken.address, 
+				tokensToCollect,
+				allocationId
+			)
+		)
+		
+		matchEvent(
+			receipt,
+			'AllocationCollected',
+			[
+				FIRST_PROFILE_ID,
+				await epochManager.currentEpoch(),
+				tokensToCollect,
+				allocationId,
+				userTwoAddress,
+				bardsCurationToken.address,
+				await getTimestamp()
+			]
+		);
+
+		// After state
+		const afterToken = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+		const afterFees = await bardsStaking.getFeesCollectedInAllocation(allocationId, bardsCurationToken.address)
+
+		// State updatced
+		expect(beforeToken).eq(afterToken.add(tokensToCollect))
+		expect(afterFees).eq(beforeFees)
+	}
+
+	let mockRebatePool: MockRebatePool;
+
+	type RebateRatio = number[]
+
+	interface RebateTestCase {
+		totalRewards: number
+		fees: number
+		totalFees: number
+		stake: number
+		totalStake: number
+	}
+
+	const testCases: RebateTestCase[] = [
+		{ totalRewards: 1400, fees: 100, totalFees: 1400, stake: 5000, totalStake: 7300 },
+		{ totalRewards: 1400, fees: 300, totalFees: 1400, stake: 600, totalStake: 7300 },
+		{ totalRewards: 1400, fees: 1000, totalFees: 1400, stake: 500, totalStake: 7300 },
+		{ totalRewards: 1400, fees: 0, totalFees: 1400, stake: 1200, totalStake: 7300 },
+	]
+
+	// Edge case #1 - No closed allocations any trade fees
+	const edgeCases1: RebateTestCase[] = [
+		{ totalRewards: 0, fees: 0, totalFees: 0, stake: 5000, totalStake: 7300 },
+		{ totalRewards: 0, fees: 0, totalFees: 0, stake: 600, totalStake: 7300 },
+		{ totalRewards: 0, fees: 0, totalFees: 0, stake: 500, totalStake: 7300 },
+		{ totalRewards: 0, fees: 0, totalFees: 0, stake: 1200, totalStake: 7300 },
+	]
+
+	async function redeem(currency: string, fees: BigNumber, stake: BigNumber): Promise<BigNumber> {
+		return await mockRebatePool.callStatic.pop(currency, fees, stake)
+	}
+
+	async function shouldMatchOut(testCases: RebateTestCase[], alpha: RebateRatio) {
+		const [alphaNumerator, alphaDenominator] = alpha
+		await mockRebatePool.setRebateRatio(alphaNumerator, alphaDenominator)
+
+		let totalFees = toBN(0)
+		for (const testCase of testCases) {
+			totalFees = totalFees.add(toBCT(testCase.fees))
+			await mockRebatePool.add(bardsCurationToken.address, toBCT(testCase.fees), toBCT(testCase.stake))
+		}
+
+		for (const testCase of testCases) {
+			const unclaimedFees = await mockRebatePool.getUnclaimedRewards(bardsCurationToken.address)
+			const rewards = await redeem(bardsCurationToken.address, toBCT(testCase.fees), toBCT(testCase.stake))
+			let expectedOut = await mockRebatePool.cobbDouglas(
+				toBCT(testCase.totalRewards),
+				toBCT(testCase.fees),
+				toBCT(testCase.totalFees),
+				toBCT(testCase.stake),
+				toBCT(testCase.totalStake),
+				alphaNumerator,
+				alphaDenominator,
+			)
+			if (expectedOut.gt(unclaimedFees)) {
+				expectedOut = unclaimedFees
+			}
+			expect(rewards).eq(expectedOut)
+		}
+	}
+
+	async function testAlphas(fn, testCases) {
+		// Typical alpha
+		it('alpha 0.90', async function () {
+			const alpha: RebateRatio = [90, 100]
+			await fn(testCases, alpha)
+		})
+
+		// Typical alpha
+		it('alpha 0.25', async function () {
+			const alpha: RebateRatio = [1, 4]
+			await fn(testCases, alpha)
+		})
+
+		// Periodic alpha
+		it('alpha 0.33~', async function () {
+			const alpha: RebateRatio = [1, 3]
+			await fn(testCases, alpha)
+		})
+
+		// Small alpha
+		it('alpha 0.005', async function () {
+			const alpha: RebateRatio = [1, 200]
+			await fn(testCases, alpha)
+		})
+
+		// Edge alpha
+		it('alpha 1', async function () {
+			const alpha: RebateRatio = [1, 1]
+			await fn(testCases, alpha)
+		})
+	}
+
+	// Test if the Solidity implementation of the rebate formula match the local implementation
+	async function shouldMatchFormulas(testCases: RebateTestCase[], alpha: RebateRatio) {
+		const [alphaNumerator, alphaDenominator] = alpha
+
+		for (const testCase of testCases) {
+			// Test Typescript cobb-doubglas formula implementation
+			const r1 = cobbDouglas(
+				testCase.totalRewards,
+				testCase.fees,
+				testCase.totalFees,
+				testCase.stake,
+				testCase.totalStake,
+				alphaNumerator,
+				alphaDenominator,
+			)
+			// Convert non-alpha values to wei before sending for precision
+			const r2 = await mockRebatePool.cobbDouglas(
+				toBCT(testCase.totalRewards),
+				toBCT(testCase.fees),
+				toBCT(testCase.totalFees),
+				toBCT(testCase.stake),
+				toBCT(testCase.totalStake),
+				alphaNumerator,
+				alphaDenominator,
+			)
+
+			// Must match : contracts to local implementation
+			expect(toFixed(r1)).eq(toFixed(r2))
+		}
+	}
+
+	// Test if the fees deposited into the rebate pool are conserved, this means that we are
+	// not able to extract more rewards than we initially deposited
+	async function shouldConserveBalances(testCases: RebateTestCase[], alpha: RebateRatio) {
+		const [alphaNumerator, alphaDenominator] = alpha
+		await mockRebatePool.setRebateRatio(alphaNumerator, alphaDenominator)
+
+		let totalFees = toBN(0)
+		for (const testCase of testCases) {
+			totalFees = totalFees.add(toBCT(testCase.fees))
+			await mockRebatePool.add(bardsCurationToken.address, toBCT(testCase.fees), toBCT(testCase.stake))
+		}
+
+		let totalRewards = toBN(0)
+		for (const testCase of testCases) {
+			const rewards = await redeem(bardsCurationToken.address, toBCT(testCase.fees), toBCT(testCase.stake))
+			totalRewards = totalRewards.add(rewards)
+		}
+		expect(toBCT(toFixed(totalRewards))).lte(toBCT(toFixed(totalFees)))
+	}
+
 	beforeEach(async function () {
 		bardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
 			bardsHub.address,
@@ -199,6 +357,10 @@ context('Bards Staking', () => {
 			DEFAULTS.staking.alphaNumerator,
 			DEFAULTS.staking.alphaDenominator,
 			DEFAULTS.staking.thawingPeriod
+		);
+		await bardsHub.connect(governance).registerContract(
+			utils.id('BardsStaking'),
+			bardsStaking.address
 		);
 		// Give some funds to the testWallet
 		await bardsCurationToken.connect(governance).mint(userTwoAddress, testTokens)
@@ -418,7 +580,7 @@ context('Bards Staking', () => {
 
 	});
 
-	describe('bonding curve', function () {
+	context('bonding curve', function () {
 		it('reject convert share to tokens if curation not initted', async function () {
 			await expect(
 				bardsStaking.shareToTokens(FIRST_PROFILE_ID, toBCT('100'))
@@ -492,6 +654,10 @@ context('Bards Staking', () => {
 						DEFAULTS.staking.alphaDenominator,
 						DEFAULTS.staking.thawingPeriod
 					);
+					await bardsHub.connect(governance).registerContract(
+						utils.id('BardsStaking'),
+						bardsStaking.address
+					);
 					await approveToken(bardsStaking.address, MaxUint256);
 					await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
 				});
@@ -556,6 +722,10 @@ context('Bards Staking', () => {
 					DEFAULTS.staking.alphaDenominator,
 					DEFAULTS.staking.thawingPeriod
 				);
+				await bardsHub.connect(governance).registerContract(
+					utils.id('BardsStaking'),
+					bardsStaking.address
+				);
 				await approveToken(bardsStaking.address, MaxUint256);
 				await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
 				await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, toBCT('100'));
@@ -618,6 +788,10 @@ context('Bards Staking', () => {
 				DEFAULTS.staking.alphaNumerator,
 				DEFAULTS.staking.alphaDenominator,
 				DEFAULTS.staking.thawingPeriod
+			);
+			await bardsHub.connect(governance).registerContract(
+				utils.id('BardsStaking'),
+				bardsStaking.address
 			);
 			await approveToken(bardsStaking.address, MaxUint256);
 			await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
@@ -694,7 +868,7 @@ context('Bards Staking', () => {
 		})
 	})
 
-	describe('Multiple staking', async function () {
+	context('Multiple staking', async function () {
 		it('should staking less share every time due to the bonding curve', async function () {
 			const tokensToDepositMany = [
 				toBCT('1000'), // should mint if we start with number above minimum deposit
@@ -741,6 +915,83 @@ context('Bards Staking', () => {
 				const stakingOut = await stakingReturningPair(bardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
 				expect(tokensToDeposit).eq(stakingOut[0]) // we compare 1:1 ratio
 			}
+		})
+	})
+
+	context('Collect', async function () {
+		beforeEach(async function () {
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: MOCK_PROFILE_HANDLE,
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: ZERO_ADDRESS,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockMarketModuleInitData,
+					curationMetaData: mockCurationMetaData,
+				})
+			).to.not.be.reverted;
+		});
+		
+		it('reject collect tokens distributed to the zero allocation Id.', async function () {
+			await expect(
+				bardsStaking.connect(userTwo).collect(
+					bardsCurationToken.address,
+					toBCT('10'),
+					0
+				)
+			).to.be.revertedWith('!alloc')
+		})
+
+		it('should collect tokens distributed to the staking pool', async function () {
+			await shouldCollect(toBCT('1'))
+			await shouldCollect(toBCT('10'))
+			await shouldCollect(toBCT('100'))
+			await shouldCollect(toBCT('200'))
+			await shouldCollect(toBCT('500.25'))
+		})
+
+	})
+
+	context('Rebate', async function () {
+		beforeEach(async function () {
+			mockRebatePool = await new MockRebatePool__factory(bardsStakingLibs, deployer).deploy();
+		})
+
+		context('should match cobb-douglas Solidity implementation', function () {
+			context('normal test case', function () {
+				testAlphas(shouldMatchFormulas, testCases)
+			})
+
+			context('edge #1 test case', function () {
+				testAlphas(shouldMatchFormulas, edgeCases1)
+			})
+		})
+
+		context('should match rewards out from rebates', function () {
+			context('normal test case', function () {
+				testAlphas(shouldMatchOut, testCases)
+			})
+
+			context('edge #1 test case', function () {
+				testAlphas(shouldMatchOut, edgeCases1)
+			})
+		})
+
+		context('should always be that sum of rebate rewards obtained <= to total rewards', function () {
+			context('normal test case', function () {
+				testAlphas(shouldConserveBalances, testCases)
+			})
+
+			context('edge #1 test case', function () {
+				testAlphas(shouldConserveBalances, edgeCases1)
+			})
 		})
 	})
 

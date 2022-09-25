@@ -11,31 +11,25 @@ import {
 } from '../utils/Constants';
 import { ERRORS } from '../utils/Errors';
 import {
+	advanceToNextEpoch,
 	cancelWithPermitForAll,
-	deriveChannelKey,
 	getSetAllocationIdWithSigParts
 } from '../utils/Helpers';
 import {
-	abiCoder,
 	bardsHub,
 	CurationType,
 	makeSuiteCleanRoom,
 	testWallet,
-	governance,
 	userAddress,
 	userTwo,
-	userTwoAddress,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
 	mockMinterMarketModuleInitData,
 	errorsLib,
-	fixPriceMarketModule,
-	bardsCurationToken,
-	transferMinter,
+	epochManager,
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Setting Allocation ID', function () {
-	const channelKey = deriveChannelKey();
 	context('Generic Stories', function () {
 
 		beforeEach(async function () {
@@ -53,7 +47,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 
@@ -71,7 +65,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -81,7 +75,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 				await expect(
 					bardsHub.connect(userTwo).setAllocationId({
 						curationId: FIRST_PROFILE_ID + 1,
-						allocationId: channelKey.address
+						allocationId: 100,
+						curationMetaData: mockCurationMetaData,
+						stakeToCuration: FIRST_PROFILE_ID + 1,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -92,37 +88,51 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 
 		context('Stories', function () {
 			it('User should set the allocation Id', async function () {
+				await advanceToNextEpoch(epochManager);
+
 				await expect(
 					bardsHub.setAllocationId({
 						curationId: FIRST_PROFILE_ID + 1,
-						allocationId: channelKey.address
+						allocationId: 100,
+						curationMetaData: mockCurationMetaData,
+						stakeToCuration: FIRST_PROFILE_ID + 1,
 					})
 				).to.not.be.reverted;
-				expect(await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 1)).to.eq(channelKey.address);
+				expect(await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 1)).to.eq(100);
 			});
 
 			it('User should set the allocation ID and then be able to unset it', async function () {
-				await expect(
-					bardsHub.setAllocationId({
-						curationId: FIRST_PROFILE_ID + 1,
-						allocationId: channelKey.address
-					})
-				).to.not.be.reverted;
+				await advanceToNextEpoch(epochManager);
 
 				await expect(
 					bardsHub.setAllocationId({
 						curationId: FIRST_PROFILE_ID + 1,
-						allocationId: ZERO_ADDRESS
+						allocationId: 100,
+						curationMetaData: mockCurationMetaData,
+						stakeToCuration: FIRST_PROFILE_ID + 1,
 					})
 				).to.not.be.reverted;
-				expect(await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 1)).to.eq(ZERO_ADDRESS);
+
+				await advanceToNextEpoch(epochManager);
+
+				await expect(
+					bardsHub.setAllocationId({
+						curationId: FIRST_PROFILE_ID + 1,
+						allocationId: 101,
+						curationMetaData: mockCurationMetaData,
+						stakeToCuration: FIRST_PROFILE_ID + 1,
+					})
+				).to.not.be.reverted;
+				expect(await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 1)).to.eq(101);
 			});
 
 			it('UserTwo should fail to set the allocation Id for the curation owned by User', async function () {
 				await expect(
 					bardsHub.connect(userTwo).setAllocationId({
 						curationId: FIRST_PROFILE_ID + 1,
-						allocationId: channelKey.address
+						allocationId: 100,
+						curationMetaData: mockCurationMetaData,
+						stakeToCuration: FIRST_PROFILE_ID + 1,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -139,7 +149,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const { v, r, s } = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 1,
-						channelKey.address,
+						100,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce,
 						'0'
 					);
@@ -147,7 +159,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 1,
-							allocationId: channelKey.address,
+							allocationId: 100,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v,
 								r,
@@ -163,7 +177,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const { v, r, s } = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 1,
-						channelKey.address,
+						100,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce,
 						'0'
 					);
@@ -171,7 +187,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 1,
-							allocationId: channelKey.address,
+							allocationId: 100,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v,
 								r,
@@ -187,7 +205,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const { v, r, s } = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 1,
-						channelKey.address,
+						100,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce + 1,
 						MAX_UINT256
 					);
@@ -195,7 +215,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 1,
-							allocationId: channelKey.address,
+							allocationId: 100,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v,
 								r,
@@ -211,7 +233,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const { v, r, s } = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 1,
-						channelKey.address,
+						100,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce,
 						MAX_UINT256
 					);
@@ -221,7 +245,9 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 1,
-							allocationId: channelKey.address,
+							allocationId: 100,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v,
 								r,
@@ -251,7 +277,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 							marketModuleInitData: mockMarketModuleInitData,
 							minterMarketModule: ZERO_ADDRESS,
 							minterMarketModuleInitData: mockMarketModuleInitData,
-							curationMetaData: mockCurationMetaData
+							curationMetaData: mockCurationMetaData,
 						})
 					).to.not.be.reverted;
 
@@ -269,7 +295,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 							marketModuleInitData: mockMarketModuleInitData,
 							minterMarketModule: ZERO_ADDRESS,
 							minterMarketModuleInitData: mockMinterMarketModuleInitData,
-							curationMetaData: mockCurationMetaData
+							curationMetaData: mockCurationMetaData,
 						})
 					).to.not.be.reverted;
 				});
@@ -278,17 +304,23 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const { v, r, s } = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 3,
-						channelKey.address,
+						100,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce,
 						MAX_UINT256
 					);
 
 					const allocationIdBeforeUse = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 1);
 
+					await advanceToNextEpoch(epochManager);
+
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 3,
-							allocationId: channelKey.address,
+							allocationId: 100,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v,
 								r,
@@ -300,25 +332,31 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 
 					const allocationIdAfter = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 3);
 
-					expect(allocationIdBeforeUse).to.eq(ZERO_ADDRESS);
-					expect(allocationIdAfter).to.eq(channelKey.address);
+					expect(allocationIdBeforeUse).to.eq(2);
+					expect(allocationIdAfter).to.eq(100);
 				});
 
 				it('TestWallet should set the allocation ID with sig and then be able to unset it', async function () {
 					const nonce = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const { v, r, s } = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 3,
-						channelKey.address,
+						100,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce,
 						MAX_UINT256
 					);
 
 					const allocationIdBeforeUse = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 3);
 
+					await advanceToNextEpoch(epochManager);
+
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 3,
-							allocationId: channelKey.address,
+							allocationId: 100,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v,
 								r,
@@ -330,23 +368,29 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 
 					const allocationIdAfter = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 3);
 
-					expect(allocationIdBeforeUse).to.eq(ZERO_ADDRESS);
-					expect(allocationIdAfter).to.eq(channelKey.address);
+					expect(allocationIdBeforeUse).to.eq(4);
+					expect(allocationIdAfter).to.eq(100);
 
 					const nonce2 = (await bardsHub.sigNonces(testWallet.address)).toNumber();
 					const signature2 = await getSetAllocationIdWithSigParts(
 						FIRST_PROFILE_ID + 3,
-						ZERO_ADDRESS,
+						101,
+						mockCurationMetaData,
+						FIRST_PROFILE_ID + 1,
 						nonce2,
 						MAX_UINT256
 					);
 
-					const allocationIDBeforeUse2 = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 3);
+					const allocationIdBeforeUse2 = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 3);
+
+					await advanceToNextEpoch(epochManager);
 
 					await expect(
 						bardsHub.setAllocationIdWithSig({
 							curationId: FIRST_PROFILE_ID + 3,
-							allocationId: ZERO_ADDRESS,
+							allocationId: 101,
+							curationMetaData: mockCurationMetaData,
+							stakeToCuration: FIRST_PROFILE_ID + 1,
 							sig: {
 								v: signature2.v,
 								r: signature2.r,
@@ -358,8 +402,8 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 
 					const allocationIdAfter2 = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID + 3);
 
-					expect(allocationIDBeforeUse2).to.eq(channelKey.address);
-					expect(allocationIdAfter2).to.eq(ZERO_ADDRESS);
+					expect(allocationIdBeforeUse2).to.eq(100);
+					expect(allocationIdAfter2).to.eq(101);
 				});
 				
 			});

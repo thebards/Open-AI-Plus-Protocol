@@ -32,6 +32,8 @@ library Errors {
     error NotWhitelisted();
     error CurationContentURILengthInvalid();
     error NoAllowance();
+    error AllocationExists();
+    error ZeroAllocationId();
 
     // Market Errors
     error InitParamsInvalid();

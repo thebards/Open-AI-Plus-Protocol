@@ -47,6 +47,7 @@ import {
 	deployerAddress,
 	bardsDaoData,
 	daoTreasuryAddress,
+	epochManager,
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Events', function () {
@@ -244,7 +245,7 @@ makeSuiteCleanRoom('Events', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			);
 		}
@@ -264,11 +265,11 @@ makeSuiteCleanRoom('Events', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			);
 
-			expect(receipt.logs.length).to.eq(3);
+			expect(receipt.logs.length).to.eq(4);
 
 			matchEvent(
 				receipt, 
@@ -307,6 +308,17 @@ makeSuiteCleanRoom('Events', function () {
 					await getTimestamp()
 				]
 			);
+
+			matchEvent(
+				receipt,
+				'AllocationCreated',
+				[
+					FIRST_PROFILE_ID,
+					await bardsHub.getAllocationIdById(FIRST_PROFILE_ID),
+					await epochManager.currentEpoch(),
+					await getTimestamp()
+				]
+			);
 		});
 
 		it('Profile creation for other user should emit the correct events', async function () {
@@ -324,11 +336,11 @@ makeSuiteCleanRoom('Events', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			);
 			
-			expect(receipt.logs.length).to.eq(3);
+			expect(receipt.logs.length).to.eq(4);
 
 			matchEvent(
 				receipt,
@@ -360,6 +372,17 @@ makeSuiteCleanRoom('Events', function () {
 				[
 					FIRST_PROFILE_ID,
 					mockCurationMetaData,
+					await getTimestamp()
+				]
+			);
+
+			matchEvent(
+				receipt,
+				'AllocationCreated',
+				[
+					FIRST_PROFILE_ID,
+					await bardsHub.getAllocationIdById(FIRST_PROFILE_ID),
+					await epochManager.currentEpoch(),
 					await getTimestamp()
 				]
 			);
@@ -422,7 +445,7 @@ makeSuiteCleanRoom('Events', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			);
 

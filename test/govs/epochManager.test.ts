@@ -1,55 +1,19 @@
-import { zeroPad } from '@ethersproject/bytes';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { constants, utils, BytesLike, BigNumber, Signature } from 'ethers'
-const { AddressZero, MaxUint256 } = constants
+import { BigNumber } from 'ethers'
 import {
-	MAX_UINT256,
-	ZERO_ADDRESS,
-	FIRST_PROFILE_ID,
-	MOCK_PROFILE_HANDLE,
-	MOCK_PROFILE_CONTENT_URI,
-	DEFAULT_CURATION_BPS,
-	DEFAULT_STAKING_BPS,
 	DEFAULTS
 } from '../utils/Constants';
-import { ERRORS } from '../utils/Errors';
 import {
-	cancelWithPermitForAll,
-	getSetMarketModuleWithSigParts,
-	getSetCurationContentURIWithSigParts,
-	getCreateCurationWithSigParts,
-	deriveChannelKey,
-	toBCT,
-	getBCTPermitWithSigParts,
 	toBN,
-	getTimestamp,
 	latestBlock,
 	advanceBlockTo,
-	advanceToNextEpoch,
 	advanceBlock
 } from '../utils/Helpers';
 import {
-	abiCoder,
-	bardsHub,
-	ProtocolState,
-	CurationType,
 	makeSuiteCleanRoom,
-	testWallet,
 	governance,
-	userTwoAddress,
-	userTwo,
-	userAddress,
-	mockCurationMetaData,
-	mockMarketModuleInitData,
-	mockMinterMarketModuleInitData,
-	errorsLib,
-	fixPriceMarketModule,
-	bardsCurationToken,
-	transferMinter,
-	user,
 	epochManager,
-	eventsLib
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Epoch Manager', function () {

@@ -151,18 +151,18 @@ interface IBardsStaking {
     /**
      * @notice Close an allocation and free the staked tokens.
      * 
-     * @param _allocationID The allocation identifier.
+     * @param _allocationId The allocation identifier.
      * @param _stakeToCuration Restake to curation.
      */
-    function closeAllocation(address _allocationID, uint256 _stakeToCuration) external;
+    function closeAllocation(uint256 _allocationId, uint256 _stakeToCuration) external;
 
     /**
      * @notice Close multiple allocations and free the staked tokens.
      * 
-     * @param _allocationIDs An array of allocationID
+     * @param _allocationIds An array of allocationId
      * @param _stakeToCurations An array of curations for restaking.
      */
-    function closeAllocationMany(address[] calldata _allocationIDs, uint256[] calldata _stakeToCurations) external;
+    function closeAllocationMany(uint256[] calldata _allocationIds, uint256[] calldata _stakeToCurations) external;
 
     /**
      * @notice Close and allocate. This will perform a close and then create a new Allocation
@@ -173,7 +173,7 @@ interface IBardsStaking {
      * @param _createAllocationData Data of struct CreateAllocationData
      */
     function closeAndAllocate(
-        address _closingAllocationID,
+        uint256 _closingAllocationID,
         uint256 _stakeToCuration,
         DataTypes.CreateAllocateData calldata _createAllocationData
     ) external;
@@ -187,9 +187,9 @@ interface IBardsStaking {
      *    the received tokens are burned.
      * @param _currency Currency of token to collect.
      * @param _tokens Amount of tokens to collect
-     * @param _allocationID Allocation where the tokens will be assigned
+     * @param _allocationId Allocation where the tokens will be assigned
      */
-    function collect(address _currency, uint256 _tokens, address _allocationID) external;
+    function collect(address _currency, uint256 _tokens, uint256 _allocationId) external;
 
     /**
      * @notice Collect the delegation rewards.
@@ -207,35 +207,50 @@ interface IBardsStaking {
     /**
      * @notice Claim tokens from the rebate pool.
      * 
-     * @param _allocationID Allocation from where we are claiming tokens
+     * @param _allocationId Allocation from where we are claiming tokens
      * @param _stakeToCuration Restake to new curation
      */
-    function claim(address _allocationID, uint256 _stakeToCuration) external;
+    function claim(uint256 _allocationId, uint256 _stakeToCuration) external;
 
     /**
      * @notice Claim tokens from the rebate pool for many allocations.
      * 
-     * @param _allocationIDs Array of allocations from where we are claiming tokens
+     * @param _allocationIds Array of allocations from where we are claiming tokens
      * @param _stakeToCuration Restake to new curation
      */
-    function claimMany(address[] calldata _allocationIDs, uint256 _stakeToCuration) external;
+    function claimMany(uint256[] calldata _allocationIds, uint256 _stakeToCuration) external;
 
     // -- Getters and calculations --
 
     /**
      * @notice Return the current state of an allocation.
-     * @param _allocationID Address used as the allocation identifier
+     * @param _allocationId Address used as the allocation identifier
      * @return AllocationState
      */
-    function getAllocationState(address _allocationID) external view returns (DataTypes.AllocationState);
+    function getAllocationState(uint256 _allocationId) external view returns (DataTypes.AllocationState);
 
     /**
-     * @notice Return if allocationID is used.
+     * @notice Return if allocationId is used.
      * 
-     * @param _allocationID Address used as signer for an allocation
-     * @return True if allocationID already used
+     * @param _allocationId Address used as signer for an allocation
+     * @return True if allocationId already used
      */
-    function isAllocation(address _allocationID) external view returns (bool);
+    function isAllocation(uint256 _allocationId) external view returns (bool);
+
+    /**
+     * @notice Return the total amount of tokens allocated to curation.
+     * 
+     * @param _allocationId allocation Id
+     * @param _currency The address of currency
+     * @return Total tokens allocated to curation
+     */
+    function getFeesCollectedInAllocation(
+        uint256 _allocationId, 
+        address _currency
+    )
+        external
+        view
+        returns (uint256);
 
     /**
      * @notice Return the total amount of tokens allocated to curation.
@@ -269,7 +284,7 @@ interface IBardsStaking {
         returns (uint256);
 
     function getSimpleAllocation(
-        address _allocationID
+        uint256 _allocationId
     ) 
         external 
         view 
@@ -293,7 +308,7 @@ interface IBardsStaking {
      * @param _delegator Delegator owning the share tokens
      * @return Are there any withdrawable tokens.
      */
-    function getWithdraweableBCTTokens(uint256 _curationId, address _delegator)
+    function getWithdrawableBCTTokens(uint256 _curationId, address _delegator)
         external
         view
         returns (uint256);
@@ -350,11 +365,11 @@ interface IBardsStaking {
     /**
      * @notice Return whether the seller is one of the stakeholders of curation.
      * 
-     * @param _allocationID _allocationID
+     * @param _allocationId _allocationId
      * @param _seller Address of the seller of curation NFT
      * @return True if delegator of curation
      */
-    function isSeller(address _allocationID, address _seller) external view returns (bool);
+    function isSeller(uint256 _allocationId, address _seller) external view returns (bool);
 
     /**
      * @notice Calculate amount of share that can be bought with tokens in a staking pool.

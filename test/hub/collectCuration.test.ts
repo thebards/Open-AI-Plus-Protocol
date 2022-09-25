@@ -7,17 +7,10 @@ import {
 	FIRST_PROFILE_ID,
 	MOCK_PROFILE_HANDLE,
 	MOCK_PROFILE_CONTENT_URI,
-	DEFAULT_CURATION_BPS,
-	DEFAULT_STAKING_BPS
 } from '../utils/Constants';
 import { ERRORS } from '../utils/Errors';
 import {
 	cancelWithPermitForAll,
-	getSetMarketModuleWithSigParts,
-	getSetCurationContentURIWithSigParts,
-	getCreateCurationWithSigParts,
-	deriveChannelKey,
-	getTimestamp,
 	collectReturningTokenPair,
 	toBN,
 	getCollectWithSigParts
@@ -25,25 +18,17 @@ import {
 import {
 	abiCoder,
 	bardsHub,
-	ProtocolState,
 	CurationType,
 	makeSuiteCleanRoom,
 	testWallet,
 	governance,
 	userTwoAddress,
-	userTwo,
 	userAddress,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
 	mockFreeMarketModuleInitData,
 	mockMinterMarketModuleInitData,
-	errorsLib,
-	fixPriceMarketModule,
-	bardsCurationToken,
-	transferMinter,
-	user,
 	freeMarketModule,
-	eventsLib
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Collecting', function () {
@@ -67,7 +52,7 @@ makeSuiteCleanRoom('Collecting', function () {
 				marketModuleInitData: mockMarketModuleInitData,
 				minterMarketModule: ZERO_ADDRESS,
 				minterMarketModuleInitData: mockMinterMarketModuleInitData,
-				curationMetaData: mockCurationMetaData
+				curationMetaData: mockCurationMetaData,
 			})
 		).to.not.be.reverted;
 
@@ -85,14 +70,14 @@ makeSuiteCleanRoom('Collecting', function () {
 				marketModuleInitData: mockFreeMarketModuleInitData,
 				minterMarketModule: ZERO_ADDRESS,
 				minterMarketModuleInitData: mockMinterMarketModuleInitData,
-				curationMetaData: mockCurationMetaData
+				curationMetaData: mockCurationMetaData,
 			})
 		).to.not.be.reverted;
 	});
 
 	context('Generic Stories', function () {
 		context('Stories', function () {
-			it('Collecting should work if the collector is the curation owner even', async function () {
+			it('!minimumStaking', async function () {
 				const collectMetaData = abiCoder.encode(
 					['address', 'uint256'],
 					[ZERO_ADDRESS, 1]

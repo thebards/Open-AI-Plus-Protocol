@@ -1,39 +1,22 @@
-import { zeroPad } from '@ethersproject/bytes';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import {
-	MAX_UINT256,
 	ZERO_ADDRESS,
 	FIRST_PROFILE_ID,
 	MOCK_PROFILE_HANDLE,
 	MOCK_PROFILE_CONTENT_URI,
-	DEFAULT_CURATION_BPS,
-	DEFAULT_STAKING_BPS,
 	MOCK_PROFILE_HANDLE2
 } from '../utils/Constants';
-import {
-	DataTypes
-} from "../../typechain-types/contracts/core/BardsHub";
-
 import { ERRORS } from '../utils/Errors';
 import {
-	cancelWithPermitForAll,
-	getSetMarketModuleWithSigParts,
-	getSetCurationContentURIWithSigParts,
-	getCreateCurationWithSigParts,
-	deriveChannelKey,
-	getTimestamp,
 	collectReturningTokenPair,
 	toBN,
-	getCollectWithSigParts
 } from '../utils/Helpers';
 import {
 	abiCoder,
 	bardsHub,
-	ProtocolState,
 	CurationType,
 	makeSuiteCleanRoom,
-	testWallet,
 	governance,
 	userTwoAddress,
 	userTwo,
@@ -43,15 +26,10 @@ import {
 	mockFreeMarketModuleInitData,
 	mockMinterMarketModuleInitData,
 	errorsLib,
-	fixPriceMarketModule,
-	bardsCurationToken,
 	transferMinter,
-	user,
 	freeMarketModule,
-	eventsLib,
 	cloneMinter
 } from '../__setup.test';
-import { IERC721Enumerable__factory } from '../../typechain-types';
 
 makeSuiteCleanRoom('Free Market Module', function () {
 
@@ -100,7 +78,7 @@ makeSuiteCleanRoom('Free Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 			await expect(
@@ -139,7 +117,7 @@ makeSuiteCleanRoom('Free Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 
@@ -158,7 +136,7 @@ makeSuiteCleanRoom('Free Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 
@@ -211,7 +189,7 @@ makeSuiteCleanRoom('Free Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 
@@ -230,7 +208,7 @@ makeSuiteCleanRoom('Free Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 

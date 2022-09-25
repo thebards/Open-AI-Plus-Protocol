@@ -1,46 +1,28 @@
-import { zeroPad } from '@ethersproject/bytes';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
-import { constants, utils, BytesLike, BigNumber, Signature } from 'ethers'
-const { AddressZero, MaxUint256 } = constants
+import { constants} from 'ethers'
+const { MaxUint256 } = constants
 import {
-	MAX_UINT256,
 	ZERO_ADDRESS,
 	FIRST_PROFILE_ID,
 	MOCK_PROFILE_HANDLE,
 	MOCK_PROFILE_CONTENT_URI,
-	DEFAULT_CURATION_BPS,
-	DEFAULT_STAKING_BPS,
 	MOCK_PROFILE_HANDLE2,
 } from '../utils/Constants';
-import {
-	DataTypes
-} from "../../typechain-types/contracts/core/BardsHub";
-
 import { ERRORS } from '../utils/Errors';
 import {
-	cancelWithPermitForAll,
-	getSetMarketModuleWithSigParts,
-	getSetCurationContentURIWithSigParts,
-	getCreateCurationWithSigParts,
-	deriveChannelKey,
-	getTimestamp,
 	collectReturningTokenPair,
 	toBN,
 	toBCT,
-	getCollectWithSigParts,
-	getBCTPermitWithSigParts,
 	approveToken
 } from '../utils/Helpers';
 import {
 	abiCoder,
 	bardsHub,
-	ProtocolState,
 	CurationType,
 	makeSuiteCleanRoom,
 	testWallet,
 	governance,
-	userTwoAddress,
 	userTwo,
 	userAddress,
 	mockCurationMetaData,
@@ -51,12 +33,8 @@ import {
 	fixPriceMarketModule,
 	bardsCurationToken,
 	transferMinter,
-	user,
-	freeMarketModule,
-	eventsLib,
 	cloneMinter
 } from '../__setup.test';
-import { IERC721Enumerable__factory } from '../../typechain-types';
 
 makeSuiteCleanRoom('Fix Price Market Module', function () {
 
@@ -79,7 +57,7 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 				marketModuleInitData: mockMarketModuleInitData,
 				minterMarketModule: ZERO_ADDRESS,
 				minterMarketModuleInitData: mockMinterMarketModuleInitData,
-				curationMetaData: mockCurationMetaData
+				curationMetaData: mockCurationMetaData,
 			})
 		).to.not.be.reverted;
 	});

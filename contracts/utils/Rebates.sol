@@ -54,17 +54,17 @@ library Rebates {
      * 
      * @param _currency Currency of deposit token
      * @param _fees Amount of fees collected in tokens
-     * @param _effectiveAllocatedStake Effective stake allocated by delegator for a period of epochs
+     * @param _effectiveAllocationStake Effective stake allocated by delegator for a period of epochs
      */
     function addToPool(
         DataTypes.RebatePool storage pool,
         address _currency,
         uint256 _fees,
-        uint256 _effectiveAllocatedStake
+        uint256 _effectiveAllocationStake
     ) internal {
         pool.fees.tryInsertCurrencyFees(_currency, _fees);
-        pool.effectiveAllocatedStake[_currency] = pool.effectiveAllocatedStake[_currency].add(
-            _effectiveAllocatedStake
+        pool.effectiveAllocationStake[_currency] = pool.effectiveAllocationStake[_currency].add(
+            _effectiveAllocationStake
         );
         pool.unclaimedAllocationsCount += 1;
     }
@@ -74,25 +74,25 @@ library Rebates {
      * 
      * @param _currency Currency of deposit token
      * @param _fees Amount of fees collected in tokens
-     * @param _effectiveAllocatedStake Effective stake allocated by delegator for a period of epochs
+     * @param _effectiveAllocationStake Effective stake allocated by delegator for a period of epochs
      * @return Amount of reward tokens according to Cobb-Douglas rebate formula
      */
     function redeem(
         DataTypes.RebatePool storage pool,
         address _currency,
         uint256 _fees,
-        uint256 _effectiveAllocatedStake
+        uint256 _effectiveAllocationStake
     ) internal returns (uint256) {
         uint256 rebateReward = 0;
 
         // Calculate the rebate rewards for the delegator
-        if (pool.fees.fees[_currency] > 0 && pool.effectiveAllocatedStake[_currency] > 0) {
+        if (pool.fees.fees[_currency] > 0 && pool.effectiveAllocationStake[_currency] > 0) {
             rebateReward = LibCobbDouglas.cobbDouglas(
                 pool.fees.fees[_currency], // totalRewards
                 _fees,
                 pool.fees.fees[_currency],
-                _effectiveAllocatedStake,
-                pool.effectiveAllocatedStake[_currency],
+                _effectiveAllocationStake,
+                pool.effectiveAllocationStake[_currency],
                 pool.alphaNumerator,
                 pool.alphaDenominator
             );

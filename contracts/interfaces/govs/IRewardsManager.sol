@@ -139,11 +139,11 @@ interface IRewardsManager {
 
     /**
      * @dev Calculate current rewards for a given allocation on demand.
-     * @param _allocationID Allocation
+     * @param _allocationId Allocation
      * @return Rewards amount for an allocation
      */
     function getRewards(
-        address _allocationID
+        uint256 _allocationId
     ) 
       external 
       view 
@@ -168,11 +168,11 @@ interface IRewardsManager {
      * @notice Pull rewards from the contract for a particular allocation.
      * This function can only be called by the BardsStaking contract.
      * This function will mint the necessary tokens to reward based on the inflation calculation.
-     * @param _allocationID Allocation
+     * @param _allocationId Allocation
      * @return Assigned rewards amount
      */
     function takeRewards(
-        address _allocationID
+        uint256 _allocationId
     ) 
       external 
       returns (uint256);

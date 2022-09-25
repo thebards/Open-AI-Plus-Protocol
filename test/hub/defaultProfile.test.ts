@@ -26,7 +26,6 @@ import {
 	userTwoAddress,
 	mockCurationMetaData,
 	mockMarketModuleInitData,
-	mockMinterMarketModuleInitData,
 	errorsLib,
 } from '../__setup.test';
 
@@ -47,7 +46,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -95,7 +94,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 
@@ -131,7 +130,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
 				})
 			).to.not.be.reverted;
 		});
@@ -380,7 +379,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 						marketModuleInitData: mockMarketModuleInitData,
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMarketModuleInitData,
-						curationMetaData: mockCurationMetaData
+						curationMetaData: mockCurationMetaData,
 					})
 				).to.not.be.reverted;
 

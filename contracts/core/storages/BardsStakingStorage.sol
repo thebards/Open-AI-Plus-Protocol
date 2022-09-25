@@ -49,8 +49,8 @@ abstract contract BardsStakingStorage {
     // There is only one CurationStakingPool per curationId
 	mapping (uint256 => DataTypes.CurationStakingPool) _stakingPools;
 
-    // Allocations : allocationID => Allocation
-    mapping(address => DataTypes.Allocation) allocations;
+    // Allocations : allocationId => Allocation
+    mapping(uint256 => DataTypes.Allocation) allocations;
 
     // Rebate pools : epoch => Pool
     mapping(uint256 => DataTypes.RebatePool) rebates;

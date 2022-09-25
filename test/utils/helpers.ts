@@ -49,6 +49,12 @@ export const randomHexBytes = (n = 32): string => hexlify(randomBytes(n))
 export const randomAddress = (): string => getAddress(randomHexBytes(20))
 export const toFloat = (n: BigNumber) => parseFloat(formatBCT(n));
 export const toRound = (n: number) => n.toFixed(12)
+export const toFixed = (n: number | BigNumber, precision = 12) => {
+	if (typeof n === 'number') {
+		return n.toFixed(precision)
+	}
+	return toFloat(n).toFixed(precision)
+}
 
 let snapshotId: string = '0x1';
 export async function takeSnapshot() {
@@ -334,13 +340,17 @@ export async function getSetDefaultProfileWithSigParts(
 
 export async function getSetAllocationIdWithSigParts(
 	curationId: BigNumberish,
-	allocationId: string,
+	allocationId: BigNumberish,
+	curationMetaData: Bytes | string,
+	stakeToCuration: BigNumberish,
 	nonce: number,
 	deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
 	const msgParams = buildSetAllocationIdWithSigParams(
 		curationId,
 		allocationId,
+		curationMetaData,
+		stakeToCuration,
 		nonce,
 		deadline
 	);
@@ -521,14 +531,18 @@ const buildSetDefaultProfileWithSigParams = (
 
 const buildSetAllocationIdWithSigParams = (
 	curationId: BigNumberish,
-	allocationId: string,
+	allocationId: BigNumberish,
+	curationMetaData: Bytes | string,
+	stakeToCuration: BigNumberish,
 	nonce: number,
 	deadline: string
 ) => ({
 	types: {
 		SetAllocationIdWithSig: [
 			{ name: 'curationId', type: 'uint256' },
-			{ name: 'allocationId', type: 'address' },
+			{ name: 'allocationId', type: 'uint256' },
+			{ name: 'curationMetaData', type: 'bytes' },
+			{ name: 'stakeToCuration', type: 'uint256' },
 			{ name: 'nonce', type: 'uint256' },
 			{ name: 'deadline', type: 'uint256' },
 		],
@@ -537,6 +551,8 @@ const buildSetAllocationIdWithSigParams = (
 	value: {
 		curationId: curationId,
 		allocationId: allocationId,
+		curationMetaData: curationMetaData,
+		stakeToCuration: stakeToCuration,
 		nonce: nonce,
 		deadline: deadline
 	},
@@ -684,34 +700,6 @@ function domain(): {
 	};
 }
 
-// Allocation keys
-
-interface ChannelKey {
-	privKey: string
-	pubKey: string
-	address: string
-	wallet: Signer
-	generateProof: (address) => Promise<string>
-}
-
-export const deriveChannelKey = (): ChannelKey => {
-	const w = Wallet.createRandom()
-	return {
-		privKey: w.privateKey,
-		pubKey: w.publicKey,
-		address: w.address,
-		wallet: w,
-		generateProof: (curatorAddress: string): Promise<string> => {
-			const messageHash = utils.solidityKeccak256(
-				['address', 'address'],
-				[curatorAddress, w.address],
-			)
-			const messageHashBytes = utils.arrayify(messageHash)
-			return w.signMessage(messageHashBytes)
-		},
-	}
-}
-
 export interface CollectReturningPairStruct {
 	sender?: Signer;
 	vars: DataTypes.SimpleDoCollectDataStruct | DataTypes.DoCollectWithSigDataStruct;
@@ -805,6 +793,27 @@ export async function calcBondingCurve(
 		toFloat(supply) *
 		((1 + toFloat(depositAmount) / toFloat(reserveBalance)) ** (reserveRatio / BPS_MAX) - 1)
 	)
+}
+
+// This function calculates the Cobb-Douglas formula in Typescript so we can compare against
+// the Solidity implementation
+// TODO: consider using bignumber.js to get extra precision
+export function cobbDouglas(
+	totalRewards: number,
+	fees: number,
+	totalFees: number,
+	stake: number,
+	totalStake: number,
+	alphaNumerator: number,
+	alphaDenominator: number,
+) {
+	if (totalFees === 0) {
+		return 0
+	}
+	const feeRatio = fees / totalFees
+	const stakeRatio = stake / totalStake
+	const alpha = alphaNumerator / alphaDenominator
+	return totalRewards * feeRatio ** alpha * stakeRatio ** (1 - alpha)
 }
 
 export const chunkify = (total: BigNumber, maxChunks = 10): Array<BigNumber> => {
