@@ -175,6 +175,7 @@ library DataTypes {
 	 * @param curationFundsBpses The fee percents that is sent to the curation.
 	 * @param curationBps The points fee of willing to share of the NFT income to curators.
 	 * @param stakingBps The points fee of willing to share of the NFT income to delegators who staking tokens.
+     * @param updatedAtBlock Period that need to pass to update curation data parameters
      */
     struct CurationData {
         address[] sellerFundsRecipients;
@@ -183,6 +184,7 @@ library DataTypes {
         uint32[] curationFundsBpses;
 		uint32 curationBps;
 		uint32 stakingBps;
+        uint256 updatedAtBlock;
     }
 
     /**

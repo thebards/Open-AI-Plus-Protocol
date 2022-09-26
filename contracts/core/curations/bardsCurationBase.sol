@@ -6,6 +6,7 @@ import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.s
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import '../../interfaces/curations/IBardsCurationBase.sol';
 import '../NFTs/BardsNFTBase.sol';
+import '../../utils/CurationHelpers.sol';
 import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
 import '../../utils/MathUtils.sol';
@@ -24,57 +25,30 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
      * @notice The curation for a given NFT, if one exists
      * @notice ERC-721 token id => Curation
 	 */
-    mapping(uint256 => DataTypes.CurationData) private _curationData;
+    mapping(uint256 => DataTypes.CurationData) internal _curationData;
+
+	// The time in blocks an curator needs to wait to change curation data parameters
+	uint32 internal _cooldownBlocks;
 
 	/**
-     * @notice See {IBardsCurationBase-createCuration}
+     * @notice Initializer sets the name, symbol and the cached domain separator.
+     *
+     * NOTE: Inheritor contracts *must* call this function to initialize the name & symbol in the
+     * inherited ERC721 contract.
+     *
+     * @param name The name to set in the ERC721 contract.
+     * @param symbol The symbol to set in the ERC721 contract.
      */
-	function initializeCuration(DataTypes.InitializeCurationData memory _vars)
-		public
-		override
+    function _initialize(
+		string calldata name, 
+		string calldata symbol,
+		uint32 cooldownBlocks
+	) 
+		internal 
 	{
-			// address tokenOwner = IERC721(_vars.tokenContract).ownerOf(_vars.tokenId);
-
-			// require(
-			// 	msg.sender == tokenOwner || IERC721(_vars._tokenContract).isApprovedForAll(tokenOwner, msg.sender),
-			// 	"Creating curation must be token owner or operator"
-			// );
-
-			DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(_vars.curationData);
-
-			require(
-				curationData.sellerFundsBpses.length == curationData.sellerFundsRecipients.length, 
-				"sellerFundsRecipients and sellerFundsBpses must have same length."
-			);
-			require(
-				curationData.curationFundsRecipients.length == curationData.curationFundsBpses.length, 
-				"curationFundsRecipients and curationFundsBpses must have same length."
-			);
-			require(
-				MathUtils.sum(MathUtils.uint32To256Array(curationData.sellerFundsBpses)) + 
-				MathUtils.sum(MathUtils.uint32To256Array(curationData.curationFundsBpses)) == Constants.MAX_BPS, 
-				"The sum of sellerFundsBpses and curationFundsBpses must be equal to 1000000."
-			);
-			require(
-				curationData.curationBps + curationData.stakingBps <= Constants.MAX_BPS, 
-				"curationBps + stakingBps <= 100%"
-			);
-
-			_curationData[_vars.tokenId] = DataTypes.CurationData({
-				sellerFundsRecipients: curationData.sellerFundsRecipients,
-				curationFundsRecipients: curationData.curationFundsRecipients,
-				sellerFundsBpses: curationData.sellerFundsBpses,
-				curationFundsBpses: curationData.curationFundsBpses,
-				curationBps: curationData.curationBps,
-				stakingBps: curationData.stakingBps
-			});
-			
-			emit Events.CurationInitialized(
-				_vars.tokenId, 
-				_vars.curationData, 
-				block.timestamp
-			);
-		}
+        super.__ERC721_Init(name, symbol);
+		_setCooldownBlocks(cooldownBlocks);
+    }
 
 	/**
      * @notice See {IBardsCurationBase-sellerFundsRecipientsOf}
@@ -84,10 +58,11 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		view
 		virtual
 		override
-		returns (address[] memory) {
-			address[] memory sellerFundsRecipients = _curationData[tokenId].sellerFundsRecipients;
-			return sellerFundsRecipients;
-		}
+		returns (address[] memory) 
+	{
+		address[] memory sellerFundsRecipients = _curationData[tokenId].sellerFundsRecipients;
+		return sellerFundsRecipients;
+	}
 
 	/**
      * @notice See {IBardsCurationBase-sellerFundsRecipientsOf}
@@ -97,10 +72,11 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 		view
 		virtual
 		override
-		returns (uint256[] memory) {
-			uint256[] memory curationFundsRecipients = _curationData[tokenId].curationFundsRecipients;
-			return curationFundsRecipients;
-		}
+		returns (uint256[] memory) 
+	{
+		uint256[] memory curationFundsRecipients = _curationData[tokenId].curationFundsRecipients;
+		return curationFundsRecipients;
+	}
 
 	/**
      * @notice See {IBardsCurationBase-sellerBpsesOf}
@@ -166,120 +142,31 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
         view
         virtual
         override
-        returns (DataTypes.CurationData memory){
-			// if (tokenContract == address(this)){
-			// 	require(_exists(tokenId), 'ERC721: token data query for nonexistent token');
-			// }
-			return _curationData[tokenId];
-   		 }
-
-	/**
-     * @notice See {IBardsCurationBase-setSellerFundsRecipientsParams}.
-     */
-	function setSellerFundsRecipientsParams(uint256 tokenId, address[] calldata sellerFundsRecipients) 
-		external 
-		virtual 
-		override 
+        returns (DataTypes.CurationData memory)
 	{
-		_curationData[tokenId].sellerFundsRecipients = sellerFundsRecipients;
-
-		emit Events.CurationSellerFundsRecipientsUpdated(tokenId, sellerFundsRecipients, block.timestamp);
-	}
-
-	/**
-     * @notice See {IBardsCurationBase-setCurationFundsRecipientsParams}.
-     */
-	function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) 
-		external 
-		virtual 
-		override 
-	{
-		_curationData[tokenId].curationFundsRecipients = curationFundsRecipients;
-
-		emit Events.CurationFundsRecipientsUpdated(
-			tokenId, 
-			curationFundsRecipients, 
-			block.timestamp
-		);
-	}
-
-	/**
-     * @notice See {IBardsCurationBase-setSellerFundsBpsesParams}.
-     */
-	function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) 
-		external 
-		virtual 
-		override 
-	{
-		_curationData[tokenId].sellerFundsBpses = sellerFundsBpses;
-
-		emit Events.CurationSellerFundsBpsesUpdated(
-			tokenId, 
-			sellerFundsBpses, 
-			block.timestamp
-		);
-	}
-
-	/**
-     * @notice See {IBardsCurationBase-setCurationFundsBpsesParams}.
-     */
-	function setCurationFundsBpsesParams(uint256 tokenId, uint32[] calldata curationFundsBpses) 
-		external 
-		virtual 
-		override 
-	{
-		_curationData[tokenId].curationFundsBpses = curationFundsBpses;
-
-		emit Events.CurationFundsBpsesUpdated(
-			tokenId, 
-			curationFundsBpses, 
-			block.timestamp
-		);
-	}
-
-	/**
-     * @notice See {IBardsCurationBase-setCurationFeeParams}.
-     */
-	function setCurationBpsParams(uint256 tokenId, uint32 curationBps) 
-		external 
-		virtual 
-		override {
-			require(curationBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
-
-			_curationData[tokenId].curationBps = curationBps;
-
-			emit Events.CurationBpsUpdated(tokenId, curationBps, block.timestamp);
+		// if (tokenContract == address(this)){
+		// 	require(_exists(tokenId), 'ERC721: token data query for nonexistent token');
+		// }
+		return _curationData[tokenId];
 		}
 
-	/**
-     * @notice See {IBardsCurationBase-setStakingBpsParams}.
+    /**
+     * @notice Internal: Set the time in blocks an curator needs to wait to change curation parameters.
+     * @param _blocks Number of blocks to set the cuation parameters cooldown period
      */
-	function setStakingBpsParams(uint256 tokenId, uint32 stakingBps) 
-		external 
-		virtual 
-		override {
-			require(stakingBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
-
-			_curationData[tokenId].stakingBps = stakingBps;
-
-			emit Events.StakingBpsUpdated(tokenId, stakingBps, block.timestamp);
-		}
-
-	/**
-     * @notice See {IBardsCurationBase-setBpsParams}.
-     */
-	function setBpsParams(uint256 tokenId, uint32 curationBps, uint32 stakingBps) 
-		external 
-		virtual 
-		override {
-			require(curationBps + stakingBps <= Constants.MAX_BPS, 'curationBps + stakingBps <= 100%');
-			
-			_curationData[tokenId].curationBps = curationBps;
-			emit Events.CurationBpsUpdated(tokenId, curationBps, block.timestamp);
-
-			_curationData[tokenId].stakingBps = stakingBps;
-			emit Events.StakingBpsUpdated(tokenId, stakingBps, block.timestamp);
-		}
+    function _setCooldownBlocks(
+        uint32 _blocks
+    ) 
+        internal 
+    {
+        uint32 prevCooldownBlocks = _cooldownBlocks;
+        _cooldownBlocks = _blocks;
+        emit Events.CooldownBlocksUpdated(
+            prevCooldownBlocks,
+            _blocks,
+            block.timestamp
+        );
+    }
 
 	/**
 	 * @notice see {IBardsCurationBase-getCurationFeeAmount}

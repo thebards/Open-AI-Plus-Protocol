@@ -10,6 +10,7 @@ import '../govs/ContractRegistrar.sol';
 import '../../interfaces/govs/IRewardsManager.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../interfaces/tokens/IBardsCurationToken.sol';
+import "hardhat/console.sol";
 
 /**
  * @title RewardsManager

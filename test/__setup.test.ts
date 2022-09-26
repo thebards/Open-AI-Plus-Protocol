@@ -163,12 +163,19 @@ before(async function () {
 	daoTreasuryAddress = await daoTreasury.getAddress();
 
 	// libs
-	const curationHelpers = await new CurationHelpers__factory(deployer).deploy();
 	const codeUtils = await new CodeUtils__factory(deployer).deploy();
+	const curationHelpLibs = {
+		'contracts/utils/CodeUtils.sol:CodeUtils': codeUtils.address
+	}
+	const curationHelpers = await new CurationHelpers__factory(
+		curationHelpLibs, 
+		deployer
+	).deploy();
+
 	const cobbs = await new LibCobbDouglas__factory(deployer).deploy();
+
 	hubLibs = {
 		'contracts/utils/CurationHelpers.sol:CurationHelpers': curationHelpers.address,
-		'contracts/utils/CodeUtils.sol:CodeUtils': codeUtils.address
 	};
 	bardsStakingLibs = {
 		'contracts/utils/Cobbs.sol:LibCobbDouglas': cobbs.address,
@@ -181,6 +188,7 @@ before(async function () {
 		BARDS_HUB_NFT_NAME,
 		BARDS_HUB_NFT_SYMBOL,
 		governanceAddress,
+		DEFAULTS.epochs.lengthInBlocks
 	]);
 	let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
 		bardsHubImpl.address,

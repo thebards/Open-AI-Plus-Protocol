@@ -2,10 +2,13 @@
 
 pragma solidity ^0.8.9;
 
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import './DataTypes.sol';
 import './Errors.sol';
 import './Events.sol';
 import './Constants.sol';
+import './CodeUtils.sol';
+import './MathUtils.sol';
 import '../interfaces/markets/IMarketModule.sol';
 import "hardhat/console.sol";
 
@@ -19,6 +22,7 @@ import "hardhat/console.sol";
  * expected events are emitted from this library instead of from the hub to alleviate code size concerns.
  */
 library CurationHelpers {
+    using SafeMath for uint256;
 	using CurationHelpers for DataTypes.CurationStruct;
 	using CurationHelpers for DataTypes.CreateCurationData;
 
@@ -278,6 +282,280 @@ library CurationHelpers {
 
         return (retTokenContract, retTokenId);
     }
+
+    function setCurationRecipientsParams(
+        DataTypes.InitializeCurationData memory vars,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+	) 
+		external 
+        returns (bytes memory)
+	{
+		require(
+            _curationData[vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[vars.tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+		DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(vars.curationData);
+
+		require(
+			curationData.sellerFundsBpses.length == curationData.sellerFundsRecipients.length, 
+			"sellerFundsRecipients and sellerFundsBpses must have same length."
+		);
+		require(
+			curationData.curationFundsRecipients.length == curationData.curationFundsBpses.length, 
+			"curationFundsRecipients and curationFundsBpses must have same length."
+		);
+		require(
+			MathUtils.sum(MathUtils.uint32To256Array(curationData.sellerFundsBpses)) + 
+			MathUtils.sum(MathUtils.uint32To256Array(curationData.curationFundsBpses)) == Constants.MAX_BPS, 
+			"The sum of sellerFundsBpses and curationFundsBpses must be equal to 1000000."
+		);
+		require(
+			curationData.curationBps + curationData.stakingBps <= Constants.MAX_BPS, 
+			"curationBps + stakingBps <= 100%"
+		);
+
+		_curationData[vars.tokenId] = DataTypes.CurationData({
+			sellerFundsRecipients: curationData.sellerFundsRecipients,
+			curationFundsRecipients: curationData.curationFundsRecipients,
+			sellerFundsBpses: curationData.sellerFundsBpses,
+			curationFundsBpses: curationData.curationFundsBpses,
+			curationBps: curationData.curationBps,
+			stakingBps: curationData.stakingBps,
+			updatedAtBlock: block.number
+		});
+
+        emit Events.CurationUpdated(
+            vars.tokenId,
+            vars.curationData,
+            block.timestamp
+        );
+
+        return vars.curationData;
+	}
+
+	function setSellerFundsRecipientsParams(
+		uint256 tokenId, 
+		address[] calldata sellerFundsRecipients,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+	) 
+		external 
+        returns (bytes memory)
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+        require(
+            _curationData[tokenId].sellerFundsBpses.length == sellerFundsRecipients.length, 
+            "sellerFundsRecipients and sellerFundsBpses must have same length."
+        );
+
+		_curationData[tokenId].sellerFundsRecipients = sellerFundsRecipients;
+		_curationData[tokenId].updatedAtBlock = block.number;
+
+		emit Events.CurationSellerFundsRecipientsUpdated(
+			tokenId, 
+			sellerFundsRecipients, 
+			block.timestamp
+		);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
+
+	function setCurationFundsRecipientsParams(
+        uint256 tokenId, 
+        uint256[] calldata curationFundsRecipients,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+    ) 
+		external 
+        returns (bytes memory)
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+        require(
+            curationFundsRecipients.length == _curationData[tokenId].curationFundsBpses.length, 
+            "curationFundsRecipients and curationFundsBpses must have same length."
+        );
+
+		_curationData[tokenId].curationFundsRecipients = curationFundsRecipients;
+		_curationData[tokenId].updatedAtBlock = block.number;
+
+		emit Events.CurationFundsRecipientsUpdated(
+			tokenId, 
+			curationFundsRecipients, 
+			block.timestamp
+		);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
+
+	function setSellerFundsBpsesParams(
+        uint256 tokenId, 
+        uint32[] calldata sellerFundsBpses,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+    ) 
+		external 
+        returns (bytes memory)
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+        require(
+            sellerFundsBpses.length == _curationData[tokenId].sellerFundsRecipients.length, 
+            "sellerFundsRecipients and sellerFundsBpses must have same length."
+        );
+
+        require(
+            MathUtils.sum(MathUtils.uint32To256Array(sellerFundsBpses)) + 
+            MathUtils.sum(MathUtils.uint32To256Array(_curationData[tokenId].curationFundsBpses)) == Constants.MAX_BPS, 
+            "The sum of sellerFundsBpses and curationFundsBpses must be equal to 100%."
+        );
+
+		_curationData[tokenId].sellerFundsBpses = sellerFundsBpses;
+		_curationData[tokenId].updatedAtBlock = block.number;
+
+		emit Events.CurationSellerFundsBpsesUpdated(
+			tokenId, 
+			sellerFundsBpses, 
+			block.timestamp
+		);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
+
+	function setCurationFundsBpsesParams(
+        uint256 tokenId, 
+        uint32[] calldata curationFundsBpses,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+    ) 
+		external
+        returns (bytes memory) 
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+        require(
+            MathUtils.sum(MathUtils.uint32To256Array(_curationData[tokenId].sellerFundsBpses)) + 
+            MathUtils.sum(MathUtils.uint32To256Array(curationFundsBpses)) == Constants.MAX_BPS, 
+            "The sum of sellerFundsBpses and curationFundsBpses must be equal to 100%."
+        );
+
+		_curationData[tokenId].curationFundsBpses = curationFundsBpses;
+		_curationData[tokenId].updatedAtBlock = block.number;
+
+		emit Events.CurationFundsBpsesUpdated(
+			tokenId, 
+			curationFundsBpses, 
+			block.timestamp
+		);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
+
+	function setCurationBpsParams(
+        uint256 tokenId, 
+        uint32 curationBps,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+    ) 
+		external
+        returns (bytes memory)
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+        require(curationBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
+
+        require(
+            curationBps + _curationData[tokenId].stakingBps <= Constants.MAX_BPS, 
+            "curationBps + stakingBps <= 100%"
+        );
+
+		_curationData[tokenId].curationBps = curationBps;
+		_curationData[tokenId].updatedAtBlock = block.number;
+
+		emit Events.CurationBpsUpdated(tokenId, curationBps, block.timestamp);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
+
+	function setStakingBpsParams(
+        uint256 tokenId, 
+        uint32 stakingBps,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+    ) 
+		external
+        returns (bytes memory)
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+		require(stakingBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
+        require(
+            _curationData[tokenId].curationBps + stakingBps <= Constants.MAX_BPS, 
+            "curationBps + stakingBps <= 100%"
+        );
+
+		_curationData[tokenId].stakingBps = stakingBps;
+		_curationData[tokenId].updatedAtBlock = block.number;
+
+		emit Events.StakingBpsUpdated(tokenId, stakingBps, block.timestamp);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
+
+
+	function setBpsParams(
+        uint256 tokenId, 
+        uint32 curationBps, 
+        uint32 stakingBps,
+        uint32 minimalCooldownBlocks,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData
+    ) 
+		external
+        returns (bytes memory) 
+	{
+		require(
+            _curationData[tokenId].updatedAtBlock == 0 ||
+                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+		require(curationBps + stakingBps <= Constants.MAX_BPS, 'curationBps + stakingBps <= 100%');
+		
+		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[tokenId].curationBps = curationBps;
+		emit Events.CurationBpsUpdated(tokenId, curationBps, block.timestamp);
+
+		_curationData[tokenId].stakingBps = stakingBps;
+		emit Events.StakingBpsUpdated(tokenId, stakingBps, block.timestamp);
+
+        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+	}
 
 	function _initMarketModule(
 		address tokenContract,

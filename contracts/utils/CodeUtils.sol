@@ -31,7 +31,28 @@ library CodeUtils {
 			sellerFundsBpses: sellerFundsBpses,
 			curationFundsBpses: curationFundsBpses,
 			curationBps: curationBps,
-			stakingBps: stakingBps
+			stakingBps: stakingBps,
+			updatedAtBlock: 0
 		});
 	}
+
+	function encodeCurationMetaData(
+		DataTypes.CurationData memory curationMetaData
+	)
+		public
+		pure
+		returns (bytes memory)
+	{
+		bytes memory _metaData = abi.encode(
+			curationMetaData.sellerFundsRecipients, 
+			curationMetaData.curationFundsRecipients,
+			curationMetaData.sellerFundsBpses,
+			curationMetaData.curationFundsBpses,
+			curationMetaData.curationBps,
+			curationMetaData.stakingBps
+        );
+
+		return _metaData;
+	}
+
 }

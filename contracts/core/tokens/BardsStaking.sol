@@ -1258,10 +1258,9 @@ contract BardsStaking is
         DataTypes.Allocation storage _alloc = allocations[_allocationId];
 
         // Stakeholders (delegators or seller) are also allowed but only after maxAllocationEpochs passed
-        bool isCurator = _isAuth(_alloc.curator);
+        bool isCurator = _isAuth(_alloc.curator) || HUB == msg.sender;
         if (_epochs > maxAllocationEpochs) {
             require(
-                HUB == msg.sender ||
                 isCurator || 
                 isDelegator(_alloc.curationId, msg.sender) || 
                 isSeller(_allocationId, msg.sender), 
@@ -1340,7 +1339,10 @@ contract BardsStaking is
      * @param _allocationId Allocation from where we are claiming tokens
      * @param _stakeToCuration Restake to othe curation.
      */
-    function _claim(uint256 _allocationId, uint256 _stakeToCuration)
+    function _claim(
+        uint256 _allocationId, 
+        uint256 _stakeToCuration
+    )
         private 
     {
         // Funds can only be claimed after a period of time passed since allocation was closed
@@ -1427,6 +1429,8 @@ contract BardsStaking is
             TokenUtils.burnTokens(bct, stakingAddress, rebatePool.unclaimedFees(address(bct)));
             delete rebates[alloc.closedAtEpoch];
         }
+
+        bardsHub().removeAllocation(alloc.curator, _allocationId);
     }
 
     /**
@@ -1455,7 +1459,6 @@ contract BardsStaking is
                 _stake(_stakeToCuration, _rewards, _curator);
                 continue;
             }
-            
             // Transfer funds to the beneficiary
             TokenUtils.transfer(
                 IERC20(_currency),

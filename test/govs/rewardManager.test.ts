@@ -4,6 +4,9 @@ import { constants, BigNumber } from 'ethers'
 import { BigNumber as BN } from 'bignumber.js'
 const { AddressZero, MaxUint256, WeiPerEther } = constants
 import {
+	DEFAULTS,
+	DEFAULT_CURATION_BPS,
+	DEFAULT_STAKING_BPS,
 	FIRST_PROFILE_ID,
 	ISSUANCE_RATE_PER_BLOCK,
 	MOCK_PROFILE_CONTENT_URI,
@@ -40,7 +43,8 @@ import {
 	mockMinterMarketModuleInitData,
 	mockCurationMetaData,
 	testWallet,
-	user
+	user,
+	abiCoder
 } from '../__setup.test';
 
 const toRound = (n: BigNumber) => formatBCT(n).split('.')[0]
@@ -512,12 +516,9 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				const afterCuratorBalance = await bardsCurationToken.balanceOf(userTwoAddress)
 				const afterStakingBalance = await bardsCurationToken.balanceOf(testWallet.address)
 
-				// Check that rewards are put into indexer stake
+				// Check that rewards are put into curator stake
 				const expectedCurationStake = beforeCurationTokensStaked.add(expectedCurationRewards)
 				const expectedTokenSupply = beforeTokenSupply.add(expectedCurationRewards)
-
-				console.log(expectedCurationStake)
-				console.log(expectedTokenSupply)
 
 				// Check stake should have increased with the rewards staked
 				expect(toRound(afterCurationTokensStaked)).eq(toRound(expectedCurationStake))
@@ -531,7 +532,77 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				expect(toRound(afterTokenSupply)).eq(toRound(expectedTokenSupply))
 			})
 
+			it('should distribute rewards on closed allocation and send to destinations', async function () {
+				// Setup
+				await setupCurationAllocation()
+				await epochManager.connect(governance).setEpochLength(DEFAULTS.epochs.lengthInBlocks)
+				// Jump
+				await advanceBlocks(await epochManager.epochLength())
+
+				// Before state
+				const beforeUserBalance = await bardsCurationToken.balanceOf(userAddress)
+				const beforeUserThreeBalance = await bardsCurationToken.balanceOf(userThreeAddress)
+
+				// Before state
+				const beforeTokenSupply = await bardsCurationToken.totalSupply()
+				const beforeCurationTokensStaked = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+				const beforeStakingBalance = await bardsCurationToken.balanceOf(testWallet.address)
+
+				const expectedCurationRewards = toBCT('23496688336')
+
+				const mockCurationMetaData = abiCoder.encode(
+					['address[]', 'uint256[]', 'uint32[]', 'uint32[]', 'uint32', 'uint32'],
+					[[userAddress, userThreeAddress], [], [800000, 200000], [], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
+				);
+
+				// Close allocation. At this point rewards should be collected for that indexer
+				await expect(
+					bardsHub
+						.connect(user)
+						.updateCuration({
+							tokenId: FIRST_PROFILE_ID,
+							curationData: mockCurationMetaData
+						})
+				).to.not.be.reverted;
+
+				// After state
+
+				const afterTokenSupply = await bardsCurationToken.totalSupply()
+				const afterCurationTokensStaked = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+				const afterStakingBalance = await bardsCurationToken.balanceOf(testWallet.address)
+
+				// Check that rewards are put into curator stake
+				const expectedCurationStake = beforeCurationTokensStaked.add(expectedCurationRewards)
+				const expectedTokenSupply = beforeTokenSupply.add(expectedCurationRewards)
+
+				// Check stake should have increased with the rewards staked
+				expect(toRound(afterCurationTokensStaked)).eq(toRound(expectedCurationStake))
+				// Check rewards are kept in the staking contract
+				expect(toRound(afterStakingBalance)).eq(
+					toRound(beforeStakingBalance.add(expectedCurationRewards)),
+				)
+				// Check that tokens have been minted
+				expect(toRound(afterTokenSupply)).eq(toRound(expectedTokenSupply))
+
+				// Jump
+				await advanceBlocks(await epochManager.epochLength())
+
+				await expect(
+					bardsStaking.connect(user).closeAllocation(2, 0)
+				).to.not.be.reverted;
+
+				const afterUserBalance = await bardsCurationToken.balanceOf(userAddress)
+				const afterUserThreeBalance = await bardsCurationToken.balanceOf(userThreeAddress)
+
+				const expectNewRewards = toBCT('48039535014');
+				expect(toRound(afterUserBalance)).eq(toRound(expectNewRewards.mul(8).div(10)))
+				expect(toRound(afterUserThreeBalance)).eq(toRound(expectNewRewards.mul(2).div(10)))
+			})
+
 		})
+
+		
+
 
 
 	});

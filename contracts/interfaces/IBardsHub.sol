@@ -21,11 +21,13 @@ interface IBardsHub {
      * @param name The name to set for the hub NFT.
      * @param symbol The symbol to set for the hub NFT.
      * @param newGovernance The governance address to set.
+     * @param cooldownBlocks Number of blocks to set the curation parameters cooldown period
      */
     function initialize(
         string calldata name,
         string calldata symbol,
-        address newGovernance
+        address newGovernance,
+        uint32 cooldownBlocks
     ) external;
 
     /**
@@ -35,7 +37,7 @@ interface IBardsHub {
      * @param newGovernance The new governance address to set.
      */
     function setGovernance(address newGovernance) 
-		external;
+		  external;
 
     /**
      * @notice Sets the emergency admin, which is a permissioned role able to set the protocol state. This function
@@ -44,7 +46,14 @@ interface IBardsHub {
      * @param newEmergencyAdmin The new emergency admin address to set.
      */
     function setEmergencyAdmin(address newEmergencyAdmin) 
-		external;
+		  external;
+
+    /**
+     * @notice Set the time in blocks an curator needs to wait to change curation parameters.
+     * @param _blocks Number of blocks to set the curation parameters cooldown period
+     */
+    function setCooldownBlocks(uint32 _blocks) 
+		  external;
 
 	/**
      * @notice Sets the protocol state to either a global pause, a publishing pause or an unpaused state. This function
@@ -65,6 +74,69 @@ interface IBardsHub {
      */
     function setState(DataTypes.ProtocolState newState) 
 		external;
+
+    /**
+    * @notice Updates a curation with the specified parameters. 
+    */
+	  function updateCuration(DataTypes.InitializeCurationData memory _vars) external;
+
+    /**
+     * @notice Sets the sellerFundsRecipients of the sellers for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param sellerFundsRecipients The bpses of seller funds
+     */
+    function setSellerFundsRecipientsParams(uint256 tokenId, address[] calldata sellerFundsRecipients) external;
+
+    /**
+     * @notice Sets the curationFundsRecipients of the sellers for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param curationFundsRecipients The bpses of curation funds
+     */
+    function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) external;
+
+
+    /**
+     * @notice Sets the fee that is sent to the sellers for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param sellerFundsBpses The fee that is sent to the sellers.
+     */
+    function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) external;
+
+    /**
+     * @notice Sets the fee that is sent to the curation for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param curationFundsBpses The fee that is sent to the curations.
+     */
+    function setCurationFundsBpsesParams(uint256 tokenId, uint32[] calldata curationFundsBpses) external;
+
+	/**
+     * @notice Sets fee parameters for a NFT
+	 *
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param curationBps The bps of curation
+     * @param stakingBps The bps of staking
+     */
+    function setBpsParams(uint256 tokenId, uint32 curationBps, uint32 stakingBps) external;
+
+    /**
+     * @notice Sets curation fee parameters for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param curationBps The bps of curation
+     */
+    function setCurationBpsParams(uint256 tokenId, uint32 curationBps) external;
+
+    /**
+     * @notice Sets staking fee parameters for a NFT
+     * 
+     * @param tokenId The token Id of the NFT to set fee params.
+     * @param stakingBps The bps of staking
+     */
+    function setStakingBpsParams(uint256 tokenId, uint32 stakingBps) external;
 
 	/**
      * @notice Adds or removes a market module from the whitelist. This function can only be called by the current
@@ -471,5 +543,13 @@ interface IBardsHub {
         external
         view
         returns (uint256);
+
+    /**
+     * @notice remove allocations in _isToBeClaimedByAllocByCurator.
+     */
+    function removeAllocation(
+        address curator, 
+        uint256 allocationId
+    ) external;
 
 }

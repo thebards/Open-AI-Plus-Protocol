@@ -7,6 +7,7 @@ import {ContractRegistrar} from './ContractRegistrar.sol';
 import '../../interfaces/govs/IEpochManager.sol';
 import '../../utils/Events.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "hardhat/console.sol";
 
 /**
  * @title EpochManager

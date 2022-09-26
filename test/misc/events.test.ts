@@ -14,7 +14,8 @@ import {
 	DEFAULT_STAKING_BPS,
 	BARDS_HUB_NFT_NAME,
 	BARDS_HUB_NFT_SYMBOL,
-	PROTOCOL_FEE
+	PROTOCOL_FEE,
+	DEFAULTS
 } from '../utils/Constants';
 import {
 	toBCT,
@@ -59,6 +60,7 @@ makeSuiteCleanRoom('Events', function () {
 				BARDS_HUB_NFT_NAME,
 				BARDS_HUB_NFT_SYMBOL,
 				governanceAddress,
+				DEFAULTS.epochs.lengthInBlocks
 			]);
 			let proxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
 				bardsHubImpl.address,

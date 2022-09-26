@@ -50,13 +50,14 @@ contract BardsHub is
     function initialize(
         string calldata name,
         string calldata symbol,
-        address newGovernance
+        address newGovernance,
+        uint32 cooldownBlocks
     ) 
         external 
         override 
-        initializer 
+        initializer
     {
-        super._initialize(name, symbol);
+        BardsCurationBase._initialize(name, symbol, cooldownBlocks);
         _setState(DataTypes.ProtocolState.Paused);
         _setGovernance(newGovernance);
     }
@@ -98,6 +99,18 @@ contract BardsHub is
             revert Errors.NotGovernanceOrEmergencyAdmin();
         }
         _setState(newState);
+    }
+
+    /// @inheritdoc IBardsHub
+    function setCooldownBlocks(
+        uint32 _blocks
+    ) 
+        external 
+        override 
+        onlyGov 
+    {
+
+        _setCooldownBlocks(_blocks);
     }
 
     ///@inheritdoc IBardsHub
@@ -211,7 +224,7 @@ contract BardsHub is
                 _marketModuleWhitelisted
             );
 
-            initializeCuration(
+            _initializeCuration(
                 DataTypes.InitializeCurationData({
                     tokenId: profileId,
                     curationData: vars.curationMetaData
@@ -222,12 +235,13 @@ contract BardsHub is
             _curationById[profileId].allocationId = allocationId;
             _getBardsStaking().allocate(
                 DataTypes.CreateAllocateData({
-                    curator: msg.sender,
+                    curator: vars.to,
                     curationId: profileId,
                     recipientsMeta: vars.curationMetaData,
                     allocationId: allocationId
                 })
             );
+            _isToBeClaimedByAllocByCurator[vars.to][allocationId] = true;
             return profileId;
         }
     }
@@ -323,18 +337,20 @@ contract BardsHub is
         if (_existsAllocationId(vars.allocationId))
             revert Errors.AllocationExists();
 
-        // init allocation
+        address owner = ownerOf(vars.curationId);
+        // reset allocation
         _getBardsStaking().closeAndAllocate(
             _curationById[vars.curationId].allocationId,
             vars.stakeToCuration,
             DataTypes.CreateAllocateData({
-                curator: msg.sender,
+                curator: owner,
                 curationId: vars.curationId,
                 recipientsMeta: vars.curationMetaData,
                 allocationId: vars.allocationId
             })
         );
         _curationById[vars.curationId].allocationId = vars.allocationId;
+        _isToBeClaimedByAllocByCurator[owner][vars.allocationId] = true;
         
         emit Events.AllocationIdSet(
             vars.curationId,
@@ -385,13 +401,14 @@ contract BardsHub is
             _curationById[vars.curationId].allocationId,
             vars.stakeToCuration,
             DataTypes.CreateAllocateData({
-                curator: msg.sender,
+                curator: owner,
                 curationId: vars.curationId,
                 recipientsMeta: vars.curationMetaData,
                 allocationId: vars.allocationId
             })
         );
         _curationById[vars.curationId].allocationId = vars.allocationId;
+        _isToBeClaimedByAllocByCurator[owner][vars.allocationId] = true;
 
         emit Events.AllocationIdSet(
             vars.curationId,
@@ -579,6 +596,302 @@ contract BardsHub is
                 curationMetaData: vars.curationMetaData
             }
         ));
+    }
+
+    /**
+    * @notice Initializes a curation with the specified parameters. 
+    */
+	function _initializeCuration(
+        DataTypes.InitializeCurationData memory _vars
+    )
+		internal
+	{
+        _validateCallerIsCurationOwnerOrApproved(_vars.tokenId);
+
+		CurationHelpers.setCurationRecipientsParams(_vars, _cooldownBlocks, _curationData);
+	}
+
+    /// @inheritdoc IBardsHub
+	function updateCuration(
+        DataTypes.InitializeCurationData memory _vars
+    )
+		external
+		override
+	{
+
+        _validateCallerIsCurationOwnerOrApproved(_vars.tokenId);
+        
+		bytes memory metaData = CurationHelpers.setCurationRecipientsParams(_vars, _cooldownBlocks, _curationData);
+
+        // reset allocation for curation
+        address owner = ownerOf(_vars.tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+
+        _getBardsStaking().closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+	}
+
+    /// @inheritdoc IBardsHub
+	function setSellerFundsRecipientsParams(
+		uint256 tokenId, 
+		address[] calldata sellerFundsRecipients
+	) 
+		external 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+
+        bytes memory metaData = CurationHelpers.setSellerFundsRecipientsParams(
+            tokenId, 
+            sellerFundsRecipients, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
+	}
+
+    /// @inheritdoc IBardsHub
+	function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) 
+		external 
+		virtual 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+        bytes memory metaData = CurationHelpers.setCurationFundsRecipientsParams(
+            tokenId, 
+            curationFundsRecipients, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
+	}
+
+    /// @inheritdoc IBardsHub
+	function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) 
+		external 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+        bytes memory metaData = CurationHelpers.setSellerFundsBpsesParams(
+            tokenId, 
+            sellerFundsBpses, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
+	}
+
+    /// @inheritdoc IBardsHub
+	function setCurationFundsBpsesParams(
+        uint256 tokenId, 
+        uint32[] calldata curationFundsBpses
+    ) 
+		external 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+
+        bytes memory metaData = CurationHelpers.setCurationFundsBpsesParams(
+            tokenId, 
+            curationFundsBpses, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
+	}
+
+    /// @inheritdoc IBardsHub
+	function setCurationBpsParams(
+        uint256 tokenId, 
+        uint32 curationBps
+    ) 
+		external 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+
+        bytes memory metaData = CurationHelpers.setCurationBpsParams(
+            tokenId, 
+            curationBps, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
+	}
+
+    /// @inheritdoc IBardsHub
+	function setStakingBpsParams(
+        uint256 tokenId, 
+        uint32 stakingBps
+    ) 
+		external 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+
+		bytes memory metaData = CurationHelpers.setStakingBpsParams(
+            tokenId, 
+            stakingBps, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+	}
+
+    /// @inheritdoc IBardsHub
+	function setBpsParams(
+        uint256 tokenId, 
+        uint32 curationBps, 
+        uint32 stakingBps
+    ) 
+		external 
+		override 
+	{
+        _validateCallerIsCurationOwnerOrApproved(tokenId);
+    
+		bytes memory metaData = CurationHelpers.setBpsParams(
+            tokenId, 
+            curationBps, 
+            stakingBps, 
+            _cooldownBlocks, 
+            _curationData
+        );
+
+        // reset allocation for curation
+        address owner = ownerOf(tokenId);
+        uint256 newAllocationId = ++_allocationCounter;
+        
+        _getBardsStaking().closeAndAllocate(
+            _curationById[tokenId].allocationId,
+            tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: tokenId,
+                recipientsMeta: metaData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+	}
+
+    /// @inheritdoc IBardsHub
+    function removeAllocation(
+        address curator, 
+        uint256 allocationId
+    ) 
+        external {
+        delete _isToBeClaimedByAllocByCurator[curator][allocationId];
     }
 
     /// @inheritdoc IBardsHub
@@ -833,7 +1146,7 @@ contract BardsHub is
                 _isMintedByIdById,
                 _marketModuleWhitelisted
             );
-            initializeCuration(
+            _initializeCuration(
                 DataTypes.InitializeCurationData(
                     curationId,
                     _vars.curationMetaData
@@ -850,6 +1163,7 @@ contract BardsHub is
                     allocationId: allocationId
                 })
             );
+            _isToBeClaimedByAllocByCurator[_vars.to][allocationId] = true;
             return curationId;
         }
     }
@@ -955,7 +1269,7 @@ contract BardsHub is
         // require(msg.sender == _governance, 'not_gov');
     }
 
-    function _existsAllocationId(uint256 allocationId) internal returns (bool) {
+    function _existsAllocationId(uint256 allocationId) internal view returns (bool) {
         return _getBardsStaking().isAllocation(allocationId);
     }
 

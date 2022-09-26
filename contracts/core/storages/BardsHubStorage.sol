@@ -58,6 +58,8 @@ abstract contract BardsHubStorage {
 	mapping(bytes32 => uint256) internal _profileIdByHandleHash;
 	// self curation or profile
 	mapping(uint256 => bool) internal _isProfileById;
+    // curator => allocationId => bool
+    mapping(address => mapping(uint256 => bool)) internal _isToBeClaimedByAllocByCurator;
 	// curation
 	mapping(uint256 => DataTypes.CurationStruct) internal _curationById;
 	// curation id (or profile) -> curation id -> bool

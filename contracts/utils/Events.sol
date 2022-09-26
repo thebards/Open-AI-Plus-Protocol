@@ -96,6 +96,18 @@ library Events {
     );
 
     /**
+     * @notice Emitted when the cooldown blocks is updated.
+     * @param oldCooldownBlocks The previous emergency admin address.
+     * @param newCooldownBlocks The new emergency admin address set.
+     * @param timestamp The current block timestamp.
+     */
+    event CooldownBlocksUpdated(
+        uint32 indexed oldCooldownBlocks, 
+        uint32 indexed newCooldownBlocks, 
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when the fee for a NFT is updated.
      * @param tokenId The token Id of a NFT.
      * @param curationBps The bps of curation.
@@ -185,7 +197,7 @@ library Events {
      * @param curationData The curation data.
      * @param timestamp The current block timestamp.
      */
-    event CurationInitialized(
+    event CurationUpdated(
         uint256 indexed tokenId,
         bytes curationData,
         uint256 timestamp
