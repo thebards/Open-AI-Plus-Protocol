@@ -1,5 +1,6 @@
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
+import { randomBytes, randomInt, randomUUID } from 'crypto';
 import { Address } from 'defender-relay-client';
 import { constants, utils, BytesLike, BigNumber, Signature, Event } from 'ethers'
 import { BardsStaking, BardsStaking__factory, MockRebatePool, MockRebatePool__factory } from '../../typechain-types';
@@ -13,6 +14,7 @@ import {
 	MOCK_PROFILE_HANDLE,
 	MOCK_PROFILE_CONTENT_URI
 } from '../utils/Constants';
+import { ERRORS } from '../utils/Errors';
 import {
 	toBCT,
 	toBN,
@@ -46,34 +48,36 @@ import {
 	userAddress,
 	CurationType,
 	mockMarketModuleInitData,
-	mockCurationMetaData
+	mockCurationMetaData,
+	errorsLib,
+	bardsStaking
 } from '../__setup.test';
 
 context('Bards Staking', () => {
 	const testTokens = toBCT('10000000000')
 	const tokensToStake = toBCT('100')
-	let bardsStaking: BardsStaking;
+	let thisBardsStaking: BardsStaking;
 	const shareof100token = toBN('3162277660168379331');
 
 	const shouldStake = async (_tokensToStake: BigNumber, _expectedShare: BigNumber) => {
 		// Before state
 		const beforeTokenTotalSupply = await bardsCurationToken.totalSupply()
 		const beforeStakingTokens = await bardsCurationToken.balanceOf(userTwoAddress)
-		const beforeStakingShare = await bardsStaking.getDelegatorShare(
+		const beforeStakingShare = await thisBardsStaking.getDelegatorShare(
 			userTwoAddress,
 			FIRST_PROFILE_ID
 		);
 
-		const beforePoolShare = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-		const beforePoolTokens = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+		const beforePoolShare = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+		const beforePoolTokens = await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
 		const beforeTotalTokens = await bardsCurationToken.balanceOf(testWallet.address)
 
 		// Calculations
-		const stakingTaxPercentage = await bardsStaking.stakingTaxPercentage()
+		const stakingTaxPercentage = await thisBardsStaking.stakingTaxPercentage()
 		const stakingTax = _tokensToStake.mul(toBN(stakingTaxPercentage)).div(toBN(BPS_MAX))
 
 		// staking
-		const receipt = await waitForTx(bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, _tokensToStake))
+		const receipt = await waitForTx(thisBardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, _tokensToStake))
 
 		matchEvent(
 			receipt,
@@ -91,13 +95,13 @@ context('Bards Staking', () => {
 		// After state
 		const afterTokenTotalSupply = await bardsCurationToken.totalSupply()
 		const afterStakingTokens = await bardsCurationToken.balanceOf(userTwoAddress)
-		const afterStakingShare = await bardsStaking.getDelegatorShare(
+		const afterStakingShare = await thisBardsStaking.getDelegatorShare(
 			userTwoAddress,
 			FIRST_PROFILE_ID
 		);
 
-		const afterPoolShare = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-		const afterPoolTokens = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+		const afterPoolShare = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+		const afterPoolTokens = await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
 		const afterTotalTokens = await bardsCurationToken.balanceOf(testWallet.address)
 
 		// Curator balance updated
@@ -107,7 +111,7 @@ context('Bards Staking', () => {
 		expect(afterPoolTokens).eq(beforePoolTokens.add(_tokensToStake.sub(stakingTax)))
 		expect(afterPoolShare).eq(beforePoolShare.add(_expectedShare))
 
-		expect(await bardsStaking.getReserveRatioOfCuration(FIRST_PROFILE_ID)).eq(await bardsStaking.defaultStakingReserveRatio())
+		expect(await thisBardsStaking.getReserveRatioOfCuration(FIRST_PROFILE_ID)).eq(await thisBardsStaking.defaultStakingReserveRatio())
 		// Contract balance updated
 		expect(afterTotalTokens).eq(beforeTotalTokens.add(_tokensToStake.sub(stakingTax)))
 		// Total supply is reduced to curation tax burning
@@ -117,17 +121,17 @@ context('Bards Staking', () => {
 	const shouldUnstake = async (_shareToRedeem: BigNumber, _expectedTokens: BigNumber) => {
 		// Before balances
 		const beforeTokenTotalSupply = await bardsCurationToken.totalSupply()
-		const beforeStakingShare = await bardsStaking.getDelegatorShare(
+		const beforeStakingShare = await thisBardsStaking.getDelegatorShare(
 			userTwoAddress,
 			FIRST_PROFILE_ID
 		);
 
-		const beforePoolShare = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-		const beforePoolTokens = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+		const beforePoolShare = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+		const beforePoolTokens = await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
 		const beforeTotalTokens = await bardsCurationToken.balanceOf(testWallet.address)
 
 		// Redeem
-		const receipt = await waitForTx(bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, _shareToRedeem))
+		const receipt = await waitForTx(thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, _shareToRedeem))
 
 		matchEvent(
 			receipt,
@@ -144,13 +148,13 @@ context('Bards Staking', () => {
 
 		// After state
 		const afterTokenTotalSupply = await bardsCurationToken.totalSupply()
-		const afterStakingShare = await bardsStaking.getDelegatorShare(
+		const afterStakingShare = await thisBardsStaking.getDelegatorShare(
 			userTwoAddress,
 			FIRST_PROFILE_ID
 		);
 
-		const afterPoolShare = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-		const afterPoolTokens = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+		const afterPoolShare = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+		const afterPoolTokens = await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
 		const afterTotalTokens = await bardsCurationToken.balanceOf(testWallet.address)
 
 		// Curator balance updated
@@ -166,6 +170,8 @@ context('Bards Staking', () => {
 
 	const shouldCollect = async (tokensToCollect: BigNumber) => {
 		const allocationId = await bardsHub.getAllocationIdById(FIRST_PROFILE_ID)
+		// console.log(allocationId);
+		// console.log(await bardsStaking.getSimpleAllocation(allocationId))
 
 		// Before state
 		const beforeToken = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
@@ -198,8 +204,8 @@ context('Bards Staking', () => {
 		const afterFees = await bardsStaking.getFeesCollectedInAllocation(allocationId, bardsCurationToken.address)
 
 		// State updatced
-		expect(beforeToken).eq(afterToken.add(tokensToCollect))
-		expect(afterFees).eq(beforeFees)
+		expect(beforeToken).eq(afterToken)
+		expect(afterFees).eq(beforeFees.add(tokensToCollect))
 	}
 
 	let mockRebatePool: MockRebatePool;
@@ -346,7 +352,7 @@ context('Bards Staking', () => {
 	}
 
 	beforeEach(async function () {
-		bardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
+		thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
 			bardsHub.address,
 			bancorFormula.address,
 			bardsShareToken.address,
@@ -359,40 +365,42 @@ context('Bards Staking', () => {
 			DEFAULTS.staking.thawingPeriod
 		);
 		await bardsHub.connect(governance).registerContract(
-			utils.id('BardsStaking'),
-			bardsStaking.address
+			utils.id('thisBardsStaking'),
+			thisBardsStaking.address
 		);
 		// Give some funds to the testWallet
 		await bardsCurationToken.connect(governance).mint(userTwoAddress, testTokens)
-		await approveToken(bardsStaking.address, MaxUint256);
-		await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
+		await approveToken(thisBardsStaking.address, MaxUint256);
+		await bardsCurationToken.connect(userTwo).approve(thisBardsStaking.address, MaxUint256);
 	})
+
+
 
 	context('configuration', () => {
 		context('defaultStakingReserveRatio', function () {
 			it('should set `defaultStakingReserveRatio`', async function () {
 				// Set right in the constructor
-				expect(await bardsStaking.defaultStakingReserveRatio()).eq(DEFAULTS.staking.reserveRatio)
+				expect(await thisBardsStaking.defaultStakingReserveRatio()).eq(DEFAULTS.staking.reserveRatio)
 
 				// Can set if allowed
 				const newValue = toBN('100')
-				await bardsStaking.connect(governance).setDefaultReserveRatio(newValue)
-				expect(await bardsStaking.defaultStakingReserveRatio()).eq(newValue)
+				await thisBardsStaking.connect(governance).setDefaultReserveRatio(newValue)
+				expect(await thisBardsStaking.defaultStakingReserveRatio()).eq(newValue)
 			})
 
 			it('reject set `defaultStakingReserveRatio` if out of bounds', async function () {
 				await expect(
-					bardsStaking.connect(governance).setDefaultReserveRatio(0)
+					thisBardsStaking.connect(governance).setDefaultReserveRatio(0)
 				).to.be.revertedWith('Default reserve ratio must be > 0')
 
 				await expect(
-					bardsStaking.connect(governance).setDefaultReserveRatio(BPS_MAX + 1)
+					thisBardsStaking.connect(governance).setDefaultReserveRatio(BPS_MAX + 1)
 				).to.be.revertedWith('Default reserve ratio cannot be higher than MAX_PPM')
 			})
 
 			it('reject set `defaultStakingReserveRatio` if not allowed', async function () {
 				await expect(
-					bardsStaking.setDefaultReserveRatio(DEFAULTS.staking.reserveRatio)
+					thisBardsStaking.setDefaultReserveRatio(DEFAULTS.staking.reserveRatio)
 				).to.be.revertedWith('Only governance can call')
 			})
 		});
@@ -400,23 +408,23 @@ context('Bards Staking', () => {
 		context('minimumStaking', function () {
 			it('should set `minimumStaking`', async function () {
 				// Set right in the constructor
-				expect(await bardsStaking.minimumStaking()).eq(DEFAULTS.staking.minimumStake)
+				expect(await thisBardsStaking.minimumStaking()).eq(DEFAULTS.staking.minimumStake)
 
 				// Can set if allowed
 				const newValue = toBN('100')
-				await bardsStaking.connect(governance).setMinimumStaking(newValue)
-				expect(await bardsStaking.minimumStaking()).eq(newValue)
+				await thisBardsStaking.connect(governance).setMinimumStaking(newValue)
+				expect(await thisBardsStaking.minimumStaking()).eq(newValue)
 			})
 
 			it('reject set `minimumStaking` if out of bounds', async function () {
 				await expect(
-					bardsStaking.connect(governance).setMinimumStaking(0)
+					thisBardsStaking.connect(governance).setMinimumStaking(0)
 				).to.be.revertedWith('Minimum curation deposit cannot be 0')
 			})
 
 			it('reject set `minimumStaking` if not allowed', async function () {
 				await expect(
-					bardsStaking.setMinimumStaking(DEFAULTS.staking.minimumStake)
+					thisBardsStaking.setMinimumStaking(DEFAULTS.staking.minimumStake)
 				).to.be.revertedWith('Only governance can call')
 			})
 		})
@@ -426,19 +434,19 @@ context('Bards Staking', () => {
 				const stakingTaxPercentage = DEFAULTS.staking.stakingTaxPercentage
 
 				// Set new value
-				await bardsStaking.connect(governance).setStakingTaxPercentage(0)
-				await bardsStaking.connect(governance).setStakingTaxPercentage(stakingTaxPercentage)
+				await thisBardsStaking.connect(governance).setStakingTaxPercentage(0)
+				await thisBardsStaking.connect(governance).setStakingTaxPercentage(stakingTaxPercentage)
 			})
 
 			it('reject set `stakingTaxPercentage` if out of bounds', async function () {
 				await expect(
-					bardsStaking.connect(governance).setStakingTaxPercentage(BPS_MAX + 1)
+					thisBardsStaking.connect(governance).setStakingTaxPercentage(BPS_MAX + 1)
 				).to.be.revertedWith('Staking tax percentage must be below or equal to MAX_BPS')
 			})
 
 			it('reject set `stakingTaxPercentage` if not allowed', async function () {
 				await expect(
-					bardsStaking.setStakingTaxPercentage(0)
+					thisBardsStaking.setStakingTaxPercentage(0)
 				).to.be.revertedWith('Only governance can call')
 			})
 		})
@@ -446,28 +454,28 @@ context('Bards Staking', () => {
 		context('bardsShareTokenImpl', function () {
 			it('should set `bardsShareTokenImpl`', async function () {
 				const newBardsShareTokenImpl = bardsShareToken.address;
-				await bardsStaking.connect(governance).setBardsShareTokenImpl(newBardsShareTokenImpl)
+				await thisBardsStaking.connect(governance).setBardsShareTokenImpl(newBardsShareTokenImpl)
 			})
 
 			it('reject set `bardsShareTokenImpl` to empty value', async function () {
 				const newBardsShareTokenImpl = AddressZero
 				const tx = 
 				await expect(
-					bardsStaking.connect(governance).setBardsShareTokenImpl(newBardsShareTokenImpl)
+					thisBardsStaking.connect(governance).setBardsShareTokenImpl(newBardsShareTokenImpl)
 				).to.be.revertedWith('Token Impl must be non-empty')
 			})
 
 			it('reject set `bardsShareTokenImpl` to non-contract', async function () {
 				const newBardsShareTokenImpl = randomAddress()
 				await expect(
-					bardsStaking.connect(governance).setBardsShareTokenImpl(newBardsShareTokenImpl)
+					thisBardsStaking.connect(governance).setBardsShareTokenImpl(newBardsShareTokenImpl)
 				).to.be.revertedWith('Token Impl must be a contract')
 			})
 
 			it('reject set `bardsShareTokenImpl` if not allowed', async function () {
 				const newBardsShareTokenImpl = bardsShareToken.address
 				await expect(
-					bardsStaking.setBardsShareTokenImpl(newBardsShareTokenImpl)
+					thisBardsStaking.setBardsShareTokenImpl(newBardsShareTokenImpl)
 				).to.be.revertedWith('Only governance can call')
 			})
 		})
@@ -475,18 +483,18 @@ context('Bards Staking', () => {
 		context('stakingAddress', function () {
 			it('should set `stakingAddress`', async function () {
 				// Set new value
-				await bardsStaking.connect(governance).setStakingAddress(testWallet.address)
+				await thisBardsStaking.connect(governance).setStakingAddress(testWallet.address)
 			})
 
 			it('reject set `stakingAddress` if zero address', async function () {
 				await expect(
-					bardsStaking.connect(governance).setStakingAddress(ZERO_ADDRESS)
+					thisBardsStaking.connect(governance).setStakingAddress(ZERO_ADDRESS)
 				).to.be.revertedWith('staking address must not be address(0)')
 			})
 
 			it('reject set `stakingAddress` if not allowed', async function () {
 				await expect(
-					bardsStaking.setStakingAddress(testWallet.address)
+					thisBardsStaking.setStakingAddress(testWallet.address)
 				).to.be.revertedWith('Only governance can call')
 			})
 		})
@@ -494,20 +502,20 @@ context('Bards Staking', () => {
 		context('channelDisputeEpochs', function () {
 			it('should set `channelDisputeEpochs`', async function () {
 				const newValue = toBN('5')
-				await bardsStaking.connect(governance).setChannelDisputeEpochs(newValue)
-				expect(await bardsStaking.channelDisputeEpochs()).eq(newValue)
+				await thisBardsStaking.connect(governance).setChannelDisputeEpochs(newValue)
+				expect(await thisBardsStaking.channelDisputeEpochs()).eq(newValue)
 			})
 
 			it('reject set `channelDisputeEpochs` if not allowed', async function () {
 				const newValue = toBN('5')
 				await expect(
-					bardsStaking.setChannelDisputeEpochs(newValue)
+					thisBardsStaking.setChannelDisputeEpochs(newValue)
 				).to.be.revertedWith('Only governance can call')
 			})
 
 			it('reject set `channelDisputeEpochs` to zero', async function () {
 				await expect(
-					bardsStaking.connect(governance).setChannelDisputeEpochs(0)
+					thisBardsStaking.connect(governance).setChannelDisputeEpochs(0)
 				).to.be.revertedWith('!channelDisputeEpochs')
 			})
 		})
@@ -515,14 +523,14 @@ context('Bards Staking', () => {
 		context('maxAllocationEpochs', function () {
 			it('should set `maxAllocationEpochs`', async function () {
 				const newValue = toBN('5')
-				await bardsStaking.connect(governance).setMaxAllocationEpochs(newValue)
-				expect(await bardsStaking.maxAllocationEpochs()).eq(newValue)
+				await thisBardsStaking.connect(governance).setMaxAllocationEpochs(newValue)
+				expect(await thisBardsStaking.maxAllocationEpochs()).eq(newValue)
 			})
 
 			it('reject set `maxAllocationEpochs` if not allowed', async function () {
 				const newValue = toBN('5')
 				await expect(
-					bardsStaking.setMaxAllocationEpochs(newValue)
+					thisBardsStaking.setMaxAllocationEpochs(newValue)
 				).revertedWith('Only governance can call')
 			})
 		})
@@ -530,89 +538,141 @@ context('Bards Staking', () => {
 		context('thawingPeriod', function () {
 			it('should set `thawingPeriod`', async function () {
 				const newValue = toBN('5')
-				await bardsStaking.connect(governance).setThawingPeriod(newValue)
-				expect(await bardsStaking.thawingPeriod()).eq(newValue)
+				await thisBardsStaking.connect(governance).setThawingPeriod(newValue)
+				expect(await thisBardsStaking.thawingPeriod()).eq(newValue)
 			})
 
 			it('reject set `thawingPeriod` if not allowed', async function () {
 				const newValue = toBN('5')
 				await expect(
-					bardsStaking.setThawingPeriod(newValue)
+					thisBardsStaking.setThawingPeriod(newValue)
 				).to.be.revertedWith('Only governance can call')
 			})
 
 			it('reject set `thawingPeriod` to zero', async function () {
 				const tx =
 				await expect(
-					bardsStaking.connect(governance).setThawingPeriod(0)
+					thisBardsStaking.connect(governance).setThawingPeriod(0)
 				).to.be.revertedWith('!thawingPeriod')
 			})
 		})
 
 		context('rebateRatio', function () {
 			it('should be setup on init', async function () {
-				expect(await bardsStaking.alphaNumerator()).eq(toBN(85))
-				expect(await bardsStaking.alphaDenominator()).eq(toBN(100))
+				expect(await thisBardsStaking.alphaNumerator()).eq(toBN(85))
+				expect(await thisBardsStaking.alphaDenominator()).eq(toBN(100))
 			})
 
 			it('should set `rebateRatio`', async function () {
-				await bardsStaking.connect(governance).setRebateRatio(5, 6)
-				expect(await bardsStaking.alphaNumerator()).eq(toBN(5))
-				expect(await bardsStaking.alphaDenominator()).eq(toBN(6))
+				await thisBardsStaking.connect(governance).setRebateRatio(5, 6)
+				expect(await thisBardsStaking.alphaNumerator()).eq(toBN(5))
+				expect(await thisBardsStaking.alphaDenominator()).eq(toBN(6))
 			})
 
 			it('reject set `rebateRatio` if out of bounds', async function () {
 				await expect(
-					bardsStaking.connect(governance).setRebateRatio(0, 1)
+					thisBardsStaking.connect(governance).setRebateRatio(0, 1)
 				).to.be.revertedWith('!alpha')
 
 				await expect(
-					bardsStaking.connect(governance).setRebateRatio(1, 0)
+					thisBardsStaking.connect(governance).setRebateRatio(1, 0)
 				).to.be.revertedWith('!alpha')
 			})
 
 			it('reject set `rebateRatio` if not allowed', async function () {
 				await expect(
-					bardsStaking.setRebateRatio(1, 1)
+					thisBardsStaking.setRebateRatio(1, 1)
 				).to.be.revertedWith('Only governance can call')
 			})
 		})
 
 	});
 
+	context('Collecting', async function () {
+		beforeEach(async function () {
+			// console.log(thisBardsStaking.address);
+			// await bardsHub.connect(governance).registerContract(
+			// 	utils.id('BardsStaking'),
+			// 	thisBardsStaking.address
+			// );
+
+			// await expect(
+			// 	thisBardsStaking.syncAllContracts()
+			// ).to.not.be.reverted;
+
+			await expect(
+				bardsHub.createProfile({
+					to: userAddress,
+					curationType: CurationType.Profile,
+					profileId: 0,
+					curationId: 0,
+					tokenContractPointed: ZERO_ADDRESS,
+					tokenIdPointed: 0,
+					handle: randomInt(5).toString() + MOCK_PROFILE_HANDLE,
+					contentURI: MOCK_PROFILE_CONTENT_URI,
+					marketModule: ZERO_ADDRESS,
+					marketModuleInitData: mockMarketModuleInitData,
+					minterMarketModule: ZERO_ADDRESS,
+					minterMarketModuleInitData: mockMarketModuleInitData,
+					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
+				})
+			).to.not.be.reverted;
+		});
+
+		it('reject collect tokens distributed to the zero allocation Id.', async function () {
+			await expect(
+				thisBardsStaking.connect(userTwo).collect(
+					bardsCurationToken.address,
+					toBCT('10'),
+					0
+				)
+			).to.be.revertedWith('!alloc')
+		})
+
+		it('should collect tokens distributed to the staking pool', async function () {
+			await shouldCollect(toBCT('1'))
+			await shouldCollect(toBCT('10'))
+			await shouldCollect(toBCT('100'))
+			await shouldCollect(toBCT('200'))
+			await shouldCollect(toBCT('500.25'))
+		})
+
+	})
+
 	context('bonding curve', function () {
 		it('reject convert share to tokens if curation not initted', async function () {
 			await expect(
-				bardsStaking.shareToTokens(FIRST_PROFILE_ID, toBCT('100'))
+				thisBardsStaking.shareToTokens(FIRST_PROFILE_ID, toBCT('100'))
 			).revertedWith('Curation must be built to perform calculations')
 		})
 
 		it('convert share to tokens', async function () {
 			// Staking
-			await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToStake)
+			await thisBardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToStake)
 
 			// Conversion
-			const shares = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-			const expectedTokens = await bardsStaking.shareToTokens(FIRST_PROFILE_ID, shares)
+			const shares = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+			const expectedTokens = await thisBardsStaking.shareToTokens(FIRST_PROFILE_ID, shares)
 			expect(expectedTokens).eq(tokensToStake)
 		})
 
 		it('convert share to tokens (with staking tax)', async function () {
 			// Set curation tax
 			const stakingTaxPercentage = 50000 // 5%
-			await bardsStaking.connect(governance).setStakingTaxPercentage(stakingTaxPercentage)
+			await thisBardsStaking.connect(governance).setStakingTaxPercentage(stakingTaxPercentage)
 
 			// Staking
 			const expectedStakingTax = tokensToStake.mul(stakingTaxPercentage).div(BPS_MAX)
-			const { 1: stakingTax } = await bardsStaking.tokensToShare(
+			const { 1: stakingTax } = await thisBardsStaking.tokensToShare(
 				FIRST_PROFILE_ID,
 				tokensToStake,
 			)
-			await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToStake)
+			await thisBardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToStake)
 
 			// Conversion
-			const shares = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-			const tokens = await bardsStaking.shareToTokens(FIRST_PROFILE_ID, shares)
+			const shares = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+			const tokens = await thisBardsStaking.shareToTokens(FIRST_PROFILE_ID, shares)
 			expect(tokens).eq(tokensToStake.sub(expectedStakingTax))
 			expect(expectedStakingTax).eq(stakingTax)
 		})
@@ -620,14 +680,14 @@ context('Bards Staking', () => {
 		it('convert tokens to share', async function () {
 			// Conversion
 			const tokens = toBCT('1000')
-			const { 0: share } = await bardsStaking.tokensToShare(FIRST_PROFILE_ID, tokens)
+			const { 0: share } = await thisBardsStaking.tokensToShare(FIRST_PROFILE_ID, tokens)
 			expect(share).eq(toBN('9999999999999999999'))
 		})
 
 		it('convert tokens to signal if non-curated subgraph', async function () {
 			const tokens = toBCT('1')
 			await expect(
-				bardsStaking.tokensToShare(FIRST_PROFILE_ID + 1, tokens)
+				thisBardsStaking.tokensToShare(FIRST_PROFILE_ID + 1, tokens)
 			).to.be.revertedWith('Curation staking is below minimum required')
 		})
 	})
@@ -636,13 +696,13 @@ context('Bards Staking', () => {
 		context('> when not staked', function () {
 			context('isStaked', function () {
 				it('should not have stakes', async function () {
-					expect(await bardsStaking.isStaked(FIRST_PROFILE_ID)).eq(false)
+					expect(await thisBardsStaking.isStaked(FIRST_PROFILE_ID)).eq(false)
 				})
 			})
 
 			context('stake', function () {
 				beforeEach(async function () {
-					bardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
+					thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
 						bardsHub.address,
 						bancorFormula.address,
 						bardsShareToken.address,
@@ -655,23 +715,23 @@ context('Bards Staking', () => {
 						DEFAULTS.staking.thawingPeriod
 					);
 					await bardsHub.connect(governance).registerContract(
-						utils.id('BardsStaking'),
-						bardsStaking.address
+						utils.id('thisBardsStaking'),
+						thisBardsStaking.address
 					);
-					await approveToken(bardsStaking.address, MaxUint256);
-					await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
+					await approveToken(thisBardsStaking.address, MaxUint256);
+					await bardsCurationToken.connect(userTwo).approve(thisBardsStaking.address, MaxUint256);
 				});
 				it('reject stake zero tokens', async function () {
 					await expect(
-						bardsStaking.stake(FIRST_PROFILE_ID, toBCT('0'))
+						thisBardsStaking.stake(FIRST_PROFILE_ID, toBCT('0'))
 					).to.be.revertedWith('Cannot deposit zero tokens')
 				})
 
 				it('reject stake less than minimum staking', async function () {
-					await bardsStaking.connect(governance).setMinimumStaking(DEFAULTS.staking.minimumStake);
-					expect(toBCT('1')).lte(await bardsStaking.minimumStaking())
+					await thisBardsStaking.connect(governance).setMinimumStaking(DEFAULTS.staking.minimumStake);
+					expect(toBCT('1')).lte(await thisBardsStaking.minimumStaking())
 					await expect(
-						bardsStaking.stake(FIRST_PROFILE_ID, toBCT('1'))
+						thisBardsStaking.stake(FIRST_PROFILE_ID, toBCT('1'))
 					).revertedWith('!minimumStaking')
 				})
 
@@ -680,16 +740,16 @@ context('Bards Staking', () => {
 				})
 
 				it('should stake tokens = minimumStaking', async function () {
-					await shouldStake(await bardsStaking.minimumStaking(), toBCT('1'))
+					await shouldStake(await thisBardsStaking.minimumStaking(), toBCT('1'))
 				})
 
 				it('should get share according to bonding curve (and account for staking tax)', async function () {
 					// Set curation tax
-					await bardsStaking.connect(governance).setStakingTaxPercentage(50000) // 5%
+					await thisBardsStaking.connect(governance).setStakingTaxPercentage(50000) // 5%
 
 					// Mint
 					const tokensToDeposit = toBCT('1000')
-					const { 0: expectedSignal } = await bardsStaking.tokensToShare(
+					const { 0: expectedSignal } = await thisBardsStaking.tokensToShare(
 						FIRST_PROFILE_ID,
 						tokensToDeposit,
 					)
@@ -702,7 +762,7 @@ context('Bards Staking', () => {
 				it('reject unstake tokens', async function () {
 					const sharesToUnstake = toBCT('2')
 					await expect(
-						bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, sharesToUnstake)
+						thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, sharesToUnstake)
 					).to.be.revertedWith('Cannot burn more share than you own')
 				})
 			})
@@ -710,7 +770,7 @@ context('Bards Staking', () => {
 
 		context('> when staked', function () {
 			beforeEach(async function () {
-				bardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
+				thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
 					bardsHub.address,
 					bancorFormula.address,
 					bardsShareToken.address,
@@ -723,17 +783,17 @@ context('Bards Staking', () => {
 					DEFAULTS.staking.thawingPeriod
 				);
 				await bardsHub.connect(governance).registerContract(
-					utils.id('BardsStaking'),
-					bardsStaking.address
+					utils.id('thisBardsStaking'),
+					thisBardsStaking.address
 				);
-				await approveToken(bardsStaking.address, MaxUint256);
-				await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
-				await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, toBCT('100'));
+				await approveToken(thisBardsStaking.address, MaxUint256);
+				await bardsCurationToken.connect(userTwo).approve(thisBardsStaking.address, MaxUint256);
+				await thisBardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, toBCT('100'));
 			});
 
 			context('isStaked', function () {
 				it('should have stakes', async function () {
-					expect(await bardsStaking.isStaked(FIRST_PROFILE_ID)).eq(true)
+					expect(await thisBardsStaking.isStaked(FIRST_PROFILE_ID)).eq(true)
 				})
 			})
 
@@ -744,30 +804,30 @@ context('Bards Staking', () => {
 
 				it('reject to stake under the minimum staking after unstake', async function () {
 					// Unstake
-					const shareStaked = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-					await bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, shareStaked)
+					const shareStaked = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+					await thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, shareStaked)
 					
 					// Stake should require to go over the minimum stake
 					await expect(
-						bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, toBCT('1'))
+						thisBardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, toBCT('1'))
 					).revertedWith('!minimumStaking')
 				})
 			})
 
 			context('unstake', function () {
 				it('should unstake and lock tokens for thawing period', async function () {
-					const shareStaked = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+					const shareStaked = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
 
 					// Unstake
 					await expect(
-						bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, shareStaked.div(2))
+						thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, shareStaked.div(2))
 					).to.not.be.reverted;
 
 				})
 
 				it('reject unstake zero tokens', async function () {
 					await expect(
-						bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, toBCT('0'))
+						thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, toBCT('0'))
 					).to.be.revertedWith('Cannot burn zero share')
 				})
 
@@ -777,7 +837,7 @@ context('Bards Staking', () => {
 
 	context('Unstaking', () => {
 		beforeEach(async function () {
-			bardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
+			thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
 				bardsHub.address,
 				bancorFormula.address,
 				bardsShareToken.address,
@@ -790,23 +850,23 @@ context('Bards Staking', () => {
 				DEFAULTS.staking.thawingPeriod
 			);
 			await bardsHub.connect(governance).registerContract(
-				utils.id('BardsStaking'),
-				bardsStaking.address
+				utils.id('thisBardsStaking'),
+				thisBardsStaking.address
 			);
-			await approveToken(bardsStaking.address, MaxUint256);
-			await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
-			await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToStake);
+			await approveToken(thisBardsStaking.address, MaxUint256);
+			await bardsCurationToken.connect(userTwo).approve(thisBardsStaking.address, MaxUint256);
+			await thisBardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToStake);
 		})
 
 		it('reject redeem more than a delegator owns', async function () {
 			await expect(
-				bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, shareof100token.mul(2))
+				thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, shareof100token.mul(2))
 			).to.be.revertedWith('Cannot burn more share than you own')
 		})
 
 		it('reject redeem zero share', async function () {
 			await expect(
-				bardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, toBCT('0'))
+				thisBardsStaking.connect(userTwo).unstake(FIRST_PROFILE_ID, toBCT('0'))
 			).to.be.revertedWith('Cannot burn zero share')
 		})
 
@@ -819,21 +879,21 @@ context('Bards Staking', () => {
 
 		it('should allow to redeem *fully*', async function () {
 			// Get all signal of the curator
-			const shareToRedeem = await bardsStaking.getDelegatorShare(userTwoAddress, FIRST_PROFILE_ID)
+			const shareToRedeem = await thisBardsStaking.getDelegatorShare(userTwoAddress, FIRST_PROFILE_ID)
 			const expectedTokens = tokensToStake
 			await shouldUnstake(shareToRedeem, expectedTokens)
 		})
 
 		it('should allow to redeem back below minimum staking', async function () {
 			// Redeem "almost" all share
-			const shares = await bardsStaking.getDelegatorShare(userTwoAddress, FIRST_PROFILE_ID)
+			const shares = await thisBardsStaking.getDelegatorShare(userTwoAddress, FIRST_PROFILE_ID)
 			const sharesToRedeem = shares.sub(toBCT('0.000001'))
-			const expectedTokens = await bardsStaking.shareToTokens(FIRST_PROFILE_ID, sharesToRedeem)
+			const expectedTokens = await thisBardsStaking.shareToTokens(FIRST_PROFILE_ID, sharesToRedeem)
 			await shouldUnstake(sharesToRedeem, expectedTokens)
 
 			// The pool should have less tokens that required by minimumStaking
-			const afterPoolTokens = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
-			expect(afterPoolTokens).lt(await bardsStaking.minimumStaking())
+			const afterPoolTokens = await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+			expect(afterPoolTokens).lt(await thisBardsStaking.minimumStaking())
 		})
 	})
 
@@ -846,24 +906,24 @@ context('Bards Staking', () => {
 			// Staking multiple times
 			let totalShare = toBCT('0')
 			for (const tokensToDeposit of chunkify(totalDeposits, 10)) {
-				const stakingOut = await stakingReturningPair(bardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
+				const stakingOut = await stakingReturningPair(thisBardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
 				totalShare = totalShare.add(stakingOut[0])
 			}
 
 			// Redeem share multiple times
 			let totalTokens = toBCT('0')
 			for (const shareToRedeem of chunkify(totalShare, 10)) {
-				const tokenOut = await unstakingReturningPair(bardsStaking, userTwo, toBN(FIRST_PROFILE_ID), shareToRedeem)
+				const tokenOut = await unstakingReturningPair(thisBardsStaking, userTwo, toBN(FIRST_PROFILE_ID), shareToRedeem)
 
 				totalTokens = totalTokens.add(tokenOut)
 			}
 
 			// Conservation of work
-			const afterPoolShare = await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
-			const afterPoolToken = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
+			const afterPoolShare = await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID)
+			const afterPoolToken = await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
 			expect(afterPoolToken).eq(toBCT('0'))
 			expect(afterPoolShare).eq(toBCT('0'))
-			expect(await bardsStaking.isStaked(FIRST_PROFILE_ID)).eq(false)
+			expect(await thisBardsStaking.isStaked(FIRST_PROFILE_ID)).eq(false)
 			expect(totalDeposits).eq(totalTokens)
 		})
 	})
@@ -882,12 +942,12 @@ context('Bards Staking', () => {
 			]
 			for (const tokensToDeposit of tokensToDepositMany) {
 				const expectedShare = await calcBondingCurve(
-					await bardsStaking.getStakingPoolShare(FIRST_PROFILE_ID),
-					await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID),
-					await bardsStaking.defaultStakingReserveRatio(),
+					await thisBardsStaking.getStakingPoolShare(FIRST_PROFILE_ID),
+					await thisBardsStaking.getStakingPoolToken(FIRST_PROFILE_ID),
+					await thisBardsStaking.defaultStakingReserveRatio(),
 					tokensToDeposit,
 				)
-				const stakingOut = await stakingReturningPair(bardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
+				const stakingOut = await stakingReturningPair(thisBardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
 				expect(toRound(expectedShare)).eq(toRound(toFloat(stakingOut[0])))
 			}
 		})
@@ -896,8 +956,8 @@ context('Bards Staking', () => {
 			this.timeout(60000) // increase timeout for test runner
 
 			// Setup edge case like linear function: 1 GRT = 1 GCS
-			await bardsStaking.connect(governance).setMinimumStaking(toBCT('1'))
-			await bardsStaking.connect(governance).setDefaultReserveRatio(BPS_MAX)
+			await thisBardsStaking.connect(governance).setMinimumStaking(toBCT('1'))
+			await thisBardsStaking.connect(governance).setDefaultReserveRatio(BPS_MAX)
 
 			const tokensToDepositMany = [
 				toBCT('1000'), // should mint if we start with number above minimum deposit
@@ -912,51 +972,10 @@ context('Bards Staking', () => {
 
 			// Mint multiple times
 			for (const tokensToDeposit of tokensToDepositMany) {
-				const stakingOut = await stakingReturningPair(bardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
+				const stakingOut = await stakingReturningPair(thisBardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);
 				expect(tokensToDeposit).eq(stakingOut[0]) // we compare 1:1 ratio
 			}
 		})
-	})
-
-	context('Collect', async function () {
-		beforeEach(async function () {
-			await expect(
-				bardsHub.createProfile({
-					to: userAddress,
-					curationType: CurationType.Profile,
-					profileId: 0,
-					curationId: 0,
-					tokenContractPointed: ZERO_ADDRESS,
-					tokenIdPointed: 0,
-					handle: MOCK_PROFILE_HANDLE,
-					contentURI: MOCK_PROFILE_CONTENT_URI,
-					marketModule: ZERO_ADDRESS,
-					marketModuleInitData: mockMarketModuleInitData,
-					minterMarketModule: ZERO_ADDRESS,
-					minterMarketModuleInitData: mockMarketModuleInitData,
-					curationMetaData: mockCurationMetaData,
-				})
-			).to.not.be.reverted;
-		});
-		
-		it('reject collect tokens distributed to the zero allocation Id.', async function () {
-			await expect(
-				bardsStaking.connect(userTwo).collect(
-					bardsCurationToken.address,
-					toBCT('10'),
-					0
-				)
-			).to.be.revertedWith('!alloc')
-		})
-
-		it('should collect tokens distributed to the staking pool', async function () {
-			await shouldCollect(toBCT('1'))
-			await shouldCollect(toBCT('10'))
-			await shouldCollect(toBCT('100'))
-			await shouldCollect(toBCT('200'))
-			await shouldCollect(toBCT('500.25'))
-		})
-
 	})
 
 	context('Rebate', async function () {

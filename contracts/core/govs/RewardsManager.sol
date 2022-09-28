@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import '../../utils/Constants.sol';
 import '../../utils/Events.sol';
@@ -11,6 +11,7 @@ import '../../interfaces/govs/IRewardsManager.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import '../../interfaces/tokens/IBardsCurationToken.sol';
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title RewardsManager
@@ -232,9 +233,13 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
 
         // New issuance of tokens during time steps
         uint256 x = a.sub(p);
-
+        
+        // console.log(string.concat("tokenSupplySnapshot: ", Strings.toString(bardsCurationToken().totalSupply())));
+        // console.log(string.concat("t,r,p,a,x: ", Strings.toString(t), " ", Strings.toString(r), " " , Strings.toString(p.div(Constants.TOKEN_DECIMALS)), " " , Strings.toString(a.div(Constants.TOKEN_DECIMALS)), " " , Strings.toString(x.div(Constants.TOKEN_DECIMALS))));
+        // console.log(string.concat("stakingTokens: ", Strings.toString(stakingTokens.div(Constants.TOKEN_DECIMALS))));
         // Get the new issuance per staked token
         // We multiply the decimals to keep the precision as fixed-point number
+        // console.log(string.concat("getNewRewardsPerStaking:" ,Strings.toString(x.mul(Constants.TOKEN_DECIMALS).div(stakingTokens).div(Constants.TOKEN_DECIMALS))));
         return x.mul(Constants.TOKEN_DECIMALS).div(stakingTokens);
     }
 

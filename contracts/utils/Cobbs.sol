@@ -13,7 +13,7 @@
 
 // SPDX-License-Identifier: Apache-2.0
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 // pragma abicoder v2;
 
 import "./LibFixedMath.sol";

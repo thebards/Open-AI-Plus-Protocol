@@ -44,17 +44,18 @@ import {
 	mockCurationMetaData,
 	testWallet,
 	user,
-	abiCoder
+	abiCoder,
+	governanceAddress
 } from '../__setup.test';
 
 const toRound = (n: BigNumber) => formatBCT(n).split('.')[0]
 
 makeSuiteCleanRoom('Reward Manager', function () {
-	const testTokens = toBCT('10000000000')
+	const testTokens = toBCT('1000000')
 	const ISSUANCE_RATE_PERIODS = 4 // blocks required to issue 5% rewards
 	const ISSUANCE_RATE_PER_BLOCK = toBN('1012272234429039270') // % increase every block
 
-	// Core formula that gets accumulated rewards per signal for a period of time
+	// Core formula that gets accumulated rewards per staking for a period of time
 	const getRewardsPerStaking = (p: BN, r: BN, t: BN, s: BN): string => {
 		if (s.eq(0)) {
 			return '0'
@@ -115,7 +116,6 @@ makeSuiteCleanRoom('Reward Manager', function () {
 		// Local calculation
 		const expectedAccrued = await tracker.accrued()
 
-		console.log(contractAccrued)
 		// Check
 		expect(toRound(expectedAccrued)).eq(toRound(contractAccrued))
 		return expectedAccrued
@@ -155,8 +155,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 		beforeEach(async function () {
 			// 5% minute rate (4 blocks)
 			await rewardsManager.connect(governance).setIssuanceRate(ISSUANCE_RATE_PER_BLOCK)
-
-			await bardsCurationToken.connect(governance).mint(userTwoAddress, testTokens)
+			await bardsCurationToken.connect(governance).transfer(userTwoAddress, testTokens)
 			await approveToken(bardsStaking.address, MaxUint256);
 			await bardsCurationToken.connect(userTwo).approve(bardsStaking.address, MaxUint256);
 		})
@@ -288,22 +287,14 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				const contractRewardsSG1 = await rewardsManager.getAccRewardsForCuration(FIRST_PROFILE_ID)
 				const rewardsPerStake1 = await tracker1.accrued()
 				const expectedRewardsSG1 = rewardsPerStake1.mul(stake1).div(WeiPerEther)
-				console.log(WeiPerEther)
-				console.log(rewardsPerStake1)
-				console.log(expectedRewardsSG1)
-				console.log(contractRewardsSG1)
 				expect(toRound(expectedRewardsSG1)).eq(toRound(contractRewardsSG1))
 
 				const contractAccrued = await rewardsManager.accRewardsPerStaking()
 				const expectedAccrued = await tracker1.accrued()
-				console.log(contractAccrued)
-				console.log(expectedAccrued)
 				expect(toRound(expectedAccrued)).eq(toRound(contractAccrued))
 
 				const contractBlockUpdated = await rewardsManager.accRewardsPerStakingLastBlockUpdated()
 				const expectedBlockUpdated = await latestBlock()
-				console.log(contractBlockUpdated)
-				console.log(expectedBlockUpdated)
 				expect(expectedBlockUpdated).eq(contractBlockUpdated)
 			})
 		})
@@ -325,6 +316,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.not.be.reverted;
 			})
@@ -337,7 +329,6 @@ makeSuiteCleanRoom('Reward Manager', function () {
 
 				// Check
 				const cr1 = await rewardsManager.curationRewards(FIRST_PROFILE_ID)
-				console.log(cr1)
 				// We trust this function because it was individually tested in previous test
 				const accRewardsForCuration1 = await rewardsManager.getAccRewardsForCuration(FIRST_PROFILE_ID)
 				const accruedRewards1 = accRewardsForCuration1.sub(cr1.accRewardsForCurationSnapshot)
@@ -367,6 +358,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.not.be.reverted;
 			})
@@ -381,8 +373,8 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				// Prepare expected results
 				// NOTE: calculated the expected result manually as the above code has 1 off block difference
 				// replace with a RewardsManagerMock
-				const expectedCurationRewards = toBCT('1886575384')
-				const expectedRewardsAT = toBCT('150926')
+				const expectedCurationRewards = toBCT('628858461')
+				const expectedRewardsAT = toBCT('50308')
 
 				// Update
 				await rewardsManager.onCurationAllocationUpdate(FIRST_PROFILE_ID)
@@ -416,6 +408,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.not.be.reverted;
 			})
@@ -444,6 +437,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 		})
 
 		context('takeRewards', function () {
+			
 			beforeEach(async function () {
 				await expect(
 					bardsHub.createProfile({
@@ -460,22 +454,24 @@ makeSuiteCleanRoom('Reward Manager', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.not.be.reverted;
-
+				
 				bardsCurationToken.connect(governance).addMinter(rewardsManager.address)
 			})
-			async function setupCurationAllocation() {
+			async function setupCurationStaking() {
 				// Setup
 				await epochManager.connect(governance).setEpochLength(10)
+				// await rewardsManager.connect(governance).setIssuanceRate(DEFAULTS.rewards.issuanceRate)
 				// Staking
-				const tokensToAllocate = toBCT('12500')
-				await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensToAllocate)
+				const tokensTostake = toBCT('12500')
+				await bardsStaking.connect(userTwo).stake(FIRST_PROFILE_ID, tokensTostake)
 			}
 
 			it('should distribute rewards on closed allocation and stake', async function () {
 				// Setup
-				await setupCurationAllocation()
+				await setupCurationStaking()
 
 				// Jump
 				await advanceBlocks(await epochManager.epochLength())
@@ -486,7 +482,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				const beforeCuratorBalance = await bardsCurationToken.balanceOf(userTwoAddress)
 				const beforeStakingBalance = await bardsCurationToken.balanceOf(testWallet.address)
 
-				const expectedCurationRewards = toBCT('3763150699')
+				const expectedCurationRewards = toBCT('1435905882')
 
 				// Close allocation. At this point rewards should be collected for that indexer
 				const receipt = await waitForTx(
@@ -534,7 +530,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 
 			it('should distribute rewards on closed allocation and send to destinations', async function () {
 				// Setup
-				await setupCurationAllocation()
+				await setupCurationStaking()
 				await epochManager.connect(governance).setEpochLength(DEFAULTS.epochs.lengthInBlocks)
 				// Jump
 				await advanceBlocks(await epochManager.epochLength())
@@ -548,7 +544,7 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				const beforeCurationTokensStaked = await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID)
 				const beforeStakingBalance = await bardsCurationToken.balanceOf(testWallet.address)
 
-				const expectedCurationRewards = toBCT('23496688336')
+				const expectedCurationRewards = toBCT('11302674700')
 
 				const mockCurationMetaData = abiCoder.encode(
 					['address[]', 'uint256[]', 'uint32[]', 'uint32[]', 'uint32', 'uint32'],
@@ -594,17 +590,42 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				const afterUserBalance = await bardsCurationToken.balanceOf(userAddress)
 				const afterUserThreeBalance = await bardsCurationToken.balanceOf(userThreeAddress)
 
-				const expectNewRewards = toBCT('48039535014');
-				expect(toRound(afterUserBalance)).eq(toRound(expectNewRewards.mul(8).div(10)))
-				expect(toRound(afterUserThreeBalance)).eq(toRound(expectNewRewards.mul(2).div(10)))
+				const expectNewRewards = toBCT('23527550282');
+				expect(toRound(afterUserBalance)).eq(toRound(beforeUserBalance.add(expectNewRewards.mul(8).div(10))))
+				expect(toRound(afterUserThreeBalance)).eq(toRound(beforeUserThreeBalance.add(expectNewRewards.mul(2).div(10))))
 			})
 
+			it('should deny rewards if curation on denylist', async function () {
+				// Setup
+				await rewardsManager.connect(governance).setDenied(FIRST_PROFILE_ID, true)
+				await setupCurationStaking()
+
+				// Jump
+				await advanceBlocks(await epochManager.epochLength())
+
+				// Close allocation. At this point rewards should be collected for that indexer
+				const receipt = await waitForTx(
+					bardsStaking
+						.connect(user)
+						.closeAllocation(
+							await bardsHub.getAllocationIdById(FIRST_PROFILE_ID),
+							FIRST_PROFILE_ID
+						)
+				)
+
+				matchEvent(receipt, 'AllocationClosed', [
+					FIRST_PROFILE_ID,
+					await epochManager.currentEpoch(),
+					await bardsStaking.getStakingPoolToken(FIRST_PROFILE_ID),
+					await bardsHub.getAllocationIdById(FIRST_PROFILE_ID),
+					(await bardsStaking.getSimpleAllocation(await bardsHub.getAllocationIdById(FIRST_PROFILE_ID))).effectiveAllocationStake,
+					userAddress,
+					FIRST_PROFILE_ID,
+					true,
+					await getTimestamp(),
+				]);
+			})
 		})
-
-		
-
-
-
 	});
 
 })

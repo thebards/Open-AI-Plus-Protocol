@@ -59,6 +59,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -82,6 +83,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -105,6 +107,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -128,6 +131,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -160,6 +164,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithoutReason;
 			});
@@ -180,6 +185,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -207,6 +213,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -243,6 +250,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					},
 				})
 			).to.eq(FIRST_PROFILE_ID);
@@ -282,6 +290,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					},
 				})
 			).to.eq(secondProfileId);
@@ -320,6 +329,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					},
 				})
 			).to.eq(FIRST_PROFILE_ID);
@@ -342,6 +352,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					},
 				})
 			).to.eq(secondProfileId);
@@ -363,6 +374,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					},
 				})
 			).to.eq(thirdProfileId);
@@ -384,6 +396,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -404,6 +417,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 
@@ -422,6 +436,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.be.revertedWithCustomError(
 				errorsLib,
@@ -443,6 +458,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -473,6 +489,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					minterMarketModule: fixPriceMarketModule.address,
 					minterMarketModuleInitData: mockMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -493,6 +510,7 @@ makeSuiteCleanRoom('Profile Creation', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 			expect(await bardsHub.ownerOf(FIRST_PROFILE_ID)).to.eq(userTwoAddress);

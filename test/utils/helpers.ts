@@ -400,6 +400,7 @@ export async function getCreateCurationWithSigParts(
 	minterMarketModule: string,
 	minterMarketModuleInitData: Bytes | string,
 	curationMetaData: Bytes | string,
+	curationFrom: BigNumberish,
 	nonce: number,
 	deadline: string
 ): Promise<{ v: number; r: string; s: string }> {
@@ -413,6 +414,7 @@ export async function getCreateCurationWithSigParts(
 		minterMarketModule,
 		minterMarketModuleInitData,
 		curationMetaData,
+		curationFrom,
 		nonce,
 		deadline
 	);
@@ -568,6 +570,7 @@ const buildCreateCurationWithSigParams = (
 	minterMarketModule: string,
 	minterMarketModuleInitData: Bytes | string,
 	curationMetaData: Bytes | string,
+	curationFrom: BigNumberish,
 	nonce: number,
 	deadline: string
 ) => ({
@@ -582,6 +585,7 @@ const buildCreateCurationWithSigParams = (
 			{ name: 'minterMarketModule', type: 'address' },
 			{ name: 'minterMarketModuleInitData', type: 'bytes' },
 			{ name: 'curationMetaData', type: 'bytes' },
+			// { name: 'curationFrom', type: 'uint256' },
 			{ name: 'nonce', type: 'uint256' },
 			{ name: 'deadline', type: 'uint256' },
 		],
@@ -597,6 +601,7 @@ const buildCreateCurationWithSigParams = (
 		minterMarketModule: minterMarketModule,
 		minterMarketModuleInitData: minterMarketModuleInitData,
 		curationMetaData: curationMetaData,
+		// curationFrom: curationFrom,
 		nonce: nonce,
 		deadline: deadline,
 	},

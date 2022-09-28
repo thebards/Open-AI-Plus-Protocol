@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import '../../interfaces/NFTs/IERC721Time.sol';
 import '../../utils/Events.sol';
@@ -49,12 +49,12 @@ abstract contract ERC721Time is Context, ERC165, IERC721Time, IERC721Metadata {
     /**
      * @notice Initializes the ERC721 name and symbol.
      *
-     * @param name The name to set.
-     * @param symbol The symbol to set.
+     * @param __name The name to set.
+     * @param __symbol The symbol to set.
      */
-    function __ERC721_Init(string calldata name, string calldata symbol) internal {
-        _name = name;
-        _symbol = symbol;
+    function __ERC721_Init(string calldata __name, string calldata __symbol) internal {
+        _name = __name;
+        _symbol = __symbol;
     }
 
     /**

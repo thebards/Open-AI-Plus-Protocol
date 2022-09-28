@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {DataTypes} from '../../utils/DataTypes.sol';
 import {Errors} from '../../utils/Errors.sol';
@@ -23,33 +23,30 @@ abstract contract TokenStorage {
 
     mapping(address => uint256) public sigNonces;
 
-	    /**
-     * @dev Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
+	/**
+     * @notice Wrapper for ecrecover to reduce code size, used in meta-tx specific functions.
      */
     function _validateRecoveredAddress(
-        bytes32 digest,
+        bytes32 hashedMessage,
+        string memory name,
         address expectedAddress,
         DataTypes.EIP712Signature calldata sig
     ) 
         internal 
         view 
     {
-        // if (sig.deadline < block.timestamp) {
-        //     revert Errors.SignatureExpired();
-        // }
-
         require(sig.deadline >= block.timestamp, 'SignatureExpired');
-
+        bytes32 digest = _calculateDigest(hashedMessage, name);
         address recoveredAddress = ecrecover(digest, sig.v, sig.r, sig.s);
-        // if (recoveredAddress == address(0) || recoveredAddress != expectedAddress)
-        //     revert Errors.SignatureInvalid();
         require(recoveredAddress != address(0) && recoveredAddress == expectedAddress, 'SignatureInvalid');
     }
 
     /**
-     * @dev Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
+     * @notice Calculates EIP712 DOMAIN_SEPARATOR based on the current contract and chain ID.
      */
-    function _calculateDomainSeparator(string memory name) 
+    function _calculateDomainSeparator(
+        string memory name
+    ) 
         internal 
         view 
         returns (bytes32) 
@@ -68,7 +65,7 @@ abstract contract TokenStorage {
     }
 
     /**
-     * @dev Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
+     * @notice Calculates EIP712 digest based on the current DOMAIN_SEPARATOR.
      *
      * @param hashedMessage The message hash from which the digest should be calculated.
 	 * @param name The name of token.

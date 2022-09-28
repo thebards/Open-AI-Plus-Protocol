@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -46,7 +46,7 @@ abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, Bard
 	) 
 		internal 
 	{
-        super.__ERC721_Init(name, symbol);
+        BardsNFTBase._initialize(name, symbol);
 		_setCooldownBlocks(cooldownBlocks);
     }
 

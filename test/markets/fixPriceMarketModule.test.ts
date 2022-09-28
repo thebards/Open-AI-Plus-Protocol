@@ -58,6 +58,7 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 				minterMarketModule: ZERO_ADDRESS,
 				minterMarketModuleInitData: mockMinterMarketModuleInitData,
 				curationMetaData: mockCurationMetaData,
+				curationFrom: 0,
 			})
 		).to.not.be.reverted;
 	});
@@ -83,7 +84,8 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 			await expect(
@@ -120,7 +122,8 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 
@@ -163,7 +166,8 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 					marketModuleInitData: mockFreeMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 
@@ -182,7 +186,8 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 
@@ -242,7 +247,8 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 					marketModuleInitData: mockMarketModuleInitData,
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockFreeMarketModuleInitData,
-					curationMetaData: mockCurationMetaData
+					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 

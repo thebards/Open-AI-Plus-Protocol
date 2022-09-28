@@ -312,7 +312,7 @@ before(async function () {
 		bardsHub.address,
 		royaltyEngine.address
 	);
-
+	
 	await expect(
 		bardsStaking.syncAllContracts()
 	).to.not.be.reverted;

@@ -1,7 +1,7 @@
 
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import '../core/curations/BardsCurationBase.sol';
 import './MockBardsHubStorage.sol';

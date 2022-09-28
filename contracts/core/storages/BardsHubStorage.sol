@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {DataTypes} from '../../utils/DataTypes.sol';
 
@@ -63,7 +63,7 @@ abstract contract BardsHubStorage {
 	// curation
 	mapping(uint256 => DataTypes.CurationStruct) internal _curationById;
 	// curation id (or profile) -> curation id -> bool
-	mapping(uint256 => mapping(uint256 => bool)) internal _isMintedByIdById;
+	// mapping(uint256 => mapping(uint256 => bool)) internal _isMintedByIdById;
 
     uint256 internal _curationCounter;
     uint256 internal _allocationCounter;

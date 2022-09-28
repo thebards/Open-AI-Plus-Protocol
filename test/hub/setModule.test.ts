@@ -45,6 +45,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -184,6 +185,7 @@ makeSuiteCleanRoom('Setting Market Module', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});

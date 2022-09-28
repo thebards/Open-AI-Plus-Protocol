@@ -51,6 +51,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -72,6 +73,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -95,6 +97,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -126,6 +129,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: fixPriceMarketModule.address,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0
 					})
 				).to.be.revertedWithCustomError(
 					errorsLib,
@@ -158,6 +162,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0
 					})
 				).to.be.revertedWithoutReason;
 			});
@@ -171,7 +176,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 
 				await expect(
 					bardsHub.createCuration({
-						to: userTwoAddress,
+						to: userAddress,
 						curationType: CurationType.Content,
 						profileId: FIRST_PROFILE_ID,
 						curationId: 0,
@@ -184,6 +189,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0
 					})
 				).to.not.be.reverted;
 
@@ -206,7 +212,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 
 				await expect(
 					bardsHub.createCuration({
-						to: userTwoAddress,
+						to: userAddress,
 						curationType: CurationType.Content,
 						profileId: FIRST_PROFILE_ID,
 						curationId: 0,
@@ -219,6 +225,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: fixPriceMarketModule.address,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0
 					})
 				).to.not.be.reverted;
 			});
@@ -244,6 +251,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -265,6 +273,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					ZERO_ADDRESS,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce,
 					'0'
 				);
@@ -283,6 +292,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,
@@ -313,6 +323,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					ZERO_ADDRESS,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce,
 					'0'
 				);
@@ -331,6 +342,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,
@@ -361,6 +373,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					ZERO_ADDRESS,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce + 1,
 					MAX_UINT256
 				);
@@ -379,6 +392,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,
@@ -405,6 +419,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					ZERO_ADDRESS,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce,
 					MAX_UINT256
 				);
@@ -423,6 +438,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,
@@ -456,6 +472,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					fixPriceMarketModule.address,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce,
 					MAX_UINT256
 				);
@@ -474,6 +491,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: fixPriceMarketModule.address,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,
@@ -503,6 +521,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					ZERO_ADDRESS,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce,
 					MAX_UINT256
 				);
@@ -523,6 +542,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,
@@ -555,6 +575,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 					ZERO_ADDRESS,
 					mockMinterMarketModuleInitData,
 					mockCurationMetaData,
+					0,
 					nonce,
 					MAX_UINT256
 				);
@@ -573,6 +594,7 @@ makeSuiteCleanRoom('Create Curations', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMinterMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 						sig: {
 							v,
 							r,

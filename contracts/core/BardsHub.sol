@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import './curations/BardsCurationBase.sol';
 import './storages/BardsHubStorage.sol';
@@ -28,15 +28,6 @@ contract BardsHub is
     IBardsHub
 {
     uint256 internal constant REVISION = 1;
-
-    // /**
-    //  * @dev The constructor sets the immutable bardsDaoData implementations.
-    //  *
-    //  * @param bardsDaoDataImpl The bardsDaoData NFT implementation address.
-    //  */
-    // constructor(address bardsDaoDataImpl) {
-    //     if (bardsDaoDataImpl == address(0)) revert Errors.InitParamsInvalid();
-    // }
     
     /**
      * @dev This modifier reverts if the caller is not the configured governance address.
@@ -261,18 +252,16 @@ contract BardsHub is
     ) external override whenNotPaused {
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                            vars.wallet,
-                            vars.profileId,
-                            sigNonces[vars.wallet]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
+                        vars.wallet,
+                        vars.profileId,
+                        sigNonces[vars.wallet]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 vars.wallet,
                 vars.sig
             );
@@ -304,18 +293,16 @@ contract BardsHub is
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_CURATION_CONTENT_URI_WITH_SIG_TYPEHASH,
-                            vars.curationId,
-                            keccak256(bytes(vars.contentURI)),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        SET_CURATION_CONTENT_URI_WITH_SIG_TYPEHASH,
+                        vars.curationId,
+                        keccak256(bytes(vars.contentURI)),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 vars.sig
             );
@@ -377,20 +364,18 @@ contract BardsHub is
 
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_ALLOCATION_ID_WITH_SIG_TYPEHASH,
-                            vars.curationId,
-                            vars.allocationId,
-                            keccak256(vars.curationMetaData),
-                            vars.stakeToCuration,
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        SET_ALLOCATION_ID_WITH_SIG_TYPEHASH,
+                        vars.curationId,
+                        vars.allocationId,
+                        keccak256(vars.curationMetaData),
+                        vars.stakeToCuration,
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 vars.sig
             );
@@ -444,21 +429,19 @@ contract BardsHub is
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
-                            vars.curationId,
-                            vars.tokenContract,
-                            vars.tokenId,
-                            vars.marketModule,
-                            keccak256(vars.marketModuleInitData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
+                        vars.curationId,
+                        vars.tokenContract,
+                        vars.tokenId,
+                        vars.marketModule,
+                        keccak256(vars.marketModuleInitData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 vars.sig
             );
@@ -503,21 +486,19 @@ contract BardsHub is
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
-                            vars.curationId,
-                            vars.tokenContract,
-                            vars.tokenId,
-                            vars.marketModule,
-                            keccak256(vars.marketModuleInitData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
+                        vars.curationId,
+                        vars.tokenContract,
+                        vars.tokenId,
+                        vars.marketModule,
+                        keccak256(vars.marketModuleInitData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 vars.sig
             );
@@ -556,25 +537,23 @@ contract BardsHub is
         address owner = ownerOf(vars.profileId);
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            CREATE_CURATION_WITH_SIG_TYPEHASH,
-                            vars.profileId,
-                            vars.tokenContractPointed,
-                            vars.tokenIdPointed,
-                            keccak256(bytes(vars.contentURI)),
-                            vars.marketModule,
-                            keccak256(vars.marketModuleInitData),
-                            vars.minterMarketModule,
-                            keccak256(vars.minterMarketModuleInitData),
-                            keccak256(vars.curationMetaData),
-                            sigNonces[owner]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        CREATE_CURATION_WITH_SIG_TYPEHASH,
+                        vars.profileId,
+                        vars.tokenContractPointed,
+                        vars.tokenIdPointed,
+                        keccak256(bytes(vars.contentURI)),
+                        vars.marketModule,
+                        keccak256(vars.marketModuleInitData),
+                        vars.minterMarketModule,
+                        keccak256(vars.minterMarketModuleInitData),
+                        keccak256(vars.curationMetaData),
+                        sigNonces[owner]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 vars.sig
             );
@@ -593,7 +572,8 @@ contract BardsHub is
                 marketModuleInitData: vars.marketModuleInitData,
                 minterMarketModule: vars.minterMarketModule,
                 minterMarketModuleInitData: vars.minterMarketModuleInitData,
-                curationMetaData: vars.curationMetaData
+                curationMetaData: vars.curationMetaData,
+                curationFrom: vars.curationFrom
             }
         ));
     }
@@ -606,7 +586,7 @@ contract BardsHub is
     )
 		internal
 	{
-        _validateCallerIsCurationOwnerOrApproved(_vars.tokenId);
+        // _validateCallerIsCurationOwnerOrApproved(_vars.tokenId);
 
 		CurationHelpers.setCurationRecipientsParams(_vars, _cooldownBlocks, _curationData);
 	}
@@ -673,7 +653,6 @@ contract BardsHub is
         );
         _curationById[tokenId].allocationId = newAllocationId;
         _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-
 	}
 
     /// @inheritdoc IBardsHub
@@ -921,18 +900,16 @@ contract BardsHub is
     {
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            COLLECT_WITH_SIG_TYPEHASH,
-                            vars.curationId,
-                            keccak256(vars.collectMetaData),
-                            sigNonces[vars.collector]++,
-                            vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        COLLECT_WITH_SIG_TYPEHASH,
+                        vars.curationId,
+                        keccak256(vars.collectMetaData),
+                        sigNonces[vars.collector]++,
+                        vars.sig.deadline
+                    )
                 ),
+                name(),
                 vars.collector,
                 vars.sig
             );
@@ -1143,7 +1120,6 @@ contract BardsHub is
             CurationHelpers.createCuration(
                 _vars,
                 _curationById,
-                _isMintedByIdById,
                 _marketModuleWhitelisted
             );
             _initializeCuration(

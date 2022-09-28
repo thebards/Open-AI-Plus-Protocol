@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import '../../interfaces/tokens/IBardsStaking.sol';
 import '../common/Multicall.sol';
@@ -304,6 +304,9 @@ contract BardsStaking is
         // Slippage protection
         // require(shareOut >= _shareOutMin, "Slippage protection");
 
+        // Trigger update rewards calculation snapshot
+        _updateRewardsWithStaking(_curationId);
+
         DataTypes.CurationStakingPool storage stakingPool = _stakingPools[_curationId];
 
         // If it hasn't been staked before then initialize the curve
@@ -340,9 +343,6 @@ contract BardsStaking is
 
         // reset the current epoch totalShare of MultiCurrencyFees.
         stakingPool.fees[epochManager().currentEpoch()].totalShare = getStakingPoolShare(_curationId);
-
-        // Trigger update rewards calculation snapshot
-        _updateRewardsWithStaking(_curationId);
 
         emit Events.CurationPoolStaked(
             _delegator, 
@@ -392,6 +392,10 @@ contract BardsStaking is
             getDelegatorShare(_delegator, _curationId) >= _shares,
             "Cannot burn more share than you own"
         );
+
+        // Trigger update rewards calculation
+        _updateRewardsWithStaking(_curationId);
+
         // Get the amount of tokens to refund based on returned signal
         uint256 tokensOut = shareToTokens(_curationId, _shares);
 
@@ -421,9 +425,6 @@ contract BardsStaking is
         delegation.lastWithdrawFeesEpoch = currentEpoch;
         // reset the current epoch totalShare of MultiCurrencyFees.
         stakingPool.fees[currentEpoch].totalShare = getStakingPoolShare(_curationId);
-
-        // Trigger update rewards calculation
-        _updateRewardsWithStaking(_curationId);
         emit Events.StakeDelegatedLocked(
             _delegator,
             _curationId,  
@@ -1220,7 +1221,7 @@ contract BardsStaking is
 
         // Creates an allocation
         // Allocation identifiers are not reused
-        allocations[_createAllocationData.allocationId].curator = _createAllocationData.curator;
+        allocations[_createAllocationData.allocationId].curator = curator;
         allocations[_createAllocationData.allocationId].curationId = _createAllocationData.curationId;
         allocations[_createAllocationData.allocationId].recipientsMeta = _createAllocationData.recipientsMeta;
         // allocations[_createAllocationData.allocationId].tokens = _stakingPools[_createAllocationData.curationId].tokens;
@@ -1353,7 +1354,7 @@ contract BardsStaking is
         DataTypes.Allocation storage alloc = allocations[_allocationId];
 
         // Only the curator or operator can decide if to restake
-        uint256 _stakeToCuration = _isAuth(alloc.curator) ? _stakeToCuration : 0;
+        _stakeToCuration = _isAuth(alloc.curator) ? _stakeToCuration : 0;
 
         DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(alloc.recipientsMeta);
 
@@ -1587,6 +1588,7 @@ contract BardsStaking is
             curationData.stakingBps
         );
         uint256 remainingRewards = totalRewards.sub(delegationRewards);
+        // console.log(remainingRewards);
 
         unchecked {
             // Send the split rewards to sellers.

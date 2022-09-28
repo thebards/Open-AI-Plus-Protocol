@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {IBardsNFTBase} from '../../interfaces/NFTs/IBardsNFTBase.sol';
 import {Errors} from '../../utils/Errors.sol';
@@ -9,17 +9,18 @@ import {Events} from '../../utils/Events.sol';
 import {ERC721Time} from './ERC721Time.sol';
 import {ERC721Enumerable} from './ERC721Enumerable.sol';
 import {TokenStorage} from '../storages/TokenStorage.sol';
+import "hardhat/console.sol";
 
 /**
  * @title BardsNFTBase
  * @author Lens Protocol
  *
  * @notice This is an abstract base contract to be inherited by other Lens Protocol NFTs, it includes
- * the slightly modified ERC721Enumerable, which itself inherits from the ERC721Time-- which adds an
+ * the slightly modified ERC721Time-- which adds an
  * internal operator approval setter, stores the mint timestamp for each token, and replaces the
  * constructor with an initializer.
  */
-abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage {
+abstract contract BardsNFTBase is ERC721Time, IBardsNFTBase, TokenStorage {
     bytes32 internal constant PERMIT_TYPEHASH =
         keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
     bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
@@ -55,18 +56,16 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage 
         address owner = ownerOf(tokenId);
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            spender,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        PERMIT_TYPEHASH,
+                        spender,
+                        tokenId,
+                        sigNonces[owner]++,
+                        sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 sig
             );
@@ -84,19 +83,17 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage 
         if (operator == address(0)) revert Errors.ZeroSpender();
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_FOR_ALL_TYPEHASH,
-                            owner,
-                            operator,
-                            approved,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        PERMIT_FOR_ALL_TYPEHASH,
+                        owner,
+                        operator,
+                        approved,
+                        sigNonces[owner]++,
+                        sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 sig
             );
@@ -105,9 +102,9 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage 
     }
 
     /// @inheritdoc IBardsNFTBase
-    function getDomainSeparator() external view override returns (bytes32) {
-        return _calculateDomainSeparator(name());
-    }
+    // function getDomainSeparator() external view override returns (bytes32) {
+    //     return _calculateDomainSeparator(name());
+    // }
 
     /// @inheritdoc IBardsNFTBase
     function burn(uint256 tokenId) public virtual override {
@@ -124,17 +121,15 @@ abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage 
         address owner = ownerOf(tokenId);
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            BURN_WITH_SIG_TYPEHASH,
-                            tokenId,
-                            sigNonces[owner]++,
-                            sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        BURN_WITH_SIG_TYPEHASH,
+                        tokenId,
+                        sigNonces[owner]++,
+                        sig.deadline
+                    )
                 ),
+                name(),
                 owner,
                 sig
             );

@@ -48,6 +48,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 
@@ -66,6 +67,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -278,6 +280,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 							minterMarketModule: ZERO_ADDRESS,
 							minterMarketModuleInitData: mockMarketModuleInitData,
 							curationMetaData: mockCurationMetaData,
+							curationFrom: 0,
 						})
 					).to.not.be.reverted;
 
@@ -296,6 +299,7 @@ makeSuiteCleanRoom('Setting Allocation ID', function () {
 							minterMarketModule: ZERO_ADDRESS,
 							minterMarketModuleInitData: mockMinterMarketModuleInitData,
 							curationMetaData: mockCurationMetaData,
+							curationFrom: 0,
 						})
 					).to.not.be.reverted;
 				});

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import '../../interfaces/tokens/IBardsCurationToken.sol';
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
@@ -10,6 +10,7 @@ import '../../utils/Events.sol';
 import '../../utils/Errors.sol';
 import '../govs/ContractRegistrar.sol';
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title BardsCurationToken contract
@@ -71,19 +72,17 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
         if (_vars.owner == address(0) || _vars.spender == address(0)) revert Errors.ZeroSpender();
         unchecked {
             _validateRecoveredAddress(
-                _calculateDigest(
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            _vars.owner,
-                            _vars.spender,
-                            _vars.value,
-                            sigNonces[_vars.owner]++,
-                            _vars.sig.deadline
-                        )
-                    ),
-                    name()
+                keccak256(
+                    abi.encode(
+                        PERMIT_TYPEHASH,
+                        _vars.owner,
+                        _vars.spender,
+                        _vars.value,
+                        sigNonces[_vars.owner]++,
+                        _vars.sig.deadline
+                    )
                 ),
+                name(),
                 _vars.owner,
                 _vars.sig
             );

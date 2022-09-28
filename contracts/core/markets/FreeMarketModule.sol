@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
@@ -89,9 +89,9 @@ contract FreeMarketModule is MarketModuleBase, IMarketModule {
         override 
         returns (address, uint256)
     {
-        // Royalty Payout + Protocol Fee + Curation Fees + staking fees + seller fees
-        address _collector = collector;
-        // The price and currency of NFT.
+        collector;
+        curationId;
+        curationIds;
         DataTypes.FreeMarketData memory marketData = _marketMetaData[tokenContract][tokenId];
         
         (

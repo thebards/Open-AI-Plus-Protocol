@@ -47,6 +47,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -95,6 +96,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.not.be.reverted;
 
@@ -131,6 +133,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			).to.not.be.reverted;
 		});
@@ -380,6 +383,7 @@ makeSuiteCleanRoom('Default profile Functionality', function () {
 						minterMarketModule: ZERO_ADDRESS,
 						minterMarketModuleInitData: mockMarketModuleInitData,
 						curationMetaData: mockCurationMetaData,
+						curationFrom: 0,
 					})
 				).to.not.be.reverted;
 

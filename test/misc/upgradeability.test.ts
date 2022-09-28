@@ -42,18 +42,18 @@ makeSuiteCleanRoom('Upgradeability', function () {
 		);
 	});
 
-	// The LensHub contract's last storage variable by default is at the 32nd slot (index 31) and contains the emergency admin
-	// We're going to validate the first 32 slots and the 33rd slot before and after the change
+	// The LensHub contract's last storage variable by default is at the 33nd slot (index 32) and contains the emergency admin
+	// We're going to validate the first 33 slots and the 34rd slot before and after the change
 	it("Should upgrade and set a new variable's value, previous storage is unchanged, new value is accurate", async function () {
 		// old hub
 		const proxyHub = TransparentUpgradeableProxy__factory.connect(bardsHub.address, deployer);
 		let prevStorage: string[] = [];
-		for (let i = 0; i < 33; i++) {
+		for (let i = 0; i < 34; i++) {
 			const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
 			prevStorage.push(valueAt);
 		}
 
-		let prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 33);
+		let prevNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 34);
 		const formattedZero = abiCoder.encode(['uint256'], [0]);
 		expect(prevNextSlot).to.eq(formattedZero);
 		
@@ -64,12 +64,12 @@ makeSuiteCleanRoom('Upgradeability', function () {
 			MockBardsHub__factory.connect(proxyHub.address, user).setAdditionalValue(valueToSet)
 		).to.not.be.reverted;
 
-		for (let i = 0; i < 33; i++) {
+		for (let i = 0; i < 34; i++) {
 			const valueAt = await ethers.provider.getStorageAt(proxyHub.address, i);
 			expect(valueAt).to.eq(prevStorage[i]);
 		}
 
-		const newNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 33);
+		const newNextSlot = await ethers.provider.getStorageAt(proxyHub.address, 34);
 		const formattedValue = abiCoder.encode(['uint256'], [valueToSet]);
 		expect(newNextSlot).to.eq(formattedValue);
 	});

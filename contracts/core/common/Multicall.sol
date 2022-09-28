@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 // pragma abicoder v2;
 
 import "../../interfaces/common/IMulticall.sol";
@@ -8,7 +8,7 @@ import "../../interfaces/common/IMulticall.sol";
 // Inspired by https://github.com/Uniswap/uniswap-v3-periphery/blob/main/contracts/base/Multicall.sol
 // Note: Removed payable from the multicall
 /**
- * @title Multicall
+ * @title Multicall 
  * @notice Enables calling multiple methods in a single call to the contract
  */
 abstract contract Multicall is IMulticall {

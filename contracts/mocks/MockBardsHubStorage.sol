@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {DataTypes} from '../utils/DataTypes.sol';
 
@@ -59,7 +59,7 @@ abstract contract MockBardsHubStorage {
 	// curation
 	mapping(uint256 => DataTypes.CurationStruct) internal _curationById;
 	// curation id (or profile) -> curation id -> bool
-	mapping(uint256 => mapping(uint256 => bool)) internal _isMintedByIdById;
+	// mapping(uint256 => mapping(uint256 => bool)) internal _isMintedByIdById;
     // curation id => Allocation Id
     mapping(uint256 => address) internal _allocationIdById;
 

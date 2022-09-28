@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import '../../interfaces/minters/IProgrammableMinter.sol';
 import '../govs/ContractRegistrar.sol';
@@ -62,7 +62,8 @@ contract CloneMinter is ContractRegistrar, IProgrammableMinter {
 				marketModuleInitData: marketModuleInitData,
 				minterMarketModule: curCuration.minterMarketModule,
 				minterMarketModuleInitData: minterMarketModuleInitData,
-				curationMetaData: curationMetaData
+				curationMetaData: curationMetaData,
+				curationFrom: cloneFromCuration
 		});
 
 		if (curCuration.curationType == DataTypes.CurationType.Profile){

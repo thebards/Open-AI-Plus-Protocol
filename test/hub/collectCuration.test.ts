@@ -29,6 +29,7 @@ import {
 	mockFreeMarketModuleInitData,
 	mockMinterMarketModuleInitData,
 	freeMarketModule,
+	errorsLib,
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Collecting', function () {
@@ -53,12 +54,13 @@ makeSuiteCleanRoom('Collecting', function () {
 				minterMarketModule: ZERO_ADDRESS,
 				minterMarketModuleInitData: mockMinterMarketModuleInitData,
 				curationMetaData: mockCurationMetaData,
+				curationFrom: 0,
 			})
 		).to.not.be.reverted;
 
 		await expect(
 			bardsHub.createCuration({
-				to: userTwoAddress,
+				to: userAddress,
 				curationType: CurationType.Content,
 				profileId: FIRST_PROFILE_ID,
 				curationId: 0,
@@ -71,6 +73,7 @@ makeSuiteCleanRoom('Collecting', function () {
 				minterMarketModule: ZERO_ADDRESS,
 				minterMarketModuleInitData: mockMinterMarketModuleInitData,
 				curationMetaData: mockCurationMetaData,
+				curationFrom: 0
 			})
 		).to.not.be.reverted;
 	});

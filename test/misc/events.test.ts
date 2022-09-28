@@ -49,6 +49,7 @@ import {
 	bardsDaoData,
 	daoTreasuryAddress,
 	epochManager,
+	userTwo,
 } from '../__setup.test';
 
 makeSuiteCleanRoom('Events', function () {
@@ -70,7 +71,7 @@ makeSuiteCleanRoom('Events', function () {
 
 			receipt = await waitForTx(proxy.deployTransaction, true);
 
-			expect(receipt.logs.length).to.eq(5);
+			expect(receipt.logs.length).to.eq(6);
 			matchEvent(receipt, 'Upgraded', [bardsHubImpl.address], proxy);
 			matchEvent(receipt, 'AdminChanged', [ZERO_ADDRESS, deployerAddress], proxy);
 			matchEvent(receipt, 'GovernanceSet', [
@@ -88,6 +89,11 @@ makeSuiteCleanRoom('Events', function () {
 			matchEvent(receipt, 'BaseInitialized', [
 				BARDS_HUB_NFT_NAME,
 				BARDS_HUB_NFT_SYMBOL,
+				await getTimestamp(),
+			]);
+			matchEvent(receipt, 'CooldownBlocksUpdated', [
+				0,
+				DEFAULTS.epochs.lengthInBlocks,
 				await getTimestamp(),
 			]);
 		});
@@ -248,6 +254,7 @@ makeSuiteCleanRoom('Events', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			);
 		}
@@ -268,6 +275,7 @@ makeSuiteCleanRoom('Events', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			);
 
@@ -303,7 +311,7 @@ makeSuiteCleanRoom('Events', function () {
 
 			matchEvent(
 				receipt,
-				'CurationInitialized',
+				'CurationUpdated',
 				[
 					FIRST_PROFILE_ID,
 					mockCurationMetaData,
@@ -339,6 +347,7 @@ makeSuiteCleanRoom('Events', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			);
 			
@@ -347,7 +356,11 @@ makeSuiteCleanRoom('Events', function () {
 			matchEvent(
 				receipt,
 				'Transfer',
-				[ZERO_ADDRESS, userTwoAddress, FIRST_PROFILE_ID],
+				[
+					ZERO_ADDRESS, 
+					userTwoAddress, 
+					FIRST_PROFILE_ID
+				],
 				bardsHubImpl
 			);
 
@@ -370,7 +383,7 @@ makeSuiteCleanRoom('Events', function () {
 
 			matchEvent(
 				receipt,
-				'CurationInitialized',
+				'CurationUpdated',
 				[
 					FIRST_PROFILE_ID,
 					mockCurationMetaData,
@@ -448,6 +461,7 @@ makeSuiteCleanRoom('Events', function () {
 					minterMarketModule: ZERO_ADDRESS,
 					minterMarketModuleInitData: mockMinterMarketModuleInitData,
 					curationMetaData: mockCurationMetaData,
+					curationFrom: 0,
 				})
 			);
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 /**
  * @title DataTypes
@@ -248,6 +248,7 @@ library DataTypes {
      * @param contentURI The URI associated with this publication.
      * @param marketModule The address of the current market module in use by this curation to trade itself, can be empty.
      * @param minterMarketModule The address of the current mint market module in use by this curation. 
+     * @param curationFrom The curation Id that this curation minted from.
      * Make sure each curation can mint its own NFTs. minterMarketModule is marketModule, but the initialization parameters are different.
      */
     struct CurationStruct {
@@ -259,6 +260,7 @@ library DataTypes {
         address marketModule;
         address minterMarketModule;
         uint256 allocationId;
+        uint256 curationFrom;
     }
 
     /**
@@ -365,6 +367,7 @@ library DataTypes {
      * minterMarketModule is marketModule, but the initialization parameters are different.
      * @param minterMarketModuleInitData The minter market module initialization data, if any.
      * @param curationMetaData The data of CurationData struct.
+     * @param curationFrom The curation Id that this curation minted from.
      */
     struct CreateCurationData {
         address to;
@@ -380,6 +383,7 @@ library DataTypes {
         address minterMarketModule;
         bytes minterMarketModuleInitData;
         bytes curationMetaData;
+        uint256 curationFrom;
     }
 
     /**
@@ -398,6 +402,7 @@ library DataTypes {
      * minterMarketModule is marketModule, but the initialization parameters are different.
      * @param minterMarketModuleInitData The minter market module initialization data, if any.
      * @param curationMetaData The data of CurationData struct.
+     * @param curationFrom The curation Id that this curation minted from.
      * @param sig
      */
     struct CreateCurationWithSigData {
@@ -413,6 +418,7 @@ library DataTypes {
         address minterMarketModule;
         bytes minterMarketModuleInitData;
         bytes curationMetaData;
+        uint256 curationFrom;
         EIP712Signature sig;
     }
 

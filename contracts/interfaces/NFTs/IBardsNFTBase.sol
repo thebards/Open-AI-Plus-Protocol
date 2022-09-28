@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import {DataTypes} from '../../utils/DataTypes.sol';
 
@@ -66,5 +66,5 @@ interface IBardsNFTBase {
      *
      * @return bytes32 The domain separator.
      */
-    function getDomainSeparator() external view returns (bytes32);
+    // function getDomainSeparator() external view returns (bytes32);
 }

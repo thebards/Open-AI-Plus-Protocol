@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import './DataTypes.sol';
@@ -53,6 +53,7 @@ library CurationHelpers {
         _curationById[_vars.profileId].contentURI = _vars.contentURI;
         _curationById[_vars.profileId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.profileId].tokenIdPointed = _vars.tokenIdPointed;
+        _curationById[_vars.profileId].curationFrom = _vars.curationFrom;
 		_isProfileById[_vars.profileId] = true;
 
         bytes memory marketModuleReturnData = _vars.marketModuleInitData;
@@ -179,13 +180,11 @@ library CurationHelpers {
      *
      * @param _vars The CreateProfileData struct.
      * @param _curationById The storage reference to the mapping of curations by token ID.
-     * @param _isMintedByIdById The storage reference to the mapping of ownership by token Id by profile Id.
      * @param _marketModuleWhitelisted The storage reference to the mapping of whitelist status by collect module address.
      */
     function createCuration(
         DataTypes.CreateCurationData memory _vars,
         mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
-		mapping(uint256 => mapping(uint256 => bool)) storage _isMintedByIdById,
         mapping(address => bool) storage _marketModuleWhitelisted
     ) external {
 
@@ -193,7 +192,7 @@ library CurationHelpers {
         _curationById[_vars.curationId].contentURI = _vars.contentURI;
 		_curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
-		// _isMintedByIdById[_vars.profileId][_vars.curationId] = true;
+		_curationById[_vars.curationId].curationFrom = _vars.curationFrom;
 
         bytes memory marketModuleReturnData;
         if (_vars.marketModule != address(0)) {
