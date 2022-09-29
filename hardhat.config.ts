@@ -3,22 +3,27 @@ import { accounts } from './helpers/test-wallets';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
 import { NETWORKS_RPC_URL } from './helper-hardhat-config';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import glob from 'glob';
 import path from 'path';
-dotenv.config({ path: '../.env' });
+
+dotenv.config();
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import '@typechain/hardhat';
 import 'solidity-coverage';
+import 'hardhat-contract-sizer';
+import 'hardhat-tracer';
+import 'hardhat-abi-exporter';
 import 'hardhat-gas-reporter';
 import 'hardhat-contract-sizer';
 import 'hardhat-log-remover';
 import 'hardhat-spdx-license-identifier';
 
 if (!process.env.SKIP_LOAD) {
-  glob.sync('./tasks/**/*.ts').forEach(function (file) {
+  glob.sync('./tasks/*/*.ts').forEach(function (file) {
+    console.log(file)
     require(path.resolve(file));
   });
 }
@@ -48,6 +53,12 @@ const mainnetFork = MAINNET_FORK
   : undefined;
 
 const config: HardhatUserConfig = {
+  paths: {
+    sources: './contracts',
+    tests: './test',
+    cache: './dist/cache', 
+    artifacts: './dist/contracts',
+  },
   solidity: {
     compilers: [
       {
@@ -55,7 +66,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 1,
+            runs: 200,
             details: {
               yul: true,
             },
@@ -65,8 +76,8 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
-    ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
+    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 42),
+    sepolia: getCommonNetworkConfig(eEthereumNetwork.sepolia, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
@@ -89,7 +100,25 @@ const config: HardhatUserConfig = {
     },
   },
   gasReporter: {
-    enabled: TRACK_GAS,
+    enabled: TRACK_GAS ? true : false,
+    showTimeSpent: true,
+    currency: 'USD',
+    outputFile: 'reports/gas-report.log',
+  },
+  abiExporter: {
+    path: './dist/abis',
+    clear: true,
+    flat: true,
+    runOnCompile: true,
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: false,
+    disambiguatePaths: false,
+  },
+  typechain: {
+    outDir: 'dist/types',
+    target: 'ethers-v5',
   },
   spdxLicenseIdentifier: {
     overwrite: false,

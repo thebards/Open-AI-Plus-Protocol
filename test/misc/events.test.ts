@@ -3,7 +3,7 @@ import { TransactionReceipt } from '@ethersproject/providers';
 import '@nomiclabs/hardhat-ethers';
 import { expect } from 'chai';
 import { constants, utils, BytesLike, BigNumber, Signature, Event } from 'ethers'
-import { BardsStaking__factory, TransparentUpgradeableProxy__factory } from '../../typechain-types';
+import { BardsStaking__factory, TransparentUpgradeableProxy__factory } from '../../build/types';
 const { AddressZero, MaxUint256 } = constants
 import {
 	ZERO_ADDRESS,

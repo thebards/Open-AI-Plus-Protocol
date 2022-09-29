@@ -1,0 +1,114 @@
+Arguments: 
+  /usr/local/bin/node /usr/local/bin/yarn test:gas
+
+PATH: 
+  /Users/yyk/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Users/yyk/anaconda3.9/anaconda3/bin:/Users/yyk/anaconda3.9/anaconda3/condabin:/Users/yyk/google-cloud-sdk/bin:/Users/yyk/.cargo/bin:/Users/yyk/.local/bin:/Users/yyk/workspace/software/apache-maven-3.8.2/bin:/Users/yyk/.foundry/bin:/Users/yyk/.local/bin:/Users/yyk/workspace/software/apache-maven-3.8.2/bin:/Users/yyk/.local/bin:/Users/yyk/.foundry/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.16.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  SyntaxError: /Users/yyk/workspace/SwordandBookWorkpace/web3/thebards-protocol/package.json: Unexpected token } in JSON at position 3496
+      at JSON.parse (<anonymous>)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:1629:59
+      at Generator.next (<anonymous>)
+      at step (/usr/local/lib/node_modules/yarn/lib/cli.js:310:30)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:321:13
+
+npm manifest: 
+  {
+      "name": "@thebards/thebards-protocol",
+      "version": "1.0.0",
+      "private": false,
+      "homepage": "https://thebards.xyz",
+      "repository": {
+          "type": "git",
+          "url": "https://github.com/thebards/thebards-protocol.git"
+      },
+      "files": [
+          "dist/**/*",
+          "dist/*"
+      ],
+      "dependencies": {
+          "@manifoldxyz/royalty-registry-solidity": "^1.0.9",
+          "@openzeppelin/contracts": "^4.5.0",
+          "@rari-capital/solmate": "^6.2.0",
+          "defender-relay-client": "^1.28.1",
+          "dotenv": "^16.0.1",
+          "hardhat-abi-exporter": "^2.10.0",
+          "hardhat-contract-sizer": "^2.6.1",
+          "hardhat-log-remover": "^2.0.2",
+          "hardhat-spdx-license-identifier": "^2.0.3",
+          "hardhat-tracer": "^1.1.0-rc.9",
+          "truffle": "^5.5.31",
+          "truffle-contract-size": "^2.0.1",
+          "winston": "^3.8.2"
+      },
+      "devDependencies": {
+          "@nomicfoundation/hardhat-chai-matchers": "^1.0.2",
+          "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+          "@typechain/ethers-v5": "^10.0.0",
+          "@types/chai": "^4.3.1",
+          "@types/mocha": "^9.1.1",
+          "@types/node": "^18.6.3",
+          "chai": "^4.3.6",
+          "hardhat": "^2.10.2",
+          "husky": "^7.0.0",
+          "ipfs-http-client": "^47.0.1",
+          "lint-staged": "^12.3.7",
+          "prettier": "^2.6.1",
+          "prettier-plugin-solidity": "^1.0.0-beta.19",
+          "solhint": "^3.3.7",
+          "solhint-plugin-prettier": "^0.0.5",
+          "ts-node": "^10.9.1",
+          "typechain": "^8.1.0",
+          "typescript": "^4.7.4"
+      },
+      "lint-staged": {
+          "*.{ts,js,css,md,sol}": "prettier --write",
+          "*.sol": "solhint"
+      },
+      "scripts": {
+          "build": "forge build && yarn typechain",
+          "clean": "forge clean && rm -rf ./dist",
+          "prepublishOnly": "rm -rf ./dist && forge clean && forge build && yarn typechain && cp -R contracts dist && cp -R addresses dist",
+          "typechain": "typechain --target=ethers-v5 'dist/artifacts/*/*.json' --out-dir dist/typechain",
+          "test": "scripts/test",
+          "test:gas": "RUN_EVM=true REPORT_GAS=true scripts/test",
+          "test:coverage": "scripts/coverage",
+          "quick-test": "hardhat test",
+          "spdx": "hardhat prepend-spdx-license",
+          "size": "npm run compile && hardhat size-contracts",
+          "full-deploy-local": "hardhat full-deploy --network localhost",
+          "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
+          "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
+          "run-env": "npm i && tail -f /dev/null",
+          "hardhat": "hardhat",
+          "hardhat:goerli": "hardhat --network goerli",
+          "hardhat:tenderly-main": "hardhat --network tenderlyMain",
+          "hardhat:sepolia": "hardhat --network sepolia",
+          "hardhat:main": "hardhat --network main",
+          "hardhat:docker": "hardhat --network hardhatevm_docker",
+          "hardhat:mumbai": "hardhat --network mumbai",
+          "hardhat:matic": "hardhat --network matic",
+          "compile": "SKIP_LOAD=true hardhat clean && SKIP_LOAD=true hardhat compile",
+          "console:fork": "MAINNET_FORK=true hardhat console",
+          "format": "prettier --write .",
+          "lint": "eslint .",
+          "analyze": "scripts/analyze",
+          "myth": "scripts/myth",
+          "flatten": "scripts/flatten && scripts/clean",
+      }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

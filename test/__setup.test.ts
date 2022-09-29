@@ -63,10 +63,10 @@ import {
 	CloneMinter__factory,
 	EmptyMinter,
 	EmptyMinter__factory,
-} from '../typechain-types';
+} from '../build/types';
 
-import { BardsHubLibraryAddresses} from "../typechain-types/factories/contracts/core/BardsHub__factory";
-import { BardsStakingLibraryAddresses } from "../typechain-types/factories/contracts/core/tokens/BardsStaking__factory";
+import { BardsHubLibraryAddresses} from "../build/types/factories/contracts/core/BardsHub__factory";
+import { BardsStakingLibraryAddresses } from "../build/types/factories/contracts/core/tokens/BardsStaking__factory";
 import exp from 'constants';
 
 export enum ProtocolState {

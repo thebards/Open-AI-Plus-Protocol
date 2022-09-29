@@ -34,7 +34,7 @@ import {
 	bardsCurationToken,
 	transferMinter
 } from '../__setup.test';
-import { DataTypes } from '../../typechain-types/contracts/core/BardsHub';
+import { DataTypes } from '../../build/types/contracts/core/BardsHub';
 
 
 

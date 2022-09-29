@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { randomBytes, randomInt, randomUUID } from 'crypto';
 import { Address } from 'defender-relay-client';
 import { constants, utils, BytesLike, BigNumber, Signature, Event } from 'ethers'
-import { BardsStaking, BardsStaking__factory, MockRebatePool, MockRebatePool__factory } from '../../typechain-types';
+import { BardsStaking, BardsStaking__factory, MockRebatePool, MockRebatePool__factory } from '../../build/types';
 const { AddressZero, MaxUint256 } = constants
 import {
 	MAX_UINT256,

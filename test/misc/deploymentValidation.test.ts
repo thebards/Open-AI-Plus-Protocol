@@ -13,7 +13,7 @@ import {
 	RewardsManager__factory, 
 	TransferMinter__factory, 
 	TransparentUpgradeableProxy__factory 
-} from '../../typechain-types';
+} from '../../build/types';
 import {
 	ZERO_ADDRESS,
 	DEFAULTS,

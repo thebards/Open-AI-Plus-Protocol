@@ -5,8 +5,8 @@ export interface SymbolMap<T> {
 export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
 
 export enum eEthereumNetwork {
-	kovan = 'kovan',
-	ropsten = 'ropsten',
+	goerli = 'goerli',
+	sepolia = 'sepolia',
 	main = 'main',
 	hardhat = 'hardhat',
 	tenderlyMain = 'tenderlyMain',
@@ -23,8 +23,8 @@ export enum eXDaiNetwork {
 }
 
 export enum EthereumNetworkNames {
-	kovan = 'kovan',
-	ropsten = 'ropsten',
+	goerli = 'goerli',
+	sepolia = 'sepolia',
 	main = 'main',
 	matic = 'matic',
 	mumbai = 'mumbai',
@@ -47,8 +47,8 @@ export interface iParamsPerNetworkAll<T>
 
 export interface iEthereumParamsPerNetwork<eNetwork> {
 	[eEthereumNetwork.harhatevm]: eNetwork;
-	[eEthereumNetwork.kovan]: eNetwork;
-	[eEthereumNetwork.ropsten]: eNetwork;
+	[eEthereumNetwork.goerli]: eNetwork;
+	[eEthereumNetwork.sepolia]: eNetwork;
 	[eEthereumNetwork.main]: eNetwork;
 	[eEthereumNetwork.hardhat]: eNetwork;
 	[eEthereumNetwork.tenderlyMain]: eNetwork;

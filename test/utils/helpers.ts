@@ -26,15 +26,15 @@ import {
 
 import { 
 	BardsHub__factory, BardsStaking 
-} from '../../typechain-types';
+} from '../../build/types';
 
 import { 
 	DataTypes
-} from "../../typechain-types/contracts/core/BardsHub";
+} from "../../build/types/contracts/core/BardsHub";
 
 import { 
 	EpochManager 
-} from '../../typechain-types/contracts/core/govs/EpochManager';
+} from '../../build/types/contracts/core/govs/EpochManager';
 import { Address } from 'defender-relay-client';
 
 
