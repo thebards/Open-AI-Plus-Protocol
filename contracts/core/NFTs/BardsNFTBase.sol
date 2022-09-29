@@ -6,31 +6,30 @@ import {IBardsNFTBase} from '../../interfaces/NFTs/IBardsNFTBase.sol';
 import {Errors} from '../../utils/Errors.sol';
 import {DataTypes} from '../../utils/DataTypes.sol';
 import {Events} from '../../utils/Events.sol';
-import {ERC721Time} from './ERC721Time.sol';
-import {ERC721Enumerable} from './ERC721Enumerable.sol';
+import './ERC721Enumerable.sol';
 import {TokenStorage} from '../storages/TokenStorage.sol';
-import "hardhat/console.sol";
+
 
 /**
  * @title BardsNFTBase
  * @author Lens Protocol
  *
  * @notice This is an abstract base contract to be inherited by other Lens Protocol NFTs, it includes
- * the slightly modified ERC721Time-- which adds an
+ * the slightly modified ERC721Enumerable-- which adds an
  * internal operator approval setter, stores the mint timestamp for each token, and replaces the
  * constructor with an initializer.
  */
-abstract contract BardsNFTBase is ERC721Time, IBardsNFTBase, TokenStorage {
-    bytes32 internal constant PERMIT_TYPEHASH =
+abstract contract BardsNFTBase is ERC721Enumerable, IBardsNFTBase, TokenStorage {
+    bytes32 private constant PERMIT_TYPEHASH = 
         keccak256('Permit(address spender,uint256 tokenId,uint256 nonce,uint256 deadline)');
-    bytes32 internal constant PERMIT_FOR_ALL_TYPEHASH =
+    bytes32 private constant PERMIT_FOR_ALL_TYPEHASH =
         keccak256(
             'PermitForAll(address owner,address operator,bool approved,uint256 nonce,uint256 deadline)'
         );
-    bytes32 internal constant BURN_WITH_SIG_TYPEHASH =
+    bytes32 private constant BURN_WITH_SIG_TYPEHASH =
         keccak256('BurnWithSig(uint256 tokenId,uint256 nonce,uint256 deadline)');
 
-    uint256 internal _counter;
+    // uint256 internal _counter;
 
     /**
      * @notice Initializer sets the name, symbol and the cached domain separator.

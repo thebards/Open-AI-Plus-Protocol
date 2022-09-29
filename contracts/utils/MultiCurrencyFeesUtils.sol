@@ -2,10 +2,11 @@
 
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import './DataTypes.sol';
-import './TokenUtils.sol';
-import "hardhat/console.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {DataTypes} from './DataTypes.sol';
+import {TokenUtils} from './TokenUtils.sol';
+
 
 library MultiCurrencyFeesUtils {
     using SafeMath for uint256;

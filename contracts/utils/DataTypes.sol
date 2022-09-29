@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+import {IBardsStaking} from '../interfaces/tokens/IBardsStaking.sol';
+
 pragma solidity ^0.8.12;
 
 /**
@@ -587,5 +589,13 @@ library DataTypes {
         address curator;
         uint256 curationId;
         bytes recipientsMeta;
+    }
+
+    struct UpdateCurationDataParamsData {
+        address owner;
+        uint256 tokenId;
+        uint256 newAllocationId;
+        uint32 minimalCooldownBlocks;
+        IBardsStaking bardsStaking;
     }
 }

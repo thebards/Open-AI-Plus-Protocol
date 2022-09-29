@@ -2,17 +2,19 @@
 
 pragma solidity ^0.8.12;
 
-import './curations/BardsCurationBase.sol';
-import './storages/BardsHubStorage.sol';
-import '../interfaces/IBardsHub.sol';
-import '../utils/DataTypes.sol';
-import '../interfaces/tokens/IBardsStaking.sol';
-import '../upgradeablity/VersionedInitializable.sol';
-import '../utils/CurationHelpers.sol';
-import '../utils/Errors.sol';
-import './govs/BardsPausable.sol';
-import "hardhat/console.sol";
-
+import {BardsCurationBase} from './curations/BardsCurationBase.sol';
+import {BardsHubStorage} from './storages/BardsHubStorage.sol';
+import {IBardsHub} from '../interfaces/IBardsHub.sol';
+import {DataTypes} from '../utils/DataTypes.sol';
+import {IBardsStaking} from '../interfaces/tokens/IBardsStaking.sol';
+import {VersionedInitializable} from '../upgradeablity/VersionedInitializable.sol';
+import {CurationHelpers} from '../utils/CurationHelpers.sol';
+import {CodeUtils} from '../utils/CodeUtils.sol';
+import {Errors} from '../utils/Errors.sol';
+import {Events} from '../utils/Events.sol';
+import {Constants} from '../utils/Constants.sol';
+import {BardsPausable} from './govs/BardsPausable.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 
 /**
  * @title BardsHub
@@ -27,6 +29,16 @@ contract BardsHub is
     BardsHubStorage,
     IBardsHub
 {
+    using CurationHelpers for DataTypes.CreateCurationData;
+    using CurationHelpers for DataTypes.UpdateCurationDataParamsData;
+    using CodeUtils for DataTypes.SetCurationContentURIWithSigData;
+    using CodeUtils for DataTypes.SetAllocationIdWithSigData;
+    using CodeUtils for DataTypes.SetMarketModuleWithSigData;
+    using CodeUtils for DataTypes.CreateCurationWithSigData;
+    using CodeUtils for DataTypes.DoCollectWithSigData;
+    using CodeUtils for DataTypes.SetDefaultProfileWithSigData;
+
+
     uint256 internal constant REVISION = 1;
     
     /**
@@ -207,32 +219,17 @@ contract BardsHub is
             vars.tokenContractPointed = address(this);
             vars.tokenIdPointed = profileId;
             
-            CurationHelpers.createProfile(
-                vars,
+            vars.createProfile(
+                allocationId,
+                _cooldownBlocks,
+                _getBardsStaking(),
+                _curationData,
                 _profileIdByHandleHash,
                 _curationById,
-                _isProfileById,
-                _marketModuleWhitelisted
+                _marketModuleWhitelisted,
+                _isToBeClaimedByAllocByCurator
             );
 
-            _initializeCuration(
-                DataTypes.InitializeCurationData({
-                    tokenId: profileId,
-                    curationData: vars.curationMetaData
-                })
-            ); 
-
-            // init allocation
-            _curationById[profileId].allocationId = allocationId;
-            _getBardsStaking().allocate(
-                DataTypes.CreateAllocateData({
-                    curator: vars.to,
-                    curationId: profileId,
-                    recipientsMeta: vars.curationMetaData,
-                    allocationId: allocationId
-                })
-            );
-            _isToBeClaimedByAllocByCurator[vars.to][allocationId] = true;
             return profileId;
         }
     }
@@ -249,17 +246,15 @@ contract BardsHub is
     /// @inheritdoc IBardsHub
     function setDefaultProfileWithSig(
         DataTypes.SetDefaultProfileWithSigData calldata vars
-    ) external override whenNotPaused {
+    ) 
+        external 
+        override 
+        whenNotPaused 
+    {
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        SET_DEFAULT_PROFILE_WITH_SIG_TYPEHASH,
-                        vars.wallet,
-                        vars.profileId,
-                        sigNonces[vars.wallet]++,
-                        vars.sig.deadline
-                    )
+                vars.encodeDefaultProfileWithSigMessage(
+                    sigNonces[vars.wallet]++
                 ),
                 name(),
                 vars.wallet,
@@ -293,14 +288,8 @@ contract BardsHub is
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        SET_CURATION_CONTENT_URI_WITH_SIG_TYPEHASH,
-                        vars.curationId,
-                        keccak256(bytes(vars.contentURI)),
-                        sigNonces[owner]++,
-                        vars.sig.deadline
-                    )
+                vars.encodeCurationContentURIWithSigMessage(
+                    sigNonces[owner]++
                 ),
                 name(),
                 owner,
@@ -364,16 +353,8 @@ contract BardsHub is
 
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        SET_ALLOCATION_ID_WITH_SIG_TYPEHASH,
-                        vars.curationId,
-                        vars.allocationId,
-                        keccak256(vars.curationMetaData),
-                        vars.stakeToCuration,
-                        sigNonces[owner]++,
-                        vars.sig.deadline
-                    )
+                vars.encodeAllocationIdWithSigMessage(
+                    sigNonces[owner]++
                 ),
                 name(),
                 owner,
@@ -429,17 +410,8 @@ contract BardsHub is
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
-                        vars.curationId,
-                        vars.tokenContract,
-                        vars.tokenId,
-                        vars.marketModule,
-                        keccak256(vars.marketModuleInitData),
-                        sigNonces[owner]++,
-                        vars.sig.deadline
-                    )
+                vars.encodeMarketModuleWithSigMessage(
+                    sigNonces[owner]++
                 ),
                 name(),
                 owner,
@@ -486,17 +458,8 @@ contract BardsHub is
         address owner = ownerOf(vars.curationId);
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        SET_MARKET_MODULE_WITH_SIG_TYPEHASH,
-                        vars.curationId,
-                        vars.tokenContract,
-                        vars.tokenId,
-                        vars.marketModule,
-                        keccak256(vars.marketModuleInitData),
-                        sigNonces[owner]++,
-                        vars.sig.deadline
-                    )
+                vars.encodeMarketModuleWithSigMessage(
+                    sigNonces[owner]++
                 ),
                 name(),
                 owner,
@@ -537,21 +500,8 @@ contract BardsHub is
         address owner = ownerOf(vars.profileId);
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        CREATE_CURATION_WITH_SIG_TYPEHASH,
-                        vars.profileId,
-                        vars.tokenContractPointed,
-                        vars.tokenIdPointed,
-                        keccak256(bytes(vars.contentURI)),
-                        vars.marketModule,
-                        keccak256(vars.marketModuleInitData),
-                        vars.minterMarketModule,
-                        keccak256(vars.minterMarketModuleInitData),
-                        keccak256(vars.curationMetaData),
-                        sigNonces[owner]++,
-                        vars.sig.deadline
-                    )
+                vars.encodeCreateCurationWithSigMessage(
+                    sigNonces[owner]++
                 ),
                 name(),
                 owner,
@@ -578,19 +528,6 @@ contract BardsHub is
         ));
     }
 
-    /**
-    * @notice Initializes a curation with the specified parameters. 
-    */
-	function _initializeCuration(
-        DataTypes.InitializeCurationData memory _vars
-    )
-		internal
-	{
-        // _validateCallerIsCurationOwnerOrApproved(_vars.tokenId);
-
-		CurationHelpers.setCurationRecipientsParams(_vars, _cooldownBlocks, _curationData);
-	}
-
     /// @inheritdoc IBardsHub
 	function updateCuration(
         DataTypes.InitializeCurationData memory _vars
@@ -601,268 +538,161 @@ contract BardsHub is
 
         _validateCallerIsCurationOwnerOrApproved(_vars.tokenId);
         
-		bytes memory metaData = CurationHelpers.setCurationRecipientsParams(_vars, _cooldownBlocks, _curationData);
-
         // reset allocation for curation
         address owner = ownerOf(_vars.tokenId);
         uint256 newAllocationId = ++_allocationCounter;
-
-        _getBardsStaking().closeAndAllocate(
-            _curationById[_vars.tokenId].allocationId,
-            _vars.tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: _vars.tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[_vars.tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-	}
-
-    /// @inheritdoc IBardsHub
-	function setSellerFundsRecipientsParams(
-		uint256 tokenId, 
-		address[] calldata sellerFundsRecipients
-	) 
-		external 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
-
-        bytes memory metaData = CurationHelpers.setSellerFundsRecipientsParams(
-            tokenId, 
-            sellerFundsRecipients, 
-            _cooldownBlocks, 
-            _curationData
-        );
-
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-	}
-
-    /// @inheritdoc IBardsHub
-	function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) 
-		external 
-		virtual 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
-        bytes memory metaData = CurationHelpers.setCurationFundsRecipientsParams(
-            tokenId, 
-            curationFundsRecipients, 
-            _cooldownBlocks, 
-            _curationData
-        );
-
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
         
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-
-	}
-
-    /// @inheritdoc IBardsHub
-	function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) 
-		external 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
-        bytes memory metaData = CurationHelpers.setSellerFundsBpsesParams(
-            tokenId, 
-            sellerFundsBpses, 
+		CurationHelpers.setCurationRecipientsParams(
+            _vars, 
+            owner,
+            newAllocationId,
             _cooldownBlocks, 
-            _curationData
+            _getBardsStaking(),
+            _curationData,
+            _curationById,
+            _isToBeClaimedByAllocByCurator
         );
-
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
-        
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-
 	}
 
-    /// @inheritdoc IBardsHub
-	function setCurationFundsBpsesParams(
-        uint256 tokenId, 
-        uint32[] calldata curationFundsBpses
-    ) 
-		external 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
+    // /// @inheritdoc IBardsHub
+	// function setSellerFundsRecipientsParams(
+	// 	uint256 tokenId, 
+	// 	address[] calldata sellerFundsRecipients
+	// ) 
+	// 	external 
+	// 	override 
+	// {
+    //     _validateCallerIsCurationOwnerOrApproved(tokenId);
 
-        bytes memory metaData = CurationHelpers.setCurationFundsBpsesParams(
-            tokenId, 
-            curationFundsBpses, 
-            _cooldownBlocks, 
-            _curationData
-        );
+    //     // reset allocation for curation
+    //     address owner = ownerOf(tokenId);
+    //     uint256 newAllocationId = ++_allocationCounter;
 
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
-        
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+    //     CurationHelpers.setSellerFundsRecipientsParams(
+    //         sellerFundsRecipients, 
+    //         DataTypes.UpdateCurationDataParamsData({
+    //             owner: owner,
+    //             tokenId: tokenId,
+    //             newAllocationId: newAllocationId,
+    //             minimalCooldownBlocks: _cooldownBlocks,
+    //             bardsStaking: _getBardsStaking()
+    //         }),
+    //         _curationData,
+    //         _curationById,
+    //         _isToBeClaimedByAllocByCurator
+    //     );
+	// }
 
-	}
+    // /// @inheritdoc IBardsHub
+	// function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) 
+	// 	external 
+	// 	virtual 
+	// 	override 
+	// {
+    //     _validateCallerIsCurationOwnerOrApproved(tokenId);
+    //     // reset allocation for curation
+    //     address owner = ownerOf(tokenId);
+    //     uint256 newAllocationId = ++_allocationCounter;
 
-    /// @inheritdoc IBardsHub
-	function setCurationBpsParams(
-        uint256 tokenId, 
-        uint32 curationBps
-    ) 
-		external 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
+    //     CurationHelpers.setCurationFundsRecipientsParams(
+    //         curationFundsRecipients, 
+    //         DataTypes.UpdateCurationDataParamsData({
+    //             owner: owner,
+    //             tokenId: tokenId,
+    //             newAllocationId: newAllocationId,
+    //             minimalCooldownBlocks: _cooldownBlocks,
+    //             bardsStaking: _getBardsStaking()
+    //         }),
+    //         _curationData,
+    //         _curationById,
+    //         _isToBeClaimedByAllocByCurator
+    //     );
+	// }
 
-        bytes memory metaData = CurationHelpers.setCurationBpsParams(
-            tokenId, 
-            curationBps, 
-            _cooldownBlocks, 
-            _curationData
-        );
+    // /// @inheritdoc IBardsHub
+	// function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) 
+	// 	external 
+	// 	override 
+	// {
+    //     _validateCallerIsCurationOwnerOrApproved(tokenId);
+    //     // reset allocation for curation
+    //     address owner = ownerOf(tokenId);
+    //     uint256 newAllocationId = ++_allocationCounter;
 
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
-        
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+    //     CurationHelpers.setSellerFundsBpsesParams(
+    //         sellerFundsBpses, 
+    //         DataTypes.UpdateCurationDataParamsData({
+    //             owner: owner,
+    //             tokenId: tokenId,
+    //             newAllocationId: newAllocationId,
+    //             minimalCooldownBlocks: _cooldownBlocks,
+    //             bardsStaking: _getBardsStaking()
+    //         }),
+    //         _curationData,
+    //         _curationById,
+    //         _isToBeClaimedByAllocByCurator
+    //     );
+	// }
 
-	}
+    // /// @inheritdoc IBardsHub
+	// function setCurationFundsBpsesParams(
+    //     uint256 tokenId, 
+    //     uint32[] calldata curationFundsBpses
+    // ) 
+	// 	external 
+	// 	override 
+	// {
+    //     _validateCallerIsCurationOwnerOrApproved(tokenId);
 
-    /// @inheritdoc IBardsHub
-	function setStakingBpsParams(
-        uint256 tokenId, 
-        uint32 stakingBps
-    ) 
-		external 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
+    //     // reset allocation for curation
+    //     address owner = ownerOf(tokenId);
+    //     uint256 newAllocationId = ++_allocationCounter;
 
-		bytes memory metaData = CurationHelpers.setStakingBpsParams(
-            tokenId, 
-            stakingBps, 
-            _cooldownBlocks, 
-            _curationData
-        );
+    //     CurationHelpers.setCurationFundsBpsesParams(
+    //         curationFundsBpses,  
+    //         DataTypes.UpdateCurationDataParamsData({
+    //             owner: owner,
+    //             tokenId: tokenId,
+    //             newAllocationId: newAllocationId,
+    //             minimalCooldownBlocks: _cooldownBlocks,
+    //             bardsStaking: _getBardsStaking()
+    //         }),
+    //         _curationData,
+    //         _curationById,
+    //         _isToBeClaimedByAllocByCurator
+    //     );
+	// }
 
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
-        
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-	}
+    // /// @inheritdoc IBardsHub
+	// function setBpsParams(
+    //     uint256 tokenId, 
+    //     uint32 curationBps, 
+    //     uint32 stakingBps
+    // ) 
+	// 	external 
+	// 	override 
+	// {
+    //     _validateCallerIsCurationOwnerOrApproved(tokenId);
 
-    /// @inheritdoc IBardsHub
-	function setBpsParams(
-        uint256 tokenId, 
-        uint32 curationBps, 
-        uint32 stakingBps
-    ) 
-		external 
-		override 
-	{
-        _validateCallerIsCurationOwnerOrApproved(tokenId);
+    //     // reset allocation for curation
+    //     address owner = ownerOf(tokenId);
+    //     uint256 newAllocationId = ++_allocationCounter;
     
-		bytes memory metaData = CurationHelpers.setBpsParams(
-            tokenId, 
-            curationBps, 
-            stakingBps, 
-            _cooldownBlocks, 
-            _curationData
-        );
-
-        // reset allocation for curation
-        address owner = ownerOf(tokenId);
-        uint256 newAllocationId = ++_allocationCounter;
-        
-        _getBardsStaking().closeAndAllocate(
-            _curationById[tokenId].allocationId,
-            tokenId,
-            DataTypes.CreateAllocateData({
-                curator: owner,
-                curationId: tokenId,
-                recipientsMeta: metaData,
-                allocationId: newAllocationId
-            })
-        );
-        _curationById[tokenId].allocationId = newAllocationId;
-        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
-	}
+	// 	CurationHelpers.setBpsParams( 
+    //         curationBps,
+    //         stakingBps, 
+    //         DataTypes.UpdateCurationDataParamsData({
+    //             owner: owner,
+    //             tokenId: tokenId,
+    //             newAllocationId: newAllocationId,
+    //             minimalCooldownBlocks: _cooldownBlocks,
+    //             bardsStaking: _getBardsStaking()
+    //         }), 
+    //         _curationData,
+    //         _curationById,
+    //         _isToBeClaimedByAllocByCurator
+    //     );
+	// }
 
     /// @inheritdoc IBardsHub
     function removeAllocation(
@@ -900,14 +730,8 @@ contract BardsHub is
     {
         unchecked {
             _validateRecoveredAddress(
-                keccak256(
-                    abi.encode(
-                        COLLECT_WITH_SIG_TYPEHASH,
-                        vars.curationId,
-                        keccak256(vars.collectMetaData),
-                        sigNonces[vars.collector]++,
-                        vars.sig.deadline
-                    )
+                vars.encodecollectWithSigMessage(
+                    sigNonces[vars.collector]++
                 ),
                 name(),
                 vars.collector,
@@ -1115,31 +939,23 @@ contract BardsHub is
                 // Get the owner of the specified token
                 address tokenOwner = IERC721(_vars.tokenContractPointed).ownerOf(_vars.tokenIdPointed);
                 // Ensure the caller is the owner or an approved operator
-                require(_isRegisteredAddress[msg.sender] == true || msg.sender == tokenOwner || IERC721(_vars.tokenContractPointed).isApprovedForAll(tokenOwner, msg.sender), "ONLY_TOKEN_OWNER_OR_OPERATOR");
+                require(
+                    _isRegisteredAddress[msg.sender] == true || 
+                    msg.sender == tokenOwner || 
+                    IERC721(_vars.tokenContractPointed).isApprovedForAll(tokenOwner, msg.sender), 
+                    "ONLY_TOKEN_OWNER_OR_OPERATOR"
+                );
             }
-            CurationHelpers.createCuration(
-                _vars,
+            _vars.createCuration(
+                allocationId,
+                _cooldownBlocks,
+                _getBardsStaking(),
+                _curationData,
                 _curationById,
-                _marketModuleWhitelisted
-            );
-            _initializeCuration(
-                DataTypes.InitializeCurationData(
-                    curationId,
-                    _vars.curationMetaData
-                )
+                _marketModuleWhitelisted,
+                _isToBeClaimedByAllocByCurator
             );
 
-            // init allocation
-            _curationById[curationId].allocationId = allocationId;
-            _getBardsStaking().allocate(
-                DataTypes.CreateAllocateData({
-                    curator: msg.sender,
-                    curationId: curationId,
-                    recipientsMeta: _vars.curationMetaData,
-                    allocationId: allocationId
-                })
-            );
-            _isToBeClaimedByAllocByCurator[_vars.to][allocationId] = true;
             return curationId;
         }
     }

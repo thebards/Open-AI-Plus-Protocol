@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.12;
 
-import '../../utils/DataTypes.sol';
-import '../../utils/Errors.sol';
-import '../../utils/Events.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
+import {Errors} from '../../utils/Errors.sol';
+import {Events} from '../../utils/Events.sol';
 
 /**
  * @title BardsPausable

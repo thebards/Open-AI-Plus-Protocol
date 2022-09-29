@@ -2,29 +2,30 @@
 
 pragma solidity ^0.8.12;
 
-import '../../interfaces/tokens/IBardsStaking.sol';
-import '../common/Multicall.sol';
-import '../storages/BardsStakingStorage.sol';
-import './BardsShareToken.sol';
-import './BardsCurationToken.sol';
-import '../../utils/DataTypes.sol';
-import '../../utils/Errors.sol';
-import '../../utils/Events.sol';
-import '../../utils/Constants.sol';
-import '../../utils/BancorFormula.sol';
-import '../../utils/Rebates.sol';
-import '../../utils/MultiCurrencyFeesUtils.sol';
-import '../../utils/TokenUtils.sol';
-import '../../utils/MathUtils.sol';
-import '../../utils/CodeUtils.sol';
-import '../../interfaces/tokens/IBardsShareToken.sol';
-import '../../interfaces/tokens/IBardsCurationToken.sol';
-import '../govs/ContractRegistrar.sol';
-import '../govs/BardsPausable.sol';
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/proxy/Clones.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IBardsStaking} from '../../interfaces/tokens/IBardsStaking.sol';
+import {IRewardsManager} from '../../interfaces/govs/IRewardsManager.sol';
+import {Multicall} from '../common/Multicall.sol';
+import {BardsStakingStorage} from '../storages/BardsStakingStorage.sol';
+import {BardsShareToken} from './BardsShareToken.sol';
+import {BardsCurationToken} from './BardsCurationToken.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
+import {Errors} from '../../utils/Errors.sol';
+import {Events} from '../../utils/Events.sol';
+import {Constants} from '../../utils/Constants.sol';
+import {BancorFormula} from '../../utils/BancorFormula.sol';
+import {Rebates} from '../../utils/Rebates.sol';
+import {MultiCurrencyFeesUtils} from '../../utils/MultiCurrencyFeesUtils.sol';
+import {TokenUtils} from '../../utils/TokenUtils.sol';
+import {MathUtils} from '../../utils/MathUtils.sol';
+import {CodeUtils} from '../../utils/CodeUtils.sol';
+import {IBardsShareToken} from '../../interfaces/tokens/IBardsShareToken.sol';
+import {IBardsCurationToken, IERC20} from '../../interfaces/tokens/IBardsCurationToken.sol';
+import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
+import {BardsPausable} from '../govs/BardsPausable.sol';
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
+import {Address} from "@openzeppelin/contracts/utils/Address.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
  * @title Curation contract
@@ -1279,6 +1280,8 @@ contract BardsStaking is
     function _closeAllocation(uint256 _allocationId, uint256 _stakeToCuration) 
         private 
     {
+        if (_allocationId == 0)
+            return;
         // Allocation must exist and be active
         DataTypes.AllocationState allocState = _getAllocationState(_allocationId);
         require(allocState == DataTypes.AllocationState.Active, "!active");

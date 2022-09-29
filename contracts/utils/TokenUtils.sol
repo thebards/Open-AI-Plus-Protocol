@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.12;
 
-import "../interfaces/tokens/IBardsCurationToken.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IBardsCurationToken} from "../interfaces/tokens/IBardsCurationToken.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 library TokenUtils {

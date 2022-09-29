@@ -80,63 +80,47 @@ interface IBardsHub {
     */
 	  function updateCuration(DataTypes.InitializeCurationData memory _vars) external;
 
-    /**
-     * @notice Sets the sellerFundsRecipients of the sellers for a NFT
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param sellerFundsRecipients The bpses of seller funds
-     */
-    function setSellerFundsRecipientsParams(uint256 tokenId, address[] calldata sellerFundsRecipients) external;
+    // /**
+    //  * @notice Sets the sellerFundsRecipients of the sellers for a NFT
+    //  * 
+    //  * @param tokenId The token Id of the NFT to set fee params.
+    //  * @param sellerFundsRecipients The bpses of seller funds
+    //  */
+    // function setSellerFundsRecipientsParams(uint256 tokenId, address[] calldata sellerFundsRecipients) external;
 
-    /**
-     * @notice Sets the curationFundsRecipients of the sellers for a NFT
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param curationFundsRecipients The bpses of curation funds
-     */
-    function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) external;
+    // /**
+    //  * @notice Sets the curationFundsRecipients of the sellers for a NFT
+    //  * 
+    //  * @param tokenId The token Id of the NFT to set fee params.
+    //  * @param curationFundsRecipients The bpses of curation funds
+    //  */
+    // function setCurationFundsRecipientsParams(uint256 tokenId, uint256[] calldata curationFundsRecipients) external;
 
 
-    /**
-     * @notice Sets the fee that is sent to the sellers for a NFT
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param sellerFundsBpses The fee that is sent to the sellers.
-     */
-    function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) external;
+  //   /**
+  //    * @notice Sets the fee that is sent to the sellers for a NFT
+  //    * 
+  //    * @param tokenId The token Id of the NFT to set fee params.
+  //    * @param sellerFundsBpses The fee that is sent to the sellers.
+  //    */
+  //   function setSellerFundsBpsesParams(uint256 tokenId, uint32[] calldata sellerFundsBpses) external;
 
-    /**
-     * @notice Sets the fee that is sent to the curation for a NFT
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param curationFundsBpses The fee that is sent to the curations.
-     */
-    function setCurationFundsBpsesParams(uint256 tokenId, uint32[] calldata curationFundsBpses) external;
+  //   /**
+  //    * @notice Sets the fee that is sent to the curation for a NFT
+  //    * 
+  //    * @param tokenId The token Id of the NFT to set fee params.
+  //    * @param curationFundsBpses The fee that is sent to the curations.
+  //    */
+  //   function setCurationFundsBpsesParams(uint256 tokenId, uint32[] calldata curationFundsBpses) external;
 
-	/**
-     * @notice Sets fee parameters for a NFT
-	 *
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param curationBps The bps of curation
-     * @param stakingBps The bps of staking
-     */
-    function setBpsParams(uint256 tokenId, uint32 curationBps, uint32 stakingBps) external;
-
-    /**
-     * @notice Sets curation fee parameters for a NFT
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param curationBps The bps of curation
-     */
-    function setCurationBpsParams(uint256 tokenId, uint32 curationBps) external;
-
-    /**
-     * @notice Sets staking fee parameters for a NFT
-     * 
-     * @param tokenId The token Id of the NFT to set fee params.
-     * @param stakingBps The bps of staking
-     */
-    function setStakingBpsParams(uint256 tokenId, uint32 stakingBps) external;
+	// /**
+  //    * @notice Sets fee parameters for a NFT
+	//  *
+  //    * @param tokenId The token Id of the NFT to set fee params.
+  //    * @param curationBps The bps of curation
+  //    * @param stakingBps The bps of staking
+  //    */
+  //   function setBpsParams(uint256 tokenId, uint32 curationBps, uint32 stakingBps) external;
 
 	/**
      * @notice Adds or removes a market module from the whitelist. This function can only be called by the current

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.12;
 
-import '../../utils/DataTypes.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
 
 /**
  * @title IBardsStaking

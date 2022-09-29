@@ -608,6 +608,17 @@ library Events {
     );
 
     /**
+     * @notice Emitted when BardsDaoData setted
+     * 
+     * @param bardsDaoData the hub address.
+     * @param timestamp The current block timestamp.
+     */
+    event BardsDaoDataSet(
+        address indexed bardsDaoData,
+        uint256 timestamp
+    );
+
+    /**
      * @notice Emitted when epoch run
      * 
      * @param epoch epoch 

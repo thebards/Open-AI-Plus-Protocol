@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.12;
 
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import '../../utils/DataTypes.sol';
+import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
 
 /**
  * @title IERC721Time

@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import '../../utils/DataTypes.sol';
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {DataTypes} from '../../utils/DataTypes.sol';
 
 /**
  * @title IBardsCurationToken

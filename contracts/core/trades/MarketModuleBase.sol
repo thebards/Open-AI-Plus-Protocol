@@ -9,11 +9,14 @@ import {ERC165Checker} from "@openzeppelin/contracts/utils/introspection/ERC165C
 import {IWETH} from "./IWETH.sol";
 import {Events} from '../../utils/Events.sol';
 import {Errors} from '../../utils/Errors.sol';
-import '../../utils/TokenUtils.sol';
-import '../BardsHub.sol';
-import '../govs/ContractRegistrar.sol';
-import '../../interfaces/tokens/IBardsStaking.sol';
-import "hardhat/console.sol";
+import {TokenUtils} from '../../utils/TokenUtils.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
+import {Constants} from '../../utils/Constants.sol';
+import {BardsHub} from '../BardsHub.sol';
+import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
+import {IBardsStaking} from '../../interfaces/tokens/IBardsStaking.sol';
+import {IBardsCurationBase} from '../../interfaces/curations/IBardsCurationBase.sol';
+
 
 /**
  * @title MarketModuleBase

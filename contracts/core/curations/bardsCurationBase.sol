@@ -4,14 +4,12 @@ pragma solidity ^0.8.12;
 
 import {ReentrancyGuard} from "@rari-capital/solmate/src/utils/ReentrancyGuard.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import '../../interfaces/curations/IBardsCurationBase.sol';
-import '../NFTs/BardsNFTBase.sol';
-import '../../utils/CurationHelpers.sol';
-import '../../utils/Constants.sol';
-import '../../utils/Events.sol';
-import '../../utils/MathUtils.sol';
-import '../../utils/DataTypes.sol';
-import '../../utils/CodeUtils.sol';
+import {IBardsCurationBase} from '../../interfaces/curations/IBardsCurationBase.sol';
+import {BardsNFTBase} from '../NFTs/BardsNFTBase.sol';
+import {Constants} from '../../utils/Constants.sol';
+import {Events} from '../../utils/Events.sol';
+import {MathUtils} from '../../utils/MathUtils.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
 
 /**
  * @title BardsCurationBase
@@ -20,7 +18,11 @@ import '../../utils/CodeUtils.sol';
  * @notice This is an abstract base contract to be inherited by other TheBards Protocol Curations, it includes
  * NFT module and curation fee setting module.
  */
-abstract contract BardsCurationBase is ReentrancyGuard, IBardsCurationBase, BardsNFTBase {
+abstract contract BardsCurationBase is 
+	ReentrancyGuard, 
+	IBardsCurationBase, 
+	BardsNFTBase
+{
 	/**
      * @notice The curation for a given NFT, if one exists
      * @notice ERC-721 token id => Curation

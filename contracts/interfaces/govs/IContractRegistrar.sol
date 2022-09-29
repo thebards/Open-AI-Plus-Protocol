@@ -4,8 +4,8 @@ pragma solidity ^0.8.12;
 
 interface IContractRegistrar {
 	/**
-     * @notice Set Controller. Only callable by current controller.
-     * @param _HUB Controller contract address
+     * @notice Set HUB
+     * @param _HUB HUB contract address
      */
 	function setHub(address _HUB) external;
 	

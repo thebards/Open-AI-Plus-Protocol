@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import './DataTypes.sol';
-import './Errors.sol';
-import './Events.sol';
-import './Constants.sol';
-import './CodeUtils.sol';
-import './MathUtils.sol';
-import '../interfaces/markets/IMarketModule.sol';
-import "hardhat/console.sol";
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {DataTypes} from './DataTypes.sol';
+import {Errors} from './Errors.sol';
+import {Events} from './Events.sol';
+import {Constants} from './Constants.sol';
+import {CodeUtils} from './CodeUtils.sol';
+import {MathUtils} from './MathUtils.sol';
+import {IMarketModule} from '../interfaces/markets/IMarketModule.sol';
+import {IBardsStaking} from '../interfaces/tokens/IBardsStaking.sol';
 
 /**
  * @title CurationHelpers
@@ -30,17 +30,25 @@ library CurationHelpers {
      * @notice Executes the logic to create a profile with the given parameters to the given address.
      *
      * @param _vars The CreateProfileData struct.
+     * @param _allocationId allocationg id
+     * @param _minimalCooldownBlocks minimal cool down blocks
+     * @param _bardsStaking The address of BardsStaking contract
+     * @param _curationData The storage reference to the mapping of curation data.
      * @param _profileIdByHandleHash The storage reference to the mapping of profile IDs by handle hash.
      * @param _curationById The storage reference to the mapping of profile structs by IDs.
-	 * @param _isProfileById The storage reference to whether the Id is belong to profile.
      * @param _marketModuleWhitelisted The storage reference to the mapping of whitelist status by market module address.
+     * @param _isToBeClaimedByAllocByCurator The storage reference to the mapping of claim status of allocation.
      */
     function createProfile(
         DataTypes.CreateCurationData memory _vars,
+        uint256 _allocationId,
+        uint32 _minimalCooldownBlocks,
+        IBardsStaking _bardsStaking,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
         mapping(bytes32 => uint256) storage _profileIdByHandleHash,
         mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
-		mapping(uint256 => bool) storage _isProfileById,
-        mapping(address => bool) storage _marketModuleWhitelisted
+        mapping(address => bool) storage _marketModuleWhitelisted,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) external {
         _validateHandle(_vars.handle);
         bytes32 handleHash = keccak256(bytes(_vars.handle));
@@ -54,7 +62,6 @@ library CurationHelpers {
         _curationById[_vars.profileId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.profileId].tokenIdPointed = _vars.tokenIdPointed;
         _curationById[_vars.profileId].curationFrom = _vars.curationFrom;
-		_isProfileById[_vars.profileId] = true;
 
         bytes memory marketModuleReturnData = _vars.marketModuleInitData;
         if (_vars.marketModule != address(0)) {
@@ -80,6 +87,20 @@ library CurationHelpers {
                 _marketModuleWhitelisted
             );
         }
+
+        _initCurationRecipientsParams(
+            DataTypes.InitializeCurationData({
+                tokenId: _vars.profileId,
+                curationData: _vars.curationMetaData
+            }), 
+            _vars.to,
+            _allocationId,
+            _minimalCooldownBlocks, 
+            _bardsStaking,
+            _curationData,
+            _curationById,
+            _isToBeClaimedByAllocByCurator
+        );
 
         _emitProfileCreated(
             _vars.profileId, 
@@ -179,24 +200,33 @@ library CurationHelpers {
      * @dev To avoid a stack too deep error, reference parameters are passed in memory rather than calldata.
      *
      * @param _vars The CreateProfileData struct.
+     * @param _allocationId allocationg id
+     * @param _minimalCooldownBlocks minimal cool down blocks
+     * @param _bardsStaking The address of BardsStaking contract
+     * @param _curationData The storage reference to the mapping of curation data.
      * @param _curationById The storage reference to the mapping of curations by token ID.
      * @param _marketModuleWhitelisted The storage reference to the mapping of whitelist status by collect module address.
+     * @param _isToBeClaimedByAllocByCurator The storage reference to the mapping of claim status of allocation.
      */
     function createCuration(
         DataTypes.CreateCurationData memory _vars,
+        uint256 _allocationId,
+        uint32 _minimalCooldownBlocks,
+        IBardsStaking _bardsStaking,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
         mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
-        mapping(address => bool) storage _marketModuleWhitelisted
+        mapping(address => bool) storage _marketModuleWhitelisted,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) external {
-
         _curationById[_vars.curationId].curationType = _vars.curationType;
         _curationById[_vars.curationId].contentURI = _vars.contentURI;
 		_curationById[_vars.curationId].tokenContractPointed = _vars.tokenContractPointed;
 		_curationById[_vars.curationId].tokenIdPointed = _vars.tokenIdPointed;
 		_curationById[_vars.curationId].curationFrom = _vars.curationFrom;
+        _curationById[_vars.curationId].allocationId = _allocationId;
 
-        bytes memory marketModuleReturnData;
         if (_vars.marketModule != address(0)) {
-            marketModuleReturnData = _initMarketModule(
+            _initMarketModule(
 				_vars.tokenContractPointed, 
                 _vars.tokenIdPointed,
                 _vars.marketModule,
@@ -205,9 +235,8 @@ library CurationHelpers {
             );
             _curationById[_vars.curationId].marketModule = _vars.marketModule;
         }
-		bytes memory minterMarketModuleReturnData;
         if (_vars.minterMarketModule != address(0)) {
-			minterMarketModuleReturnData = _initMarketModule(
+			_initMarketModule(
 				_vars.tokenContractPointed,
                 _vars.tokenIdPointed,
 				_vars.minterMarketModule,
@@ -215,8 +244,21 @@ library CurationHelpers {
                 _marketModuleWhitelisted
             );
             _curationById[_vars.curationId].minterMarketModule = _vars.minterMarketModule;
-
         }
+
+        _initCurationRecipientsParams(
+            DataTypes.InitializeCurationData({
+                tokenId: _vars.curationId,
+                curationData: _vars.curationMetaData
+            }),
+            _vars.to,
+            _allocationId,
+            _minimalCooldownBlocks, 
+            _bardsStaking,
+            _curationData,
+            _curationById,
+            _isToBeClaimedByAllocByCurator
+        );
 
         emit Events.CurationCreated(
             _vars.profileId,
@@ -284,10 +326,40 @@ library CurationHelpers {
 
     function setCurationRecipientsParams(
         DataTypes.InitializeCurationData memory vars,
+        address owner,
+        uint256 newAllocationId,
         uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        IBardsStaking bardsStaking,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
 	) 
-		external 
+		external
+        returns (bytes memory)
+	{
+        return _setCurationRecipientsParams(
+            vars,
+            owner,
+            newAllocationId,
+            minimalCooldownBlocks,
+            bardsStaking,
+            _curationData,
+            _curationById,
+            _isToBeClaimedByAllocByCurator
+        );
+    }
+
+    function _initCurationRecipientsParams(
+        DataTypes.InitializeCurationData memory vars,
+        address owner,
+        uint256 newAllocationId,
+        uint32 minimalCooldownBlocks,
+        IBardsStaking bardsStaking,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
+	) 
+		private
         returns (bytes memory)
 	{
 		require(
@@ -326,6 +398,89 @@ library CurationHelpers {
 			updatedAtBlock: block.number
 		});
 
+        bardsStaking.allocate(
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: vars.tokenId,
+                recipientsMeta: vars.curationData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[vars.tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
+        emit Events.CurationUpdated(
+            vars.tokenId,
+            vars.curationData,
+            block.timestamp
+        );
+
+        return vars.curationData;
+	}
+
+
+    function _setCurationRecipientsParams(
+        DataTypes.InitializeCurationData memory vars,
+        address owner,
+        uint256 newAllocationId,
+        uint32 minimalCooldownBlocks,
+        IBardsStaking bardsStaking,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
+	) 
+		private
+        returns (bytes memory)
+	{
+		require(
+            _curationData[vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[vars.tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            "!cooldown"
+        );
+
+		DataTypes.CurationData memory curationData = CodeUtils.decodeCurationMetaData(vars.curationData);
+
+		require(
+			curationData.sellerFundsBpses.length == curationData.sellerFundsRecipients.length, 
+			"sellerFundsRecipients and sellerFundsBpses must have same length."
+		);
+		require(
+			curationData.curationFundsRecipients.length == curationData.curationFundsBpses.length, 
+			"curationFundsRecipients and curationFundsBpses must have same length."
+		);
+		require(
+			MathUtils.sum(MathUtils.uint32To256Array(curationData.sellerFundsBpses)) + 
+			MathUtils.sum(MathUtils.uint32To256Array(curationData.curationFundsBpses)) == Constants.MAX_BPS, 
+			"The sum of sellerFundsBpses and curationFundsBpses must be equal to 1000000."
+		);
+		require(
+			curationData.curationBps + curationData.stakingBps <= Constants.MAX_BPS, 
+			"curationBps + stakingBps <= 100%"
+		);
+
+		_curationData[vars.tokenId] = DataTypes.CurationData({
+			sellerFundsRecipients: curationData.sellerFundsRecipients,
+			curationFundsRecipients: curationData.curationFundsRecipients,
+			sellerFundsBpses: curationData.sellerFundsBpses,
+			curationFundsBpses: curationData.curationFundsBpses,
+			curationBps: curationData.curationBps,
+			stakingBps: curationData.stakingBps,
+			updatedAtBlock: block.number
+		});
+
+        bardsStaking.closeAndAllocate(
+            _curationById[vars.tokenId].allocationId,
+            vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: owner,
+                curationId: vars.tokenId,
+                recipientsMeta: vars.curationData,
+                allocationId: newAllocationId
+            })
+        );
+        _curationById[vars.tokenId].allocationId = newAllocationId;
+        _isToBeClaimedByAllocByCurator[owner][newAllocationId] = true;
+
         emit Events.CurationUpdated(
             vars.tokenId,
             vars.curationData,
@@ -336,224 +491,339 @@ library CurationHelpers {
 	}
 
 	function setSellerFundsRecipientsParams(
-		uint256 tokenId, 
 		address[] calldata sellerFundsRecipients,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
 	) 
 		external 
         returns (bytes memory)
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 
         require(
-            _curationData[tokenId].sellerFundsBpses.length == sellerFundsRecipients.length, 
+            _curationData[_vars.tokenId].sellerFundsBpses.length == sellerFundsRecipients.length, 
             "sellerFundsRecipients and sellerFundsBpses must have same length."
         );
 
-		_curationData[tokenId].sellerFundsRecipients = sellerFundsRecipients;
-		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].sellerFundsRecipients = sellerFundsRecipients;
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
+
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
 
 		emit Events.CurationSellerFundsRecipientsUpdated(
-			tokenId, 
+			_vars.tokenId, 
 			sellerFundsRecipients, 
 			block.timestamp
 		);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        return metaData;
 	}
 
 	function setCurationFundsRecipientsParams(
-        uint256 tokenId, 
         uint256[] calldata curationFundsRecipients,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) 
 		external 
         returns (bytes memory)
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 
         require(
-            curationFundsRecipients.length == _curationData[tokenId].curationFundsBpses.length, 
+            curationFundsRecipients.length == _curationData[_vars.tokenId].curationFundsBpses.length, 
             "curationFundsRecipients and curationFundsBpses must have same length."
         );
 
-		_curationData[tokenId].curationFundsRecipients = curationFundsRecipients;
-		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].curationFundsRecipients = curationFundsRecipients;
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
+
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
+
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
 
 		emit Events.CurationFundsRecipientsUpdated(
-			tokenId, 
+			_vars.tokenId, 
 			curationFundsRecipients, 
 			block.timestamp
 		);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        return metaData;
 	}
 
 	function setSellerFundsBpsesParams(
-        uint256 tokenId, 
         uint32[] calldata sellerFundsBpses,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) 
 		external 
         returns (bytes memory)
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 
         require(
-            sellerFundsBpses.length == _curationData[tokenId].sellerFundsRecipients.length, 
+            sellerFundsBpses.length == _curationData[_vars.tokenId].sellerFundsRecipients.length, 
             "sellerFundsRecipients and sellerFundsBpses must have same length."
         );
 
         require(
             MathUtils.sum(MathUtils.uint32To256Array(sellerFundsBpses)) + 
-            MathUtils.sum(MathUtils.uint32To256Array(_curationData[tokenId].curationFundsBpses)) == Constants.MAX_BPS, 
+            MathUtils.sum(MathUtils.uint32To256Array(_curationData[_vars.tokenId].curationFundsBpses)) == Constants.MAX_BPS, 
             "The sum of sellerFundsBpses and curationFundsBpses must be equal to 100%."
         );
 
-		_curationData[tokenId].sellerFundsBpses = sellerFundsBpses;
-		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].sellerFundsBpses = sellerFundsBpses;
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
+
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
+
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
 
 		emit Events.CurationSellerFundsBpsesUpdated(
-			tokenId, 
+			_vars.tokenId, 
 			sellerFundsBpses, 
 			block.timestamp
 		);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        return metaData;
 	}
 
-	function setCurationFundsBpsesParams(
-        uint256 tokenId, 
+	function setCurationFundsBpsesParams( 
         uint32[] calldata curationFundsBpses,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) 
 		external
         returns (bytes memory) 
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 
         require(
-            MathUtils.sum(MathUtils.uint32To256Array(_curationData[tokenId].sellerFundsBpses)) + 
+            MathUtils.sum(MathUtils.uint32To256Array(_curationData[_vars.tokenId].sellerFundsBpses)) + 
             MathUtils.sum(MathUtils.uint32To256Array(curationFundsBpses)) == Constants.MAX_BPS, 
             "The sum of sellerFundsBpses and curationFundsBpses must be equal to 100%."
         );
 
-		_curationData[tokenId].curationFundsBpses = curationFundsBpses;
-		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].curationFundsBpses = curationFundsBpses;
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
+        
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
+
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
 
 		emit Events.CurationFundsBpsesUpdated(
-			tokenId, 
+			_vars.tokenId, 
 			curationFundsBpses, 
 			block.timestamp
 		);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        return metaData;
 	}
 
 	function setCurationBpsParams(
-        uint256 tokenId, 
         uint32 curationBps,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) 
 		external
         returns (bytes memory)
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 
         require(curationBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
 
         require(
-            curationBps + _curationData[tokenId].stakingBps <= Constants.MAX_BPS, 
+            curationBps + _curationData[_vars.tokenId].stakingBps <= Constants.MAX_BPS, 
             "curationBps + stakingBps <= 100%"
         );
 
-		_curationData[tokenId].curationBps = curationBps;
-		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].curationBps = curationBps;
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
 
-		emit Events.CurationBpsUpdated(tokenId, curationBps, block.timestamp);
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
+
+		emit Events.CurationBpsUpdated(
+            _vars.tokenId, 
+            curationBps, 
+            block.timestamp
+        );
+
+        return metaData;
 	}
 
 	function setStakingBpsParams(
-        uint256 tokenId, 
         uint32 stakingBps,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) 
 		external
         returns (bytes memory)
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 		require(stakingBps <= Constants.MAX_BPS, "setCurationFeeParams must set fee <= 100%");
         require(
-            _curationData[tokenId].curationBps + stakingBps <= Constants.MAX_BPS, 
+            _curationData[_vars.tokenId].curationBps + stakingBps <= Constants.MAX_BPS, 
             "curationBps + stakingBps <= 100%"
         );
 
-		_curationData[tokenId].stakingBps = stakingBps;
-		_curationData[tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].stakingBps = stakingBps;
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
 
-		emit Events.StakingBpsUpdated(tokenId, stakingBps, block.timestamp);
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
+
+		emit Events.StakingBpsUpdated(_vars.tokenId, stakingBps, block.timestamp);
+
+        return metaData;
 	}
 
 
 	function setBpsParams(
-        uint256 tokenId, 
         uint32 curationBps, 
         uint32 stakingBps,
-        uint32 minimalCooldownBlocks,
-        mapping(uint256 => DataTypes.CurationData) storage _curationData
+        DataTypes.UpdateCurationDataParamsData memory _vars,
+        mapping(uint256 => DataTypes.CurationData) storage _curationData,
+        mapping(uint256 => DataTypes.CurationStruct) storage _curationById,
+        mapping(address => mapping(uint256 => bool)) storage _isToBeClaimedByAllocByCurator
     ) 
 		external
         returns (bytes memory) 
 	{
 		require(
-            _curationData[tokenId].updatedAtBlock == 0 ||
-                _curationData[tokenId].updatedAtBlock.add(uint256(minimalCooldownBlocks)) <= block.number,
+            _curationData[_vars.tokenId].updatedAtBlock == 0 ||
+                _curationData[_vars.tokenId].updatedAtBlock.add(uint256(_vars.minimalCooldownBlocks)) <= block.number,
             "!cooldown"
         );
 		require(curationBps + stakingBps <= Constants.MAX_BPS, 'curationBps + stakingBps <= 100%');
 		
-		_curationData[tokenId].updatedAtBlock = block.number;
-		_curationData[tokenId].curationBps = curationBps;
-		emit Events.CurationBpsUpdated(tokenId, curationBps, block.timestamp);
+		_curationData[_vars.tokenId].updatedAtBlock = block.number;
+		_curationData[_vars.tokenId].curationBps = curationBps;
+		emit Events.CurationBpsUpdated(_vars.tokenId, curationBps, block.timestamp);
 
-		_curationData[tokenId].stakingBps = stakingBps;
-		emit Events.StakingBpsUpdated(tokenId, stakingBps, block.timestamp);
+		_curationData[_vars.tokenId].stakingBps = stakingBps;
+		emit Events.StakingBpsUpdated(_vars.tokenId, stakingBps, block.timestamp);
 
-        return CodeUtils.encodeCurationMetaData(_curationData[tokenId]);
+        bytes memory metaData = CodeUtils.encodeCurationMetaData(_curationData[_vars.tokenId]);
+
+        _vars.bardsStaking.closeAndAllocate(
+            _curationById[_vars.tokenId].allocationId,
+            _vars.tokenId,
+            DataTypes.CreateAllocateData({
+                curator: _vars.owner,
+                curationId: _vars.tokenId,
+                recipientsMeta: metaData,
+                allocationId: _vars.newAllocationId
+            })
+        );
+        _curationById[_vars.tokenId].allocationId = _vars.newAllocationId;
+        _isToBeClaimedByAllocByCurator[_vars.owner][_vars.newAllocationId] = true;
+
+        return metaData;
 	}
 
 	function _initMarketModule(
@@ -579,7 +849,9 @@ library CurationHelpers {
         DataTypes.CreateCurationData memory vars,
         bytes memory marketModuleReturnData,
 		bytes memory minterMarketModuleReturnData
-    ) internal {
+    ) 
+        private 
+    {
         emit Events.ProfileCreated(
             profileId,
             msg.sender, // Creator is always the msg sender
@@ -594,7 +866,12 @@ library CurationHelpers {
         );
     }
 
-	function _validateHandle(string memory handle) private pure {
+	function _validateHandle(
+        string memory handle
+    ) 
+        private 
+        pure 
+    {
         bytes memory byteHandle = bytes(handle);
         if (byteHandle.length == 0 || byteHandle.length > Constants.MAX_HANDLE_LENGTH)
             revert Errors.HandleLengthInvalid();

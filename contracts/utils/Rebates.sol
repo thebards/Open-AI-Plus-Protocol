@@ -3,10 +3,10 @@
 pragma solidity ^0.8.12;
 // pragma abicoder v2;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import './Cobbs.sol';
-import './DataTypes.sol';
-import './MultiCurrencyFeesUtils.sol';
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {LibCobbDouglas} from './Cobbs.sol';
+import {DataTypes} from './DataTypes.sol';
+import {MultiCurrencyFeesUtils} from './MultiCurrencyFeesUtils.sol';
 
 /**
  * @title A collection of data structures and functions to manage Rebates

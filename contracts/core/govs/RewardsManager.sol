@@ -2,15 +2,17 @@
 
 pragma solidity ^0.8.12;
 
-import '../../utils/Constants.sol';
-import '../../utils/Events.sol';
-import '../../utils/MathUtils.sol';
-import '../storages/RewardsManagerStorage.sol';
-import '../govs/ContractRegistrar.sol';
-import '../../interfaces/govs/IRewardsManager.sol';
+import {Constants} from '../../utils/Constants.sol';
+import {Events} from '../../utils/Events.sol';
+import {MathUtils} from '../../utils/MathUtils.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
+import {RewardsManagerStorage} from '../storages/RewardsManagerStorage.sol';
+import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
+import {IRewardsManager} from '../../interfaces/govs/IRewardsManager.sol';
+import {IBardsCurationToken} from '../../interfaces/tokens/IBardsCurationToken.sol';
+import {IBardsStaking} from '../../interfaces/tokens/IBardsStaking.sol';
+
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import '../../interfaces/tokens/IBardsCurationToken.sol';
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**

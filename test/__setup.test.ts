@@ -63,7 +63,6 @@ import {
 	CloneMinter__factory,
 	EmptyMinter,
 	EmptyMinter__factory,
-	CodeUtils__factory,
 } from '../typechain-types';
 
 import { BardsHubLibraryAddresses} from "../typechain-types/factories/contracts/core/BardsHub__factory";
@@ -163,12 +162,7 @@ before(async function () {
 	daoTreasuryAddress = await daoTreasury.getAddress();
 
 	// libs
-	const codeUtils = await new CodeUtils__factory(deployer).deploy();
-	const curationHelpLibs = {
-		'contracts/utils/CodeUtils.sol:CodeUtils': codeUtils.address
-	}
 	const curationHelpers = await new CurationHelpers__factory(
-		curationHelpLibs, 
 		deployer
 	).deploy();
 
@@ -179,7 +173,6 @@ before(async function () {
 	};
 	bardsStakingLibs = {
 		'contracts/utils/Cobbs.sol:LibCobbDouglas': cobbs.address,
-		'contracts/utils/CodeUtils.sol:CodeUtils': codeUtils.address
 	};
 
 	bardsHubImpl = await new BardsHub__factory(hubLibs, deployer).deploy();

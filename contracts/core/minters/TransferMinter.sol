@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.12;
 
-import '../../interfaces/minters/IProgrammableMinter.sol';
-import '../govs/ContractRegistrar.sol';
+import {IProgrammableMinter} from '../../interfaces/minters/IProgrammableMinter.sol';
+import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
 import {IERC721} from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
-import "hardhat/console.sol";
+
 
 /**
  * @title TransferMinter

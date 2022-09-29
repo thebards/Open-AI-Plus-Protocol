@@ -2,17 +2,17 @@
 
 pragma solidity ^0.8.12;
 
-import '../../interfaces/govs/IContractRegistrar.sol';
-import '../../interfaces/IBardsHub.sol';
-import '../../utils/Events.sol';
-import '../../interfaces/tokens/IBardsShareToken.sol';
-import '../../interfaces/tokens/IBardsCurationToken.sol';
-import '../../interfaces/tokens/IBardsStaking.sol';
-import '../../interfaces/govs/IRewardsManager.sol';
-import '../../interfaces/govs/IEpochManager.sol';
-import '../../interfaces/govs/IBardsDaoData.sol';
-import '../../interfaces/minters/IProgrammableMinter.sol';
-import '../trades/IWETH.sol';
+import {IContractRegistrar} from '../../interfaces/govs/IContractRegistrar.sol';
+import {IBardsHub} from '../../interfaces/IBardsHub.sol';
+import {Events} from '../../utils/Events.sol';
+import {IBardsShareToken} from '../../interfaces/tokens/IBardsShareToken.sol';
+import {IBardsCurationToken} from '../../interfaces/tokens/IBardsCurationToken.sol';
+import {IBardsStaking} from '../../interfaces/tokens/IBardsStaking.sol';
+import {IRewardsManager} from '../../interfaces/govs/IRewardsManager.sol';
+import {IEpochManager} from '../../interfaces/govs/IEpochManager.sol';
+import {IBardsDaoData} from '../../interfaces/govs/IBardsDaoData.sol';
+import {IProgrammableMinter} from '../../interfaces/minters/IProgrammableMinter.sol';
+import {IWETH} from '../trades/IWETH.sol';
 
 /**
  * @title ContractRegistrar

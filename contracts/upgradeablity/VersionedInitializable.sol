@@ -3,7 +3,7 @@
 pragma solidity ^0.8.12;
 
 import {Errors} from '../utils/Errors.sol';
-import "hardhat/console.sol";
+
 
 /**
  * @title VersionedInitializable

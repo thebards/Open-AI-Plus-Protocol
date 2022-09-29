@@ -4,15 +4,15 @@ pragma solidity ^0.8.12;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import '../../interfaces/markets/IMarketModule.sol';
-import '../../interfaces/IBardsHub.sol';
-import '../../interfaces/curations/IBardsCurationBase.sol';
-import '../../interfaces/minters/IProgrammableMinter.sol';
-import '../trades/MarketModuleBase.sol';
-import '../../utils/DataTypes.sol';
-import '../../utils/Errors.sol';
-import '../../utils/Constants.sol';
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {IMarketModule} from '../../interfaces/markets/IMarketModule.sol';
+import {IBardsHub} from '../../interfaces/IBardsHub.sol';
+import {IBardsCurationBase} from '../../interfaces/curations/IBardsCurationBase.sol';
+import {IProgrammableMinter} from '../../interfaces/minters/IProgrammableMinter.sol';
+import {MarketModuleBase} from '../trades/MarketModuleBase.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
+import {Errors} from '../../utils/Errors.sol';
+import {Constants} from '../../utils/Constants.sol';
 
 /**
  * @title FreeMarketModule

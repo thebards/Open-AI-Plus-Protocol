@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.12;
 
-import '../storages/EpochManagerStorage.sol';
+import {EpochManagerStorage} from '../storages/EpochManagerStorage.sol';
 import {ContractRegistrar} from './ContractRegistrar.sol';
-import '../../interfaces/govs/IEpochManager.sol';
-import '../../utils/Events.sol';
+import {IEpochManager} from '../../interfaces/govs/IEpochManager.sol';
+import {Events} from '../../utils/Events.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "hardhat/console.sol";
+
 
 /**
  * @title EpochManager

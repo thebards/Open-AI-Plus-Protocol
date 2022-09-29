@@ -3,10 +3,10 @@
 
 pragma solidity ^0.8.12;
 
-import '../core/curations/BardsCurationBase.sol';
-import './MockBardsHubStorage.sol';
-import '../upgradeablity/VersionedInitializable.sol';
-import '../core/govs/BardsPausable.sol';
+import {BardsCurationBase} from '../core/curations/BardsCurationBase.sol';
+import {MockBardsHubStorage} from './MockBardsHubStorage.sol';
+import {VersionedInitializable} from '../upgradeablity/VersionedInitializable.sol';
+import {BardsPausable} from '../core/govs/BardsPausable.sol';
 
 /**
  * @notice A mock upgraded bardsHub contract that is used to validate that the initializer cannot be called with the same revision.

@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.12;
 
-import '../../interfaces/govs/IBardsDaoData.sol';
-import '../../utils/Constants.sol';
-import '../../utils/Errors.sol';
-import '../../utils/Events.sol';
-import '../../utils/DataTypes.sol';
+import {IBardsDaoData} from '../../interfaces/govs/IBardsDaoData.sol';
+import {Constants} from '../../utils/Constants.sol';
+import {Errors} from '../../utils/Errors.sol';
+import {Events} from '../../utils/Events.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
 
 /**
  * @title BardsDaoData

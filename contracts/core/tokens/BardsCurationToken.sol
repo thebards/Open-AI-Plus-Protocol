@@ -2,15 +2,16 @@
 
 pragma solidity ^0.8.12;
 
-import '../../interfaces/tokens/IBardsCurationToken.sol';
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import '../storages/TokenStorage.sol';
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import '../../utils/Events.sol';
-import '../../utils/Errors.sol';
-import '../govs/ContractRegistrar.sol';
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import {IBardsCurationToken} from '../../interfaces/tokens/IBardsCurationToken.sol';
+import {ERC20Burnable, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import {TokenStorage} from '../storages/TokenStorage.sol';
+import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {Events} from '../../utils/Events.sol';
+import {Errors} from '../../utils/Errors.sol';
+import {DataTypes} from '../../utils/DataTypes.sol';
+import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
+
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title BardsCurationToken contract
