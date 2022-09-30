@@ -38,7 +38,6 @@ contract BardsHub is
     using CodeUtils for DataTypes.DoCollectWithSigData;
     using CodeUtils for DataTypes.SetDefaultProfileWithSigData;
 
-
     uint256 internal constant REVISION = 1;
     
     /**
@@ -1069,7 +1068,7 @@ contract BardsHub is
         return IBardsStaking(_registry[keccak256("BardsStaking")]);
     } 
 
-    function getRevision() internal pure virtual override returns (uint256) {
+    function getRevision() internal pure override returns (uint256) {
         return REVISION;
     }
 }

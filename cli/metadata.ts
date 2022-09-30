@@ -1,3 +1,9 @@
+enum ProtocolState {
+	Unpaused,
+	CurationPaused,
+	Paused,
+}
+
 interface AccountMetadata {
 	codeRepository: string
 	description: string
@@ -59,6 +65,7 @@ const checkString = (field): string => {
 }
 
 export {
+	ProtocolState,
 	AccountMetadata,
 	SubgraphMetadata,
 	VersionMetadata,

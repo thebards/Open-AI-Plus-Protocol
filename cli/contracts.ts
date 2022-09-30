@@ -12,7 +12,6 @@ import {
 	EpochManager,
 	BardsStaking,
 	RewardsManager,
-	BancorFormula,
 	FixPriceMarketModule,
 	FreeMarketModule,
 	CloneMinter,
@@ -28,7 +27,6 @@ export interface NetworkContracts {
 	EpochManager: EpochManager
 	BardsStaking: BardsStaking
 	RewardsManager: RewardsManager
-	BancorFormula: BancorFormula,
 	FixPriceMarketModule: FixPriceMarketModule,
 	FreeMarketModule: FreeMarketModule,
 	CloneMinter: CloneMinter,

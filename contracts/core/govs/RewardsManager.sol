@@ -24,7 +24,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
  * the Staking contract. Staked GRT in Curation determine what percentage of the tokens go
  * towards each stakeholder. Then each Curation can have multiple Delegator Staked on it. Thus, the
  * total rewards for the Curation are split up for each Creator and Delegator based on much they have Staked on
- * that Subgraph.
+ * that Curation.
  *
  */
 contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsManager {
@@ -354,7 +354,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         // Called since `total staked BCT` will change
         updateAccRewardsPerStaking();
 
-        // Updates the accumulated rewards for a subgraph
+        // Updates the accumulated rewards for a curation
         DataTypes.CurationReward storage curationReward = curationRewards[_curationId];
 
         curationReward.accRewardsForCuration = getAccRewardsForCuration(_curationId);
@@ -420,7 +420,7 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
             alloc.curationId
         );
 
-        // Do not do rewards on denied subgraph deployments ID
+        // Do not do rewards on denied curation ID
         if (isDenied(alloc.curationId)) {
             emit Events.RewardsDenied(
                 alloc.curationId, 

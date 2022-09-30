@@ -3,7 +3,7 @@ import {
 	ePolygonNetwork,
 	eXDaiNetwork,
 	iParamsPerNetwork,
-} from './helpers/types';
+} from './cli/helpers/types';
 
 import dotenv from 'dotenv';
 dotenv.config({});

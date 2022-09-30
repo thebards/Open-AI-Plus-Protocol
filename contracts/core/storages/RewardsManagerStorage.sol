@@ -14,13 +14,10 @@ abstract contract RewardsManagerStorage {
     uint256 public accRewardsPerStaking;
     uint256 public accRewardsPerStakingLastBlockUpdated;
 
-    // // Address of role allowed to deny rewards on subgraphs
-    // address public subgraphAvailabilityOracle;
-
-    // Subgraph related rewards: subgraph deployment ID => curation rewards
+    // Curation related rewards: curation ID => curation rewards
     mapping(uint256 => DataTypes.CurationReward) public curationRewards;
 
-    // Subgraph denylist : subgraph deployment ID => block when added or zero (if not denied)
+    // Curation denylist : curation ID => block when added or zero (if not denied)
     mapping(uint256 => uint256) public denylist;
 
 	// Minimum amount of tokens on a curation required to accrue rewards

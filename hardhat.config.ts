@@ -1,7 +1,7 @@
 import { HardhatUserConfig } from 'hardhat/types';
-import { accounts } from './helpers/test-wallets';
-import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
-import { HARDHATEVM_CHAINID } from './helpers/hardhat-constants';
+import { accounts } from './cli/helpers/test-wallets';
+import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './cli/helpers/types';
+import { HARDHATEVM_CHAINID } from './cli/helpers/hardhat-constants';
 import { NETWORKS_RPC_URL } from './helper-hardhat-config';
 import * as dotenv from 'dotenv';
 import glob from 'glob';
@@ -22,8 +22,8 @@ import 'hardhat-log-remover';
 import 'hardhat-spdx-license-identifier';
 
 if (!process.env.SKIP_LOAD) {
+  require('./bre/bre')
   glob.sync('./tasks/*/*.ts').forEach(function (file) {
-    console.log(file)
     require(path.resolve(file));
   });
 }
@@ -35,14 +35,16 @@ const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 const TRACK_GAS = process.env.TRACK_GAS === 'true';
 const BLOCK_EXPLORER_KEY = process.env.BLOCK_EXPLORER_KEY || '';
 
-const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
+const getCommonNetworkConfig = (networkName: eNetwork, chainId: number) => ({
   url: NETWORKS_RPC_URL[networkName] ?? '',
+  chainId: chainId,
   accounts: {
     mnemonic: MNEMONIC,
     path: MNEMONIC_PATH,
     initialIndex: 0,
     count: 20,
   },
+  bardsConfig: `configs/theBards.${networkName}.yml`
 });
 
 const mainnetFork = MAINNET_FORK
@@ -76,8 +78,8 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 42),
-    sepolia: getCommonNetworkConfig(eEthereumNetwork.sepolia, 3),
+    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
+    sepolia: getCommonNetworkConfig(eEthereumNetwork.sepolia, 11155111),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
@@ -103,7 +105,7 @@ const config: HardhatUserConfig = {
     enabled: TRACK_GAS ? true : false,
     showTimeSpent: true,
     currency: 'USD',
-    outputFile: 'reports/gas-report.log',
+    outputFile: './dist/reports/gas-report.log',
   },
   abiExporter: {
     path: './dist/abis',

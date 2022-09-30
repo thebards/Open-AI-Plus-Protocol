@@ -8,7 +8,7 @@
 # Usage:
 # - https://github.com/crytic/slither/wiki/Usage
 
-mkdir -p reports
+mkdir -p dist/reports
 
 pip3 install --user slither-analyzer && \
 yarn build && \
@@ -16,16 +16,16 @@ yarn build && \
 echo "Analyzing contracts..."
 slither . \
     --hardhat-ignore-compile \
-    --hardhat-artifacts-directory ./build/contracts \
+    --hardhat-artifacts-directory ./dist/contracts \
     --sarif - \
-    --filter-paths "contracts/bancor/.*|contracts/tests/.*|contracts/staking/libs/Cobbs.*|contracts/staking/libs/LibFixedMath.*|contracts/staking/libs/MathUtils.*" \
+    --filter-paths "contracts/staking/utils/Cobbs.*|contracts/staking/utils/LibFixedMath.*|contracts/utils/MathUtils.*" \
     --exclude-dependencies \
     --exclude similar-names,naming-convention \
     --disable-color \
-    &> reports/analyzer-report.sarif && \
-echo "Slither report generated at ./reports/analyzer-report.sarif"
+    &> dist/reports/analyzer-report.sarif && \
+echo "Slither report generated at ./dist/reports/analyzer-report.sarif"
 echo "Checking ERC compliance..."
-slither-check-erc build/flatten/GraphToken.sol GraphToken &> reports/analyzer-report-erc.log
-echo "Compliance report generated at ./reports/analyzer-report-erc.log"
+slither-check-erc dist/flatten/BardsCurationToken.sol BardsCurationToken &> dist/reports/analyzer-report-erc.log
+echo "Compliance report generated at ./dist/reports/analyzer-report-erc.log"
 
 echo "Done!"

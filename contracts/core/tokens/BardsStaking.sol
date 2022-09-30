@@ -26,6 +26,7 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
 
 /**
  * @title Curation contract
@@ -42,18 +43,21 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
  * bonding curve.
  */
 contract BardsStaking is
-    IBardsStaking, 
-    BardsStakingStorage,
+    VersionedInitializable,
     ContractRegistrar, 
     BardsPausable,
-    Multicall
+    Multicall,
+    BardsStakingStorage,
+    IBardsStaking
 {
 	using SafeMath for uint256;
     using Rebates for DataTypes.RebatePool;
     using MultiCurrencyFeesUtils for DataTypes.MultiCurrencyFees;
+
+    uint256 internal constant REVISION = 1;
 	
 	/**
-     * @dev Initialize this contract.
+     * @notice Initialize this contract.
      */
     constructor(
 		address _HUB,
@@ -96,7 +100,7 @@ contract BardsStaking is
     ) 
         public
         override
-        onlyGov
+        initializer
     {
         _initialize(
             _HUB,
@@ -195,7 +199,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Set the rebate ratio (fees to allocated stake).
+     * @notice Set the rebate ratio (fees to allocated stake).
      * @param _alphaNumerator Numerator of `alpha` in the cobb-douglas function
      * @param _alphaDenominator Denominator of `alpha` in the cobb-douglas function
      */
@@ -771,7 +775,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Calculate amount of signal that can be bought with tokens in a curation staking pool.
+     * @notice Calculate amount of signal that can be bought with tokens in a curation staking pool.
      * @param _curationId Curation to mint share
      * @param _tokens Amount of tokens used to mint share
      * @return Amount of share that can be bought with tokens
@@ -900,7 +904,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Return the simple allocation by ID.
+     * @notice Return the simple allocation by ID.
      * @param _allocationId Address used as allocation identifier
      * @return SimpleAllocation data
      */
@@ -1018,7 +1022,7 @@ contract BardsStaking is
     }
 
 	/**
-     * @dev Internal: Set the default reserve ratio percentage for a curation staking pool.
+     * @notice Internal: Set the default reserve ratio percentage for a curation staking pool.
      * @notice Update the default reserver ratio to `_defaultReserveRatio`
      * @param _newDefaultStakingReserveRatio Reserve ratio (in PPM)
      */
@@ -1043,7 +1047,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Internal: Set the minimum staking amount for delegators.
+     * @notice Internal: Set the minimum staking amount for delegators.
      * @notice Update the minimum staking amount to `minimumStaking`
      * @param _newMinimumStaking Minimum amount of tokens required staking
      */
@@ -1065,7 +1069,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Internal: Set the master copy to use as clones for the curation token.
+     * @notice Internal: Set the master copy to use as clones for the curation token.
      * @param _newBardsShareTokenImpl Address of implementation contract to use for curation staking tokens
      */
     function _setBardsShareTokenImpl(address _newBardsShareTokenImpl) 
@@ -1138,7 +1142,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Set the rebate ratio (fees to allocated stake).
+     * @notice Set the rebate ratio (fees to allocated stake).
      * @param _alphaNumerator Numerator of `alpha` in the cobb-douglas function
      * @param _alphaDenominator Denominator of `alpha` in the cobb-douglas function
      */
@@ -1188,7 +1192,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Check if the caller is authorized
+     * @notice Check if the caller is authorized
      */
     function _isAuth(address _curator)
         private 
@@ -1339,7 +1343,7 @@ contract BardsStaking is
     }
 
     /**
-     * @dev Claim tokens from the rebate pool.
+     * @notice Claim tokens from the rebate pool.
      * @param _allocationId Allocation from where we are claiming tokens
      * @param _stakeToCuration Restake to othe curation.
      */
@@ -1652,5 +1656,9 @@ contract BardsStaking is
             }
         }
         return delegationRewards;
+    }
+
+    function getRevision() internal pure override returns (uint256) {
+        return REVISION;
     }
 }

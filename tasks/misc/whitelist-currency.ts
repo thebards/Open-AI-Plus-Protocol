@@ -1,8 +1,8 @@
 
 import '@nomiclabs/hardhat-ethers';
 import { task } from 'hardhat/config';
-import { BardsHub__factory } from '../build/types';
-import { waitForTx } from '../helpers/utils';
+import { BardsHub__factory } from '../../dist/types';
+import { waitForTx } from '../../cli/helpers/utils';
 
 task('whitelist-currency', 'whitelists a currency in the bards hub')
 	.addParam('gov')

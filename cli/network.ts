@@ -57,7 +57,7 @@ export const isContractDeployed = async (
 	const addressEntry = addressBook.getEntry(name)
 
 	// If the contract is behind a proxy we check the Proxy artifact instead
-	const artifact = addressEntry.proxy === true ? loadArtifact('GraphProxy') : loadArtifact(name)
+	const artifact = addressEntry.proxy === true ? loadArtifact('BardsProxy') : loadArtifact(name)
 
 	if (checkCreationCode) {
 		const savedCreationCodeHash = addressEntry.creationCodeHash
@@ -153,20 +153,20 @@ export const getContractAt = (
 	return new Contract(address, loadArtifact(name).abi, signerOrProvider)
 }
 
-// export const deployProxy = async (
-// 	implementationAddress: string,
-// 	proxyAdminAddress: string,
-// 	sender: Signer,
-// 	overrides?: Overrides,
-// ): Promise<DeployResult> => {
-// 	return deployContract(
-// 		'GraphProxy',
-// 		[implementationAddress, proxyAdminAddress],
-// 		sender,
-// 		false,
-// 		overrides,
-// 	)
-// }
+export const deployProxy = async (
+	implementationAddress: string,
+	proxyAdminAddress: string,
+	sender: Signer,
+	overrides?: Overrides,
+): Promise<DeployResult> => {
+	return deployContract(
+		'TransparentUpgradeableProxy',
+		[implementationAddress, proxyAdminAddress],
+		sender,
+		false,
+		overrides,
+	)
+}
 
 export const deployContract = async (
 	name: string,
@@ -207,70 +207,70 @@ export const deployContract = async (
 	return { contract, creationCodeHash, runtimeCodeHash, txHash, libraries }
 }
 
-// export const deployContractWithProxy = async (
-// 	proxyAdmin: Contract,
-// 	name: string,
-// 	args: Array<ContractParam>,
-// 	sender: Signer,
-// 	buildAcceptProxyTx = false,
-// 	overrides?: Overrides,
-// ): Promise<Contract> => {
-// 	// Deploy implementation
-// 	const { contract } = await deployContract(name, [], sender, true, overrides)
+export const deployContractWithProxy = async (
+	proxyAdmin: Contract,
+	name: string,
+	args: Array<ContractParam>,
+	sender: Signer,
+	buildAcceptProxyTx = false,
+	overrides?: Overrides,
+): Promise<Contract> => {
+	// Deploy implementation
+	const { contract } = await deployContract(name, [], sender, true, overrides)
 
-// 	// Wrap implementation with proxy
-// 	const proxy = await wrapContractWithProxy(
-// 		proxyAdmin,
-// 		contract,
-// 		args,
-// 		sender,
-// 		buildAcceptProxyTx,
-// 		overrides,
-// 	)
+	// Wrap implementation with proxy
+	const proxy = await wrapContractWithProxy(
+		proxyAdmin,
+		contract,
+		args,
+		sender,
+		buildAcceptProxyTx,
+		overrides,
+	)
 
-// 	// Use interface of contract but with the proxy address
-// 	return contract.attach(proxy.address)
-// }
+	// Use interface of contract but with the proxy address
+	return contract.attach(proxy.address)
+}
 
-// export const wrapContractWithProxy = async (
-// 	proxyAdmin: Contract,
-// 	contract: Contract,
-// 	args: Array<ContractParam>,
-// 	sender: Signer,
-// 	buildAcceptProxyTx = false,
-// 	overrides?: Overrides,
-// ): Promise<Contract> => {
-// 	// Deploy proxy
-// 	const { contract: proxy } = await deployProxy(
-// 		contract.address,
-// 		proxyAdmin.address,
-// 		sender,
-// 		overrides,
-// 	)
+export const wrapContractWithProxy = async (
+	proxyAdmin: Contract,
+	contract: Contract,
+	args: Array<ContractParam>,
+	sender: Signer,
+	buildAcceptProxyTx = false,
+	overrides?: Overrides,
+): Promise<Contract> => {
+	// Deploy proxy
+	const { contract: proxy } = await deployProxy(
+		contract.address,
+		proxyAdmin.address,
+		sender,
+		overrides,
+	)
 
-// 	// Implementation accepts upgrade
-// 	const initTx = args ? await contract.populateTransaction.initialize(...args) : null
-// 	const acceptFunctionName = initTx ? 'acceptProxyAndCall' : 'acceptProxy'
-// 	const acceptFunctionParams = initTx
-// 		? [contract.address, proxy.address, initTx.data]
-// 		: [contract.address, proxy.address]
-// 	if (buildAcceptProxyTx) {
-// 		logger.info(
-// 			` 
-//       Copy this data in the Gnosis Multisig UI, or a similar app and call ${acceptFunctionName}
-//       --------------------------------------------------------------------------------------
-//         > Contract Address:  ${proxyAdmin.address}
-//         > Implementation:    ${contract.address}
-//         > Proxy:             ${proxy.address}
-//         > Data:              ${initTx && initTx.data}
-//       `,
-// 		)
-// 	} else {
-// 		await sendTransaction(sender, proxyAdmin, acceptFunctionName, acceptFunctionParams)
-// 	}
+	// Implementation accepts upgrade
+	const initTx = args ? await contract.populateTransaction.initialize(...args) : null
+	const acceptFunctionName = initTx ? 'acceptProxyAndCall' : 'acceptProxy'
+	const acceptFunctionParams = initTx
+		? [contract.address, proxy.address, initTx.data]
+		: [contract.address, proxy.address]
+	if (buildAcceptProxyTx) {
+		logger.info(
+			` 
+      Copy this data in the Gnosis Multisig UI, or a similar app and call ${acceptFunctionName}
+      --------------------------------------------------------------------------------------
+        > Contract Address:  ${proxyAdmin.address}
+        > Implementation:    ${contract.address}
+        > Proxy:             ${proxy.address}
+        > Data:              ${initTx && initTx.data}
+      `,
+		)
+	} else {
+		await sendTransaction(sender, proxyAdmin, acceptFunctionName, acceptFunctionParams)
+	}
 
-// 	return proxy
-// }
+	return proxy
+}
 
 export const deployContractAndSave = async (
 	name: string,
@@ -298,43 +298,43 @@ export const deployContractAndSave = async (
 	return deployResult.contract
 }
 
-// export const deployContractWithProxyAndSave = async (
-// 	name: string,
-// 	args: Array<ContractParam>,
-// 	sender: Signer,
-// 	addressBook: AddressBook,
-// 	buildAcceptProxyTx?: boolean,
-// ): Promise<Contract> => {
-// 	// Get the GraphProxyAdmin to own the GraphProxy for this contract
-// 	const proxyAdminEntry = addressBook.getEntry('GraphProxyAdmin')
-// 	if (!proxyAdminEntry) {
-// 		throw new Error('GraphProxyAdmin not detected in the config, must be deployed first!')
-// 	}
-// 	const proxyAdmin = getContractAt('GraphProxyAdmin', proxyAdminEntry.address)
+export const deployContractWithProxyAndSave = async (
+	name: string,
+	args: Array<ContractParam>,
+	sender: Signer,
+	addressBook: AddressBook,
+	buildAcceptProxyTx?: boolean,
+): Promise<Contract> => {
+	// Get the BardsProxyAdmin to own the BardsProxy for this contract
+	const proxyAdminEntry = addressBook.getEntry('BardsProxyAdmin')
+	if (!proxyAdminEntry) {
+		throw new Error('BardsProxyAdmin not detected in the config, must be deployed first!')
+	}
+	const proxyAdmin = getContractAt('BardsProxyAdmin', proxyAdminEntry.address)
 
-// 	// Deploy implementation
-// 	const contract = await deployContractAndSave(name, [], sender, addressBook)
+	// Deploy implementation
+	const contract = await deployContractAndSave(name, [], sender, addressBook)
 
-// 	// Wrap implementation with proxy
-// 	const proxy = await wrapContractWithProxy(proxyAdmin, contract, args, sender, buildAcceptProxyTx)
+	// Wrap implementation with proxy
+	const proxy = await wrapContractWithProxy(proxyAdmin, contract, args, sender, buildAcceptProxyTx)
 
-// 	// Overwrite address entry with proxy
-// 	const artifact = loadArtifact('GraphProxy')
-// 	const contractEntry = addressBook.getEntry(name)
-// 	addressBook.setEntry(name, {
-// 		address: proxy.address,
-// 		initArgs: args.length === 0 ? undefined : args.map((e) => e.toString()),
-// 		creationCodeHash: hashHexString(artifact.bytecode),
-// 		runtimeCodeHash: hashHexString(await sender.provider!.getCode(proxy.address)),
-// 		txHash: proxy.deployTransaction.hash,
-// 		proxy: true,
-// 		implementation: contractEntry,
-// 	})
-// 	logger.info('> Contract saved to address book')
+	// Overwrite address entry with proxy
+	const artifact = loadArtifact('BardsProxy')
+	const contractEntry = addressBook.getEntry(name)
+	addressBook.setEntry(name, {
+		address: proxy.address,
+		initArgs: args.length === 0 ? undefined : args.map((e) => e.toString()),
+		creationCodeHash: hashHexString(artifact.bytecode),
+		runtimeCodeHash: hashHexString(await sender.provider!.getCode(proxy.address)),
+		txHash: proxy.deployTransaction.hash,
+		proxy: true,
+		implementation: contractEntry,
+	})
+	logger.info('> Contract saved to address book')
 
-// 	// Use interface of contract but with the proxy address
-// 	return contract.attach(proxy.address)
-// }
+	// Use interface of contract but with the proxy address
+	return contract.attach(proxy.address)
+}
 
 export const linkLibraries = (
 	artifact: {
@@ -356,9 +356,9 @@ export const linkLibraries = (
 
 					for (const fixup of fixups) {
 						bytecode =
-							bytecode.substr(0, 2 + fixup.start * 2) +
-							addr.substr(2) +
-							bytecode.substr(2 + (fixup.start + fixup.length) * 2)
+							bytecode.substring(0, 2 + fixup.start * 2) +
+						addr.substring(2) +
+						bytecode.substring(2 + (fixup.start + fixup.length) * 2)
 					}
 				}
 			}

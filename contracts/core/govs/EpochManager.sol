@@ -8,12 +8,15 @@ import {IEpochManager} from '../../interfaces/govs/IEpochManager.sol';
 import {Events} from '../../utils/Events.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-
 /**
  * @title EpochManager
  * @notice Produce epochs based on a number of blocks to coordinate contracts in the protocol.
  */
-contract EpochManager is EpochManagerStorage, ContractRegistrar, IEpochManager {
+contract EpochManager is
+    ContractRegistrar, 
+    EpochManagerStorage, 
+    IEpochManager 
+{
 	using SafeMath for uint256;
 
 	/**

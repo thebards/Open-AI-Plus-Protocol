@@ -883,7 +883,7 @@ library Events {
     );
 
     /**
-     * @notice Emitted when `indexer` claimed a rebate on `subgraphDeploymentID` during `epoch`
+     * @notice Emitted when `curator` claimed a rebate on `curationId` during `epoch`
      * related to the `forEpoch` rebate pool.
      * The rebate is for `tokens` amount and `unclaimedAllocationsCount` are left for claim
      * in the rebate pool. `delegationFees` collected and sent to delegation pool.
@@ -902,7 +902,7 @@ library Events {
 
     /**
      * @notice Emitted when `indexer` collected `tokens` amount in `epoch` for `allocationId`.
-     * These funds are related to `subgraphDeploymentID`.
+     * These funds are related to `curationId`.
      * The `from` value is the sender of the collected funds.
      */
     event AllocationCollected(

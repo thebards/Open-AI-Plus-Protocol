@@ -73,7 +73,7 @@ interface IRewardsManager {
     /**
      * @notice Tells if curation is in deny list
      * @param _curationId Curation ID to check
-     * @return Whether the subgraph is denied for claiming rewards or not
+     * @return Whether the curation is denied for claiming rewards or not
      */
     function isDenied(
         uint256 _curationId
@@ -126,7 +126,7 @@ interface IRewardsManager {
 
     /**
      * @notice Gets the accumulated rewards per allocated token for the curation.
-     * @param _curationId Subgraph deployment
+     * @param _curationId Curation Id
      * @return Accumulated rewards per allocated token for the curation
      * @return Accumulated rewards for curation
      */
@@ -197,7 +197,7 @@ interface IRewardsManager {
      * Must be called before allocation on a curation changes.
      * NOTE: Hook called from the BardStaking contract on allocate() and closeAllocation()
      *
-     * @param _curationId Subgraph deployment
+     * @param _curationId Curation Id
      * @return Accumulated rewards per allocated token for a curation
      */
     function onCurationAllocationUpdate(

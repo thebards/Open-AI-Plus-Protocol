@@ -684,7 +684,7 @@ context('Bards Staking', () => {
 			expect(share).eq(toBN('9999999999999999999'))
 		})
 
-		it('convert tokens to signal if non-curated subgraph', async function () {
+		it('convert tokens to share if non-curated curation', async function () {
 			const tokens = toBCT('1')
 			await expect(
 				thisBardsStaking.tokensToShare(FIRST_PROFILE_ID + 1, tokens)
