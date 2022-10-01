@@ -11,7 +11,7 @@ import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
 import {IRewardsManager} from '../../interfaces/govs/IRewardsManager.sol';
 import {IBardsCurationToken} from '../../interfaces/tokens/IBardsCurationToken.sol';
 import {IBardsStaking} from '../../interfaces/tokens/IBardsStaking.sol';
-
+import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -27,23 +27,32 @@ import "@openzeppelin/contracts/utils/Strings.sol";
  * that Curation.
  *
  */
-contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsManager {
+contract RewardsManager is 
+    VersionedInitializable, 
+    ContractRegistrar, 
+    RewardsManagerStorage,
+    IRewardsManager 
+{
 	using SafeMath for uint256;
 
-	/**
-     * @notice Initialize this contract.
-     */
-    constructor( 
+    uint256 internal constant REVISION = 1;
+
+    /// @inheritdoc IRewardsManager
+    function initialize(
         address _HUB,
         uint256 _issuanceRate,
         uint256 _inflationChange,
         uint256 _targetBondingRate
-    ) {
+    ) 
+        external 
+        override 
+        initializer
+    {
         ContractRegistrar._initialize(_HUB);
         _setIssuanceRate(_issuanceRate);
         _setInflationChange(_inflationChange);
         _setTargetBondingRate(_targetBondingRate);
-	}
+    }
 
 	/// @inheritdoc IRewardsManager
     function setIssuanceRate(
@@ -453,5 +462,9 @@ contract RewardsManager is RewardsManagerStorage, ContractRegistrar, IRewardsMan
         );
 
         return rewards;
+    }
+
+    function getRevision() internal pure override returns (uint256) {
+        return REVISION;
     }
 }

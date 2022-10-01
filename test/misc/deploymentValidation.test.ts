@@ -13,7 +13,7 @@ import {
 	RewardsManager__factory, 
 	TransferMinter__factory, 
 	TransparentUpgradeableProxy__factory 
-} from '../../build/types';
+} from '../../dist/types';
 import {
 	ZERO_ADDRESS,
 	DEFAULTS,
@@ -48,28 +48,48 @@ import {
 makeSuiteCleanRoom('Deployment Validation', () => {
 
 	it('Should fail to deploy a epoch manager moudle implementation with zero address hub', async function () {
-		await expect(
-			new EpochManager__factory(deployer).deploy(
+		let epochManagerImpl = await new EpochManager__factory(deployer).deploy();
+		let epochManagerData = epochManagerImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS,
 				DEFAULTS.epochs.lengthInBlocks
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				epochManagerImpl.address,
+				deployerAddress,
+				epochManagerData
 			)
 		).to.be.revertedWith("HUB must be set");
 	});
 
 	it('Should fail to deploy a reward manager moudle implementation with zero address hub', async function () {
-		await expect(
-			new RewardsManager__factory(deployer).deploy(
+		let rewardsManagerImpl = await new RewardsManager__factory(deployer).deploy();
+		let rewardsManagerData = rewardsManagerImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS,
 				DEFAULTS.rewards.issuanceRate,
 				DEFAULTS.rewards.inflationChange,
 				DEFAULTS.rewards.targetBondingRate
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				rewardsManagerImpl.address,
+				deployerAddress,
+				rewardsManagerData
 			)
 		).to.be.revertedWith("HUB must be set");
 	});
 
 	it('Should fail to deploy a stake manager moudle implementation with zero address hub', async function () {
-		await expect(
-			new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
+		let bardsStakingImpl = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy();
+		let bardsStakingData = bardsStakingImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS,
 				bancorFormula.address,
 				bardsShareToken.address,
@@ -80,6 +100,13 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 				DEFAULTS.staking.alphaNumerator,
 				DEFAULTS.staking.alphaDenominator,
 				DEFAULTS.staking.thawingPeriod
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsStakingImpl.address,
+				deployerAddress,
+				bardsStakingData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -246,13 +273,22 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 
 
 	it('Should fail to deploy Bards Dao Data contract with zero address governance', async function () {
-		await expect(
-			new BardsDaoData__factory(deployer).deploy(
+		let bardsDaoDataImpl = await new BardsDaoData__factory(deployer).deploy()
+		let bardsDaoDataData = bardsDaoDataImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS,
 				daoTreasuryAddress,
 				PROTOCOL_FEE,
 				DEFAULT_CURATION_BPS,
 				DEFAULT_STAKING_BPS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsDaoDataImpl.address,
+				deployerAddress,
+				bardsDaoDataData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -261,13 +297,22 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 	});
 
 	it('Should fail to deploy Bards Dao Data contract with zero address treasury', async function () {
-		await expect(
-			new BardsDaoData__factory(deployer).deploy(
+		let bardsDaoDataImpl = await new BardsDaoData__factory(deployer).deploy()
+		let bardsDaoDataData = bardsDaoDataImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				governanceAddress,
 				ZERO_ADDRESS,
 				PROTOCOL_FEE,
 				DEFAULT_CURATION_BPS,
 				DEFAULT_STAKING_BPS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsDaoDataImpl.address,
+				deployerAddress,
+				bardsDaoDataData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -276,13 +321,22 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 	});
 
 	it('Should fail to deploy Bards Dao Data with protocol fee > MAX_BPS / 2', async function () {
-		await expect(
-			new BardsDaoData__factory(deployer).deploy(
-				governanceAddress, 
+		let bardsDaoDataImpl = await new BardsDaoData__factory(deployer).deploy()
+		let bardsDaoDataData = bardsDaoDataImpl.interface.encodeFunctionData(
+			'initialize',
+			[
+				governanceAddress,
 				daoTreasuryAddress,
 				BPS_MAX / 2 + 1,
 				DEFAULT_CURATION_BPS,
 				DEFAULT_STAKING_BPS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsDaoDataImpl.address,
+				deployerAddress,
+				bardsDaoDataData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -291,13 +345,22 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 	});
 
 	it('Should fail to deploy Bards Dao Data with DefaultCurationBps > MAX_BPS / 2', async function () {
-		await expect(
-			new BardsDaoData__factory(deployer).deploy(
+		let bardsDaoDataImpl = await new BardsDaoData__factory(deployer).deploy()
+		let bardsDaoDataData = bardsDaoDataImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				governanceAddress,
 				daoTreasuryAddress,
 				PROTOCOL_FEE,
 				BPS_MAX / 2 + 1,
 				DEFAULT_STAKING_BPS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsDaoDataImpl.address,
+				deployerAddress,
+				bardsDaoDataData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -306,13 +369,22 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 	});
 
 	it('Should fail to deploy Bards Dao Data with DefaultStakingBps > MAX_BPS / 2', async function () {
-		await expect(
-			new BardsDaoData__factory(deployer).deploy(
+		let bardsDaoDataImpl = await new BardsDaoData__factory(deployer).deploy()
+		let bardsDaoDataData = bardsDaoDataImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				governanceAddress,
 				daoTreasuryAddress,
 				PROTOCOL_FEE,
 				DEFAULT_CURATION_BPS,
 				BPS_MAX / 2 + 1
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsDaoDataImpl.address,
+				deployerAddress,
+				bardsDaoDataData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,

@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { randomBytes, randomInt, randomUUID } from 'crypto';
 import { Address } from 'defender-relay-client';
 import { constants, utils, BytesLike, BigNumber, Signature, Event } from 'ethers'
-import { BardsStaking, BardsStaking__factory, MockRebatePool, MockRebatePool__factory } from '../../build/types';
+import { BardsStaking, BardsStaking__factory, MockRebatePool, MockRebatePool__factory, TransparentUpgradeableProxy__factory } from '../../dist/types';
 const { AddressZero, MaxUint256 } = constants
 import {
 	MAX_UINT256,
@@ -50,7 +50,9 @@ import {
 	mockMarketModuleInitData,
 	mockCurationMetaData,
 	errorsLib,
-	bardsStaking
+	bardsStaking,
+	deployerAddress,
+	user
 } from '../__setup.test';
 
 context('Bards Staking', () => {
@@ -352,18 +354,29 @@ context('Bards Staking', () => {
 	}
 
 	beforeEach(async function () {
-		thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
-			bardsHub.address,
-			bancorFormula.address,
-			bardsShareToken.address,
-			DEFAULTS.staking.reserveRatio,
-			DEFAULTS.staking.stakingTaxPercentage,
-			DEFAULTS.staking.minimumStake,
-			testWallet.address,
-			DEFAULTS.staking.alphaNumerator,
-			DEFAULTS.staking.alphaDenominator,
-			DEFAULTS.staking.thawingPeriod
+		let bardsStakingImpl = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy();
+		let bardsStakingData = bardsStakingImpl.interface.encodeFunctionData(
+			'initialize',
+			[
+				bardsHub.address,
+				bancorFormula.address,
+				bardsShareToken.address,
+				DEFAULTS.staking.reserveRatio,
+				DEFAULTS.staking.stakingTaxPercentage,
+				DEFAULTS.staking.minimumStake,
+				testWallet.address,
+				DEFAULTS.staking.alphaNumerator,
+				DEFAULTS.staking.alphaDenominator,
+				DEFAULTS.staking.thawingPeriod
+			]
+		)
+		let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+			bardsStakingImpl.address,
+			deployerAddress,
+			bardsStakingData
 		);
+		thisBardsStaking = BardsStaking__factory.connect(bardsStakingProxy.address, user)
+
 		await bardsHub.connect(governance).registerContract(
 			utils.id('thisBardsStaking'),
 			thisBardsStaking.address
@@ -702,18 +715,28 @@ context('Bards Staking', () => {
 
 			context('stake', function () {
 				beforeEach(async function () {
-					thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
-						bardsHub.address,
-						bancorFormula.address,
-						bardsShareToken.address,
-						DEFAULTS.staking.reserveRatio,
-						DEFAULTS.staking.stakingTaxPercentage,
-						DEFAULTS.staking.minimumStake,
-						testWallet.address,
-						DEFAULTS.staking.alphaNumerator,
-						DEFAULTS.staking.alphaDenominator,
-						DEFAULTS.staking.thawingPeriod
+					let bardsStakingImpl = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy();
+					let bardsStakingData = bardsStakingImpl.interface.encodeFunctionData(
+						'initialize',
+						[
+							bardsHub.address,
+							bancorFormula.address,
+							bardsShareToken.address,
+							DEFAULTS.staking.reserveRatio,
+							DEFAULTS.staking.stakingTaxPercentage,
+							DEFAULTS.staking.minimumStake,
+							testWallet.address,
+							DEFAULTS.staking.alphaNumerator,
+							DEFAULTS.staking.alphaDenominator,
+							DEFAULTS.staking.thawingPeriod
+						]
+					)
+					let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+						bardsStakingImpl.address,
+						deployerAddress,
+						bardsStakingData
 					);
+					thisBardsStaking = BardsStaking__factory.connect(bardsStakingProxy.address, user)
 					await bardsHub.connect(governance).registerContract(
 						utils.id('thisBardsStaking'),
 						thisBardsStaking.address
@@ -770,18 +793,28 @@ context('Bards Staking', () => {
 
 		context('> when staked', function () {
 			beforeEach(async function () {
-				thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
-					bardsHub.address,
-					bancorFormula.address,
-					bardsShareToken.address,
-					DEFAULTS.staking.reserveRatio,
-					DEFAULTS.staking.stakingTaxPercentage,
-					DEFAULTS.staking.minimumStake,
-					testWallet.address,
-					DEFAULTS.staking.alphaNumerator,
-					DEFAULTS.staking.alphaDenominator,
-					DEFAULTS.staking.thawingPeriod
+				let bardsStakingImpl = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy();
+				let bardsStakingData = bardsStakingImpl.interface.encodeFunctionData(
+					'initialize',
+					[
+						bardsHub.address,
+						bancorFormula.address,
+						bardsShareToken.address,
+						DEFAULTS.staking.reserveRatio,
+						DEFAULTS.staking.stakingTaxPercentage,
+						DEFAULTS.staking.minimumStake,
+						testWallet.address,
+						DEFAULTS.staking.alphaNumerator,
+						DEFAULTS.staking.alphaDenominator,
+						DEFAULTS.staking.thawingPeriod
+					]
+				)
+				let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+					bardsStakingImpl.address,
+					deployerAddress,
+					bardsStakingData
 				);
+				thisBardsStaking = BardsStaking__factory.connect(bardsStakingProxy.address, user)
 				await bardsHub.connect(governance).registerContract(
 					utils.id('thisBardsStaking'),
 					thisBardsStaking.address
@@ -837,18 +870,28 @@ context('Bards Staking', () => {
 
 	context('Unstaking', () => {
 		beforeEach(async function () {
-			thisBardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
-				bardsHub.address,
-				bancorFormula.address,
-				bardsShareToken.address,
-				DEFAULTS.staking.reserveRatio,
-				DEFAULTS.staking.stakingTaxPercentage,
-				DEFAULTS.staking.minimumStake,
-				testWallet.address,
-				DEFAULTS.staking.alphaNumerator,
-				DEFAULTS.staking.alphaDenominator,
-				DEFAULTS.staking.thawingPeriod
+			let bardsStakingImpl = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy();
+			let bardsStakingData = bardsStakingImpl.interface.encodeFunctionData(
+				'initialize',
+				[
+					bardsHub.address,
+					bancorFormula.address,
+					bardsShareToken.address,
+					DEFAULTS.staking.reserveRatio,
+					DEFAULTS.staking.stakingTaxPercentage,
+					DEFAULTS.staking.minimumStake,
+					testWallet.address,
+					DEFAULTS.staking.alphaNumerator,
+					DEFAULTS.staking.alphaDenominator,
+					DEFAULTS.staking.thawingPeriod
+				]
+			)
+			let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsStakingImpl.address,
+				deployerAddress,
+				bardsStakingData
 			);
+			thisBardsStaking = BardsStaking__factory.connect(bardsStakingProxy.address, user)
 			await bardsHub.connect(governance).registerContract(
 				utils.id('thisBardsStaking'),
 				thisBardsStaking.address

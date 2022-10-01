@@ -55,35 +55,6 @@ contract BardsStaking is
     using MultiCurrencyFeesUtils for DataTypes.MultiCurrencyFees;
 
     uint256 internal constant REVISION = 1;
-	
-	/**
-     * @notice Initialize this contract.
-     */
-    constructor(
-		address _HUB,
-        address _bondingCurve,
-        address _bardsShareTokenImpl,
-        uint32 _defaultStakingReserveRatio,
-        uint32 _stakingTaxPercentage,
-        uint256 _minimumStaking,
-        address _stakingAddress,
-        uint32 _rebateAlphaNumerator,
-        uint32 _rebateAlphaDenominator,
-        uint32 _thawingPeriod
-    ) {
-        _initialize(
-            _HUB,
-            _bondingCurve,
-            _bardsShareTokenImpl,
-            _defaultStakingReserveRatio,
-            _stakingTaxPercentage,
-            _minimumStaking,
-            _stakingAddress,
-            _rebateAlphaNumerator,
-            _rebateAlphaDenominator,
-            _thawingPeriod
-        );
-    }
 
     /// @inheritdoc IBardsStaking
     function initialize(

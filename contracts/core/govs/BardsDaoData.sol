@@ -7,6 +7,7 @@ import {Constants} from '../../utils/Constants.sol';
 import {Errors} from '../../utils/Errors.sol';
 import {Events} from '../../utils/Events.sol';
 import {DataTypes} from '../../utils/DataTypes.sol';
+import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
 
 /**
  * @title BardsDaoData
@@ -18,8 +19,12 @@ import {DataTypes} from '../../utils/DataTypes.sol';
  * NOTE: The reason we have an additional governance address instead of just fetching it from the hub is to
  * allow the flexibility of using different governance executors.
  */
-contract BardsDaoData is IBardsDaoData {
+contract BardsDaoData is 
+    VersionedInitializable, 
+    IBardsDaoData 
+{
     address internal _governance;
+    uint256 internal constant REVISION = 1;
 
 	/// The Bards protocol fee
 	DataTypes.ProtocolFeeSetting internal _protocolFeeSetting;
@@ -29,20 +34,18 @@ contract BardsDaoData is IBardsDaoData {
         _;
     }
 
-    /**
-     * @notice Initializes the governance, treasury and treasury fee amounts.
-     *
-     * @param governance The governance address which has additional control over setting certain parameters.
-     * @param treasury The treasury address to direct fees to.
-     * @param protocolFee The treasury fee in BPS to levy on collects.
-     */
-    constructor(
+/// @inheritdoc IBardsDaoData
+    function initialize(
         address governance,
         address treasury,
         uint32 protocolFee,
         uint32 defaultCurationBps,
         uint32 defaultStakingBps
-    ) {
+    ) 
+        external 
+        override 
+        initializer
+    {
         _setGovernance(governance);
         _setTreasury(treasury);
         _setProtocolFee(protocolFee);
@@ -178,5 +181,9 @@ contract BardsDaoData is IBardsDaoData {
         uint32 prevDefaultStakingBps = _protocolFeeSetting.defaultStakingBps;
         _protocolFeeSetting.defaultStakingBps = newDefaultStakingBps;
         emit Events.DefaultStakingFeeSet(prevDefaultStakingBps, newDefaultStakingBps, block.timestamp);
+    }
+
+    function getRevision() internal pure override returns (uint256) {
+        return REVISION;
     }
 }

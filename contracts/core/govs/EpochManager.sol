@@ -7,22 +7,31 @@ import {ContractRegistrar} from './ContractRegistrar.sol';
 import {IEpochManager} from '../../interfaces/govs/IEpochManager.sol';
 import {Events} from '../../utils/Events.sol';
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
 
 /**
  * @title EpochManager
  * @notice Produce epochs based on a number of blocks to coordinate contracts in the protocol.
  */
 contract EpochManager is
+    VersionedInitializable,
     ContractRegistrar, 
     EpochManagerStorage, 
     IEpochManager 
 {
 	using SafeMath for uint256;
 
-	/**
-     * @notice Initialize this contract.
-     */
-    constructor(address _HUB, uint256 _epochLength) {
+    uint256 internal constant REVISION = 1;
+
+    /// @inheritdoc IEpochManager
+    function initialize(
+        address _HUB, 
+        uint256 _epochLength
+    ) 
+        external 
+        override 
+        initializer
+    {
         require(_epochLength > 0, "Epoch length cannot be 0");
 
         ContractRegistrar._initialize(_HUB);
@@ -157,5 +166,9 @@ contract EpochManager is
      */
     function epochsSinceUpdate() public view override returns (uint256) {
         return blockNum().sub(lastLengthUpdateBlock).div(epochLength);
+    }
+
+    function getRevision() internal pure override returns (uint256) {
+        return REVISION;
     }
 }

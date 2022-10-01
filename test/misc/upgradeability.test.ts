@@ -19,7 +19,7 @@ import {
 	MockBardsHubWithBadRevision__factory,
 	MockBardsHub__factory,
 	TransparentUpgradeableProxy__factory
-} from '../../build/types';
+} from '../../dist/types';
 import { BARDS_HUB_NFT_NAME, BARDS_HUB_NFT_SYMBOL } from '../utils/Constants';
 
 makeSuiteCleanRoom('Upgradeability', function () {

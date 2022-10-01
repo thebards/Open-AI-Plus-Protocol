@@ -12,6 +12,24 @@ import {DataTypes} from '../../utils/DataTypes.sol';
  * which allows an optional fee percentage, recipient governancor to be set for TheBards protocol Dao.
  */
 interface IBardsDaoData {
+
+    /**
+     * @notice Initializes the governance, treasury, treasury fee, default curation fee, and default staking fee amounts.
+     *
+     * @param governance The governance address which has additional control over setting certain parameters.
+     * @param treasury The treasury address to direct fees to.
+     * @param protocolFee The treasury fee in BPS to levy on collects.
+     * @param defaultCurationBps The default curation fee in BPS to levy on collects.
+     * @param defaultStakingBps The default staking fee in BPS to levy on collects.
+     */
+    function initialize(
+        address governance,
+        address treasury,
+        uint32 protocolFee,
+        uint32 defaultCurationBps,
+        uint32 defaultStakingBps
+    ) external;
+
     /**
      * @notice Sets the governance address. This function can only be called by governance.
      *

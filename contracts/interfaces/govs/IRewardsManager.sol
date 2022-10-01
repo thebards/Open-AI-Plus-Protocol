@@ -10,6 +10,22 @@ pragma solidity ^0.8.12;
  * @notice The interface of RewardManager contract.
  */
 interface IRewardsManager {
+
+    /**
+     * @notice Initializes the governance, treasury, treasury fee, default curation fee, and default staking fee amounts.
+     *
+     * @param _HUB The address of HUB
+     * @param _issuanceRate The issuance rate
+     * @param _inflationChange The issuance change
+     * @param _targetBondingRate The target bonding rate
+     */
+    function initialize(
+        address _HUB,
+        uint256 _issuanceRate,
+        uint256 _inflationChange,
+        uint256 _targetBondingRate
+    ) external;
+
 	// -- Config --
 
 	  /**

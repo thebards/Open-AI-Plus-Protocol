@@ -63,10 +63,10 @@ import {
 	CloneMinter__factory,
 	EmptyMinter,
 	EmptyMinter__factory,
-} from '../build/types';
+} from '../dist/types';
 
-import { BardsHubLibraryAddresses} from "../build/types/factories/contracts/core/BardsHub__factory";
-import { BardsStakingLibraryAddresses } from "../build/types/factories/contracts/core/tokens/BardsStaking__factory";
+import { BardsHubLibraryAddresses} from "../dist/types/factories/contracts/core/BardsHub__factory";
+import { BardsStakingLibraryAddresses } from "../dist/types/factories/contracts/core/tokens/BardsStaking__factory";
 import exp from 'constants';
 
 export enum ProtocolState {
@@ -193,13 +193,24 @@ before(async function () {
 	bardsHub = BardsHub__factory.connect(proxy.address, user);
 
 	// bards Dao Data
-	bardsDaoData = await new BardsDaoData__factory(deployer).deploy(
-		governanceAddress,
-		daoTreasuryAddress,
-		PROTOCOL_FEE,
-		DEFAULT_CURATION_BPS,
-		DEFAULT_STAKING_BPS
+	let bardsDaoDataImpl = await new BardsDaoData__factory(deployer).deploy()
+	let bardsDaoDataData = bardsDaoDataImpl.interface.encodeFunctionData(
+		'initialize', 
+		[
+			governanceAddress,
+			daoTreasuryAddress,
+			PROTOCOL_FEE,
+			DEFAULT_CURATION_BPS,
+			DEFAULT_STAKING_BPS
+		]
+	)
+	let bardsDaoDataProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		bardsDaoDataImpl.address,
+		deployerAddress,
+		bardsDaoDataData
 	);
+	bardsDaoData = BardsDaoData__factory.connect(bardsDaoDataProxy.address, user)
+
 	await bardsHub.connect(governance).registerContract(
 		utils.id('BardsDaoData'),
 		bardsDaoData.address
@@ -216,21 +227,43 @@ before(async function () {
 	// Bards Share Tokens
 	bardsShareToken = await new BardsShareToken__factory(deployer).deploy();
 	// Epoch Manager
-	epochManager = await new EpochManager__factory(deployer).deploy(
-		bardsHub.address,
-		DEFAULTS.epochs.lengthInBlocks
+	let epochManagerImpl = await new EpochManager__factory(deployer).deploy();
+	let epochManagerData = epochManagerImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address,
+			DEFAULTS.epochs.lengthInBlocks
+		]
+	)
+	let epochManagerProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		epochManagerImpl.address,
+		deployerAddress,
+		epochManagerData
 	);
+	epochManager = EpochManager__factory.connect(epochManagerProxy.address, user)
+
 	await bardsHub.connect(governance).registerContract(
 		utils.id('EpochManager'),
 		epochManager.address
 	);
 	// Reward Manager
-	rewardsManager = await new RewardsManager__factory(deployer).deploy(
-		bardsHub.address,
-		DEFAULTS.rewards.issuanceRate,
-		DEFAULTS.rewards.inflationChange,
-		DEFAULTS.rewards.targetBondingRate
+	let rewardsManagerImpl = await new RewardsManager__factory(deployer).deploy();
+	let rewardsManagerData = rewardsManagerImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address,
+			DEFAULTS.rewards.issuanceRate,
+			DEFAULTS.rewards.inflationChange,
+			DEFAULTS.rewards.targetBondingRate
+		]
+	)
+	let rewardsManagerProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		rewardsManagerImpl.address,
+		deployerAddress,
+		rewardsManagerData
 	);
+	rewardsManager = RewardsManager__factory.connect(rewardsManagerProxy.address, user)
+
 	await bardsHub.connect(governance).registerContract(
 		utils.id('RewardsManager'),
 		rewardsManager.address
@@ -242,18 +275,28 @@ before(async function () {
 		bancorFormula.address
 	);
 	// Bards Staking
-	bardsStaking = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy(
-		bardsHub.address,
-		bancorFormula.address,
-		bardsShareToken.address,
-		DEFAULTS.staking.reserveRatio,
-		DEFAULTS.staking.stakingTaxPercentage,
-		DEFAULTS.staking.minimumStake,
-		testWallet.address,
-		DEFAULTS.staking.alphaNumerator,
-		DEFAULTS.staking.alphaDenominator,
-		DEFAULTS.staking.thawingPeriod
+	let bardsStakingImpl = await new BardsStaking__factory(bardsStakingLibs, deployer).deploy();
+	let bardsStakingData = bardsStakingImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address,
+			bancorFormula.address,
+			bardsShareToken.address,
+			DEFAULTS.staking.reserveRatio,
+			DEFAULTS.staking.stakingTaxPercentage,
+			DEFAULTS.staking.minimumStake,
+			testWallet.address,
+			DEFAULTS.staking.alphaNumerator,
+			DEFAULTS.staking.alphaDenominator,
+			DEFAULTS.staking.thawingPeriod
+		]
+	)
+	let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		bardsStakingImpl.address,
+		deployerAddress,
+		bardsStakingData
 	);
+	bardsStaking = BardsStaking__factory.connect(bardsStakingProxy.address, user)
 	
 	await bardsHub.connect(governance).registerContract(
 		utils.id('BardsStaking'),

@@ -3,6 +3,18 @@
 pragma solidity ^0.8.12;
 
 interface IEpochManager {
+
+    /**
+     * @notice Initialize contract
+     *
+     * @param _HUB The address of HUB
+     * @param _epochLength The epoch length
+     */
+    function initialize(
+        address _HUB, 
+        uint256 _epochLength
+    ) external;
+
 	// -- Configuration --
 
     function setEpochLength(uint256 _epochLength) external;
