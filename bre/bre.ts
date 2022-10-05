@@ -42,7 +42,6 @@ extendEnvironment((hre: HardhatRuntimeEnvironment) => {
 	hre.bards = (opts: BardsRuntimeEnvironmentOptions = {}) => {
 		logDebug('*** Initializing Bards Runtime Environment (BRE) ***')
 		logDebug(`Main network: ${hre.network.name}`)
-
 		const { l1ChainId, l2ChainId, isHHL1 } = getChains(hre.network.config.chainId)
 		const { l1Provider, l2Provider } = getProviders(hre, l1ChainId, l2ChainId, isHHL1)
 		const addressBookPath = getAddressBookPath(hre, opts)
