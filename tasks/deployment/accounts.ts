@@ -12,29 +12,22 @@ task('migrate:accounts', 'Creates protocol accounts and saves them in bards conf
 
 		const deployer = await getDeployer()
 		const [
-			,
-			arbitrator,
 			governor,
-			authority,
-			availabilityOracle,
-			pauseGuardian,
-			allocationExchangeOwner,
+			treasury,
+			stakingTreasury,
+			proxyAdmin
 		] = await hre.ethers.getSigners()
 
 		console.log(`- Deployer: ${deployer.address}`)
-		console.log(`- Arbitrator: ${arbitrator.address}`)
 		console.log(`- Governor: ${governor.address}`)
-		console.log(`- Authority: ${authority.address}`)
-		console.log(`- Availability Oracle: ${availabilityOracle.address}`)
-		console.log(`- Pause Guardian: ${pauseGuardian.address}`)
-		console.log(`- Allocation Exchange Owner: ${allocationExchangeOwner.address}`)
+		console.log(`- Dao Treasury: ${treasury.address}`)
+		console.log(`- Staking Treasury: ${stakingTreasury.address}`)
+		console.log(`- proxyAdmin: ${proxyAdmin.address}`)
 
-		updateItemValue(bardsConfig, 'general/arbitrator', arbitrator.address)
 		updateItemValue(bardsConfig, 'general/governor', governor.address)
-		updateItemValue(bardsConfig, 'general/authority', authority.address)
-		updateItemValue(bardsConfig, 'general/availabilityOracle', availabilityOracle.address)
-		updateItemValue(bardsConfig, 'general/pauseGuardian', pauseGuardian.address)
-		updateItemValue(bardsConfig, 'general/allocationExchangeOwner', allocationExchangeOwner.address)
+		updateItemValue(bardsConfig, 'general/treasury', treasury.address)
+		updateItemValue(bardsConfig, 'general/stakingTreasury', stakingTreasury.address)
+		updateItemValue(bardsConfig, 'general/proxyAdmin', proxyAdmin.address)
 
 		writeConfig(taskArgs.bardsConfig, bardsConfig.toString())
 	})

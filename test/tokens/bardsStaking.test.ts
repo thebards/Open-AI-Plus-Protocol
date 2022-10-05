@@ -367,7 +367,9 @@ context('Bards Staking', () => {
 				testWallet.address,
 				DEFAULTS.staking.alphaNumerator,
 				DEFAULTS.staking.alphaDenominator,
-				DEFAULTS.staking.thawingPeriod
+				DEFAULTS.staking.thawingPeriod,
+				DEFAULTS.staking.channelDisputeEpochs,
+				DEFAULTS.staking.maxAllocationEpochs
 			]
 		)
 		let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -728,7 +730,9 @@ context('Bards Staking', () => {
 							testWallet.address,
 							DEFAULTS.staking.alphaNumerator,
 							DEFAULTS.staking.alphaDenominator,
-							DEFAULTS.staking.thawingPeriod
+							DEFAULTS.staking.thawingPeriod,
+							DEFAULTS.staking.channelDisputeEpochs,
+							DEFAULTS.staking.maxAllocationEpochs
 						]
 					)
 					let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -806,7 +810,9 @@ context('Bards Staking', () => {
 						testWallet.address,
 						DEFAULTS.staking.alphaNumerator,
 						DEFAULTS.staking.alphaDenominator,
-						DEFAULTS.staking.thawingPeriod
+						DEFAULTS.staking.thawingPeriod,
+						DEFAULTS.staking.channelDisputeEpochs,
+						DEFAULTS.staking.maxAllocationEpochs
 					]
 				)
 				let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -883,7 +889,9 @@ context('Bards Staking', () => {
 					testWallet.address,
 					DEFAULTS.staking.alphaNumerator,
 					DEFAULTS.staking.alphaDenominator,
-					DEFAULTS.staking.thawingPeriod
+					DEFAULTS.staking.thawingPeriod,
+					DEFAULTS.staking.channelDisputeEpochs,
+					DEFAULTS.staking.maxAllocationEpochs
 				]
 			)
 			let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(

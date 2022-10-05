@@ -3,7 +3,9 @@ import yargs, { Argv } from 'yargs'
 import {
 	getContractAt,
 	deployContract,
-	deployContractAndSave
+	deployContractAndSave,
+	deployContractWithProxy,
+	deployContractWithProxyAndSave,
 } from '../network'
 import { loadEnv, CLIArgs, CLIEnvironment } from '../env'
 import { logger } from '../logging'
@@ -15,6 +17,7 @@ export const deploy = async (cli: CLIEnvironment, cliArgs: CLIArgs): Promise<voi
 	const deployType = cliArgs.type
 	const buildAcceptProxyTx = cliArgs.buildTx
 	const skipConfirmation = cliArgs.skipConfirmation
+	let proxyAdmin = cliArgs.proxyAdmin
 
 	// Ensure action
 	const sure = await confirm(`Are you sure to deploy ${contractName}?`, skipConfirmation)
@@ -29,7 +32,29 @@ export const deploy = async (cli: CLIEnvironment, cliArgs: CLIArgs): Promise<voi
 			break
 		case 'deploy-save':
 			logger.info(`Deploying contract ${contractName} and saving to address book...`)
-			await deployContractAndSave(contractName, contractArgs, cli.wallet, cli.addressBook)
+			await deployContractAndSave(proxyAdmin, contractName, contractArgs, cli.wallet, cli.addressBook)
+			break
+		case 'deploy-with-proxy':
+			proxyAdmin = cli.wallet
+
+			logger.info(`Deploying contract ${contractName} with proxy ...`)
+			await deployContractWithProxy(
+				proxyAdmin,
+				contractName,
+				contractArgs,
+				cli.wallet,
+				buildAcceptProxyTx,
+			)
+			break
+		case 'deploy-with-proxy-save':
+			logger.info(`Deploying contract ${contractName} with proxy and saving to address book...`)
+			await deployContractWithProxyAndSave(
+				proxyAdmin,
+				contractName,
+				contractArgs,
+				cli.wallet,
+				cli.addressBook,
+			)
 			break
 		default:
 			logger.error('Please provide the correct option for deploy type')
@@ -56,7 +81,7 @@ export const deployCommand = {
 			})
 			.option('t', {
 				alias: 'type',
-				description: 'Choose deploy, deploy-save',
+				description: 'Choose deploy, deploy-save, deploy-with-proxy, deploy-with-proxy-save',
 				type: 'string',
 				requiresArg: true,
 				demandOption: true,

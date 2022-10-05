@@ -14,7 +14,7 @@ type Artifact = {
 	deployedLinkReferences?: LinkReferences
 }
 
-const ARTIFACTS_PATH = path.resolve('build/contracts')
+const ARTIFACTS_PATH = path.resolve('dist/contracts')
 
 const artifacts = new Artifacts(ARTIFACTS_PATH)
 

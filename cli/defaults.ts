@@ -5,7 +5,7 @@ export const local = {
 	mnemonic: 'myth like bonus scare over problem client lizard pioneer submit female collect',
 	providerUrl: 'http://localhost:8545',
 	addressBookPath: './addresses.json',
-	theBardsConfigPath: './configs/theBards.goerli.yml',
+	theBardsConfigPath: './configs/bards.localhost.yml',
 	accountNumber: '0',
 }
 
@@ -23,7 +23,7 @@ export const cliOpts = {
 		default: local.addressBookPath,
 	},
 	bardsConfig: {
-		alias: 'theBards-config',
+		alias: 'bards-config',
 		description: 'The path to the config file',
 		type: 'string',
 		group: 'Config',

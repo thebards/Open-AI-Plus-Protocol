@@ -57,7 +57,7 @@ export const isContractDeployed = async (
 	const addressEntry = addressBook.getEntry(name)
 
 	// If the contract is behind a proxy we check the Proxy artifact instead
-	const artifact = addressEntry.proxy === true ? loadArtifact('BardsProxy') : loadArtifact(name)
+	const artifact = addressEntry.proxy === true ? loadArtifact('TransparentUpgradeableProxy') : loadArtifact(name)
 
 	if (checkCreationCode) {
 		const savedCreationCodeHash = addressEntry.creationCodeHash
@@ -156,12 +156,13 @@ export const getContractAt = (
 export const deployProxy = async (
 	implementationAddress: string,
 	proxyAdminAddress: string,
+	args: Array<ContractParam>,
 	sender: Signer,
 	overrides?: Overrides,
 ): Promise<DeployResult> => {
 	return deployContract(
 		'TransparentUpgradeableProxy',
-		[implementationAddress, proxyAdminAddress],
+		[implementationAddress, proxyAdminAddress, args.at(args.length - 1)!],
 		sender,
 		false,
 		overrides,
@@ -191,6 +192,8 @@ export const deployContract = async (
 	}
 
 	// Deploy
+	console.log(name)
+	console.log(args)
 	const factory = getContractFactory(name, libraries)
 	const contract = await factory.connect(sender).deploy(...args)
 	const txHash = contract.deployTransaction.hash
@@ -208,11 +211,10 @@ export const deployContract = async (
 }
 
 export const deployContractWithProxy = async (
-	proxyAdmin: Contract,
+	proxyAdmin: Signer,
 	name: string,
 	args: Array<ContractParam>,
 	sender: Signer,
-	buildAcceptProxyTx = false,
 	overrides?: Overrides,
 ): Promise<Contract> => {
 	// Deploy implementation
@@ -224,7 +226,6 @@ export const deployContractWithProxy = async (
 		contract,
 		args,
 		sender,
-		buildAcceptProxyTx,
 		overrides,
 	)
 
@@ -233,52 +234,36 @@ export const deployContractWithProxy = async (
 }
 
 export const wrapContractWithProxy = async (
-	proxyAdmin: Contract,
+	proxyAdmin: Signer,
 	contract: Contract,
 	args: Array<ContractParam>,
 	sender: Signer,
-	buildAcceptProxyTx = false,
 	overrides?: Overrides,
 ): Promise<Contract> => {
+	let newArgs: Array<ContractParam> = []
+	let data = contract.interface.encodeFunctionData('initialize', args);
+	newArgs.push(data)
 	// Deploy proxy
 	const { contract: proxy } = await deployProxy(
 		contract.address,
-		proxyAdmin.address,
+		await proxyAdmin.getAddress(),
+		newArgs,
 		sender,
 		overrides,
 	)
-
-	// Implementation accepts upgrade
-	const initTx = args ? await contract.populateTransaction.initialize(...args) : null
-	const acceptFunctionName = initTx ? 'acceptProxyAndCall' : 'acceptProxy'
-	const acceptFunctionParams = initTx
-		? [contract.address, proxy.address, initTx.data]
-		: [contract.address, proxy.address]
-	if (buildAcceptProxyTx) {
-		logger.info(
-			` 
-      Copy this data in the Gnosis Multisig UI, or a similar app and call ${acceptFunctionName}
-      --------------------------------------------------------------------------------------
-        > Contract Address:  ${proxyAdmin.address}
-        > Implementation:    ${contract.address}
-        > Proxy:             ${proxy.address}
-        > Data:              ${initTx && initTx.data}
-      `,
-		)
-	} else {
-		await sendTransaction(sender, proxyAdmin, acceptFunctionName, acceptFunctionParams)
-	}
-
 	return proxy
 }
 
 export const deployContractAndSave = async (
+	proxyAdmin: Signer,
 	name: string,
 	args: Array<ContractParam>,
 	sender: Signer,
 	addressBook: AddressBook,
 ): Promise<Contract> => {
 	// Deploy the contract
+
+	console.log(args)
 	const deployResult = await deployContract(name, args, sender)
 
 	// Save address entry
@@ -299,27 +284,21 @@ export const deployContractAndSave = async (
 }
 
 export const deployContractWithProxyAndSave = async (
+	proxyAdmin: Signer,
 	name: string,
 	args: Array<ContractParam>,
 	sender: Signer,
 	addressBook: AddressBook,
-	buildAcceptProxyTx?: boolean,
 ): Promise<Contract> => {
-	// Get the BardsProxyAdmin to own the BardsProxy for this contract
-	const proxyAdminEntry = addressBook.getEntry('BardsProxyAdmin')
-	if (!proxyAdminEntry) {
-		throw new Error('BardsProxyAdmin not detected in the config, must be deployed first!')
-	}
-	const proxyAdmin = getContractAt('BardsProxyAdmin', proxyAdminEntry.address)
 
 	// Deploy implementation
-	const contract = await deployContractAndSave(name, [], sender, addressBook)
+	const contract = await deployContractAndSave(proxyAdmin, name, [], sender, addressBook)
 
 	// Wrap implementation with proxy
-	const proxy = await wrapContractWithProxy(proxyAdmin, contract, args, sender, buildAcceptProxyTx)
+	const proxy = await wrapContractWithProxy(proxyAdmin, contract, args, sender)
 
 	// Overwrite address entry with proxy
-	const artifact = loadArtifact('BardsProxy')
+	const artifact = loadArtifact('TransparentUpgradeableProxy')
 	const contractEntry = addressBook.getEntry(name)
 	addressBook.setEntry(name, {
 		address: proxy.address,

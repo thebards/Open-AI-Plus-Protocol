@@ -101,6 +101,11 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
     },
   },
+  bards: {
+    addressBook: process.env.ADDRESS_BOOK ?? 'addresses.json',
+    l1GraphConfig: process.env.GRAPH_CONFIG ?? 'configs/bards.localhost.yml',
+    l2GraphConfig: process.env.L2_GRAPH_CONFIG,
+  },
   gasReporter: {
     enabled: TRACK_GAS ? true : false,
     showTimeSpent: true,

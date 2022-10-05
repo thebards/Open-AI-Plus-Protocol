@@ -205,7 +205,7 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 			).to.not.be.reverted;
 
 			await expect(
-				bardsCurationToken.mint(testWallet.address, toBCT(100))
+				bardsCurationToken.connect(governance).mint(testWallet.address, toBCT(100))
 			).to.not.be.reverted;
 
 			// Allow to transfer tokens
@@ -262,7 +262,7 @@ makeSuiteCleanRoom('Fix Price Market Module', function () {
 			).to.not.be.reverted;
 
 			await expect(
-				bardsCurationToken.mint(testWallet.address, toBCT(100))
+				bardsCurationToken.connect(governance).mint(testWallet.address, toBCT(100))
 			).to.not.be.reverted;
 
 			// Allow to transfer tokens for testWallet

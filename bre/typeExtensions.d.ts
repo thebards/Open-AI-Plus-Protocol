@@ -13,12 +13,9 @@ export interface BardsRuntimeEnvironmentOptions {
 }
 
 export type AccountNames =
-	| 'arbitrator'
 	| 'governor'
-	| 'authority'
-	| 'availabilityOracle'
-	| 'pauseGuardian'
-	| 'allocationExchangeOwner'
+	| 'treasury'
+	| 'stakingTreasury'
 
 export type NamedAccounts = {
 	[name in AccountNames]: SignerWithAddress

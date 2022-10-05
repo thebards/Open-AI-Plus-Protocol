@@ -67,7 +67,9 @@ contract BardsStaking is
         address _stakingAddress,
         uint32 _rebateAlphaNumerator,
         uint32 _rebateAlphaDenominator,
-        uint32 _thawingPeriod
+        uint32 _thawingPeriod,
+        uint32 _channelDisputeEpochs,
+        uint32 _maxAllocationEpochs
     ) 
         public
         override
@@ -83,7 +85,9 @@ contract BardsStaking is
             _stakingAddress,
             _rebateAlphaNumerator,
             _rebateAlphaDenominator,
-            _thawingPeriod
+            _thawingPeriod,
+            _channelDisputeEpochs,
+            _maxAllocationEpochs
         );
     }
 
@@ -97,7 +101,9 @@ contract BardsStaking is
         address _stakingAddress,
         uint32 _rebateAlphaNumerator,
         uint32 _rebateAlphaDenominator,
-        uint32 _thawingPeriod
+        uint32 _thawingPeriod,
+        uint32 _channelDisputeEpochs,
+        uint32 _maxAllocationEpochs
     ) 
         internal
     {
@@ -113,6 +119,8 @@ contract BardsStaking is
         _setStakingAddress(_stakingAddress);
         _setRebateRatio(_rebateAlphaNumerator, _rebateAlphaDenominator);
         _setThawingPeriod(_thawingPeriod);
+        _setChannelDisputeEpochs(_channelDisputeEpochs);
+        _setMaxAllocationEpochs(_maxAllocationEpochs);
     }
 
     /// @inheritdoc IBardsStaking

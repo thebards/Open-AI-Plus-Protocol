@@ -466,7 +466,7 @@ makeSuiteCleanRoom('Events', function () {
 			);
 
 			await expect(
-				bardsCurationToken.mint(testWallet.address, toBCT('10000'))
+				bardsCurationToken.connect(governance).mint(testWallet.address, toBCT('10000'))
 			).to.not.be.reverted;
 
 			await expect(

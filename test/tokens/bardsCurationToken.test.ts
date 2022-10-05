@@ -183,7 +183,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.permit({
+				bardsCurationToken.permitWithSig({
 					owner: testWallet.address,
 					spender: userAddress,
 					value: tokensToApprove,
@@ -211,7 +211,7 @@ makeSuiteCleanRoom('BardsCurationToken', function () {
 			);
 
 			await expect(
-				bardsCurationToken.permit({
+				bardsCurationToken.permitWithSig({
 					owner: testWallet.address,
 					spender: userTwoAddress,
 					value: tokensToApprove,

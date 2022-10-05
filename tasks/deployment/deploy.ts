@@ -13,6 +13,7 @@ task('migrate', 'Migrate contracts')
 	.addFlag('autoMine', 'Enable auto mining after deployment on local networks')
 	.setAction(async (taskArgs, hre) => {
 		const accounts = await hre.ethers.getSigners()
+		taskArgs.proxyAdmin = accounts[3]
 		await migrate(
 			await loadEnv(taskArgs, accounts[0] as unknown as Wallet),
 			taskArgs,

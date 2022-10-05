@@ -99,7 +99,9 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 				testWallet.address,
 				DEFAULTS.staking.alphaNumerator,
 				DEFAULTS.staking.alphaDenominator,
-				DEFAULTS.staking.thawingPeriod
+				DEFAULTS.staking.thawingPeriod,
+				DEFAULTS.staking.channelDisputeEpochs,
+				DEFAULTS.staking.maxAllocationEpochs
 			]
 		)
 		await expect(
@@ -115,10 +117,20 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 	});
 
 	it('Should fail to deploy a bards curation token contract implementation with zero address hub', async function () {
-		await expect(
-			new BardsCurationToken__factory(deployer).deploy(
+		let bardsCurationTokenImpl = await new BardsCurationToken__factory(deployer).deploy();
+		let bardsCurationTokenData = bardsCurationTokenImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS,
 				DEFAULTS.token.initialSupply
+			]
+		)
+
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				bardsCurationTokenImpl.address,
+				deployerAddress,
+				bardsCurationTokenData
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -130,7 +142,8 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 		await expect(
 			new FixPriceMarketModule__factory(deployer).deploy(
 				ZERO_ADDRESS,
-				royaltyEngine.address
+				royaltyEngine.address,
+				testWallet.address
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -140,7 +153,8 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 		await expect(
 			new FixPriceMarketModule__factory(deployer).deploy(
 				bardsHub.address,
-				ZERO_ADDRESS
+				ZERO_ADDRESS,
+				testWallet.address
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -150,7 +164,8 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 		await expect(
 			new FreeMarketModule__factory(deployer).deploy(
 				ZERO_ADDRESS,
-				royaltyEngine.address
+				royaltyEngine.address,
+				testWallet.address
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
@@ -160,7 +175,8 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 		await expect(
 			new FreeMarketModule__factory(deployer).deploy(
 				bardsHub.address,
-				ZERO_ADDRESS
+				ZERO_ADDRESS,
+				testWallet.address
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,

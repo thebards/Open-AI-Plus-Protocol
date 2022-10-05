@@ -10,7 +10,7 @@ import {Events} from '../../utils/Events.sol';
 import {Errors} from '../../utils/Errors.sol';
 import {DataTypes} from '../../utils/DataTypes.sol';
 import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
-
+import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
@@ -26,11 +26,17 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
  * assigned to the deployer.
  *
  */
-contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
+contract BardsCurationToken is 
+    VersionedInitializable,
+    TokenStorage, 
+    ContractRegistrar, 
+    ERC20Burnable 
+{
     using SafeMath for uint256;
+    uint256 internal constant REVISION = 1;
     bytes32 private constant PERMIT_TYPEHASH =
         keccak256(
-            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+            "PermitWithSig(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
     );
     mapping(address => bool) private _minters;
 
@@ -39,11 +45,15 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
         _;
     }
 
-    /**
-     * @notice Bards Curation Token Contract Constructor.
-     * @param _initialSupply Initial supply of BCT
-     */
-    constructor(address _HUB, uint256 _initialSupply) ERC20("Bards Curation Token", "BCT") {
+    constructor() ERC20("Bards Curation Token", "BCT"){}
+
+    function initialize(
+        address _HUB, 
+        uint256 _initialSupply
+    ) 
+        external 
+        initializer 
+    {   
         if (_HUB == address(0)) revert Errors.InitParamsInvalid();
         ContractRegistrar._initialize(_HUB);
         address gov = bardsHub().getGovernance();
@@ -54,7 +64,6 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
         // HUB is minter too
         _addMinter(_HUB);
         _addMinter(msg.sender);
-
     }
 
     function burnFrom(
@@ -68,6 +77,15 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
     }
 
     function permit(
+        DataTypes.BCTPermitData calldata _vars
+    ) 
+        external 
+    {
+        require(msg.sender == _vars.owner, "Just owner can permit.");
+        _approve(_vars.owner, _vars.spender, _vars.value);
+    }
+
+    function permitWithSig(
         DataTypes.BCTPermitWithSigData calldata _vars
     ) external {
         if (_vars.owner == address(0) || _vars.spender == address(0)) revert Errors.ZeroSpender();
@@ -157,5 +175,9 @@ contract BardsCurationToken is TokenStorage, ContractRegistrar, ERC20Burnable {
     {
         _minters[_account] = false;
         emit Events.MinterRemoved(_account, block.timestamp);
+    }
+
+    function getRevision() internal pure override returns (uint256) {
+        return REVISION;
     }
 }

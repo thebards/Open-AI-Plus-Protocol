@@ -20,12 +20,14 @@ const { formatEther } = utils
 const allContracts = [
 	"BardsHub",
 	"BardsDaoData",
+	"WETH",
+	"EpochManager",
 	"BardsCurationToken",
 	"BardsShareToken",
-	"EpochManager",
 	"RewardsManager",
+	"BancorFormula",
 	"BardsStaking",
-	"IWETH",
+	"RoyaltyEngine",
 	"FixPriceMarketModule",
 	"FreeMarketModule",
 	"CloneMinter",
@@ -42,6 +44,15 @@ export const migrate = async (
 	const contractName = cliArgs.contract
 	const chainId = cli.chainId
 	const skipConfirmation = cliArgs.skipConfirmation
+	const proxyAdmin = cliArgs.proxyAdmin
+
+	// console.log(utils.id('WETH') + " WETH")
+	// console.log(utils.id('BardsStaking') + " BardsStaking")
+	// console.log(utils.id('BardsDaoData') + " BardsDaoData")
+	// console.log(utils.id('BardsCurationToken') + " BardsCurationToken")
+	// console.log(utils.id('RewardsManager') + " RewardsManager")
+	// console.log(utils.id('EpochManager') + " EpochManager")
+	// console.log(utils.id('TransferMinter') + " TransferMinter")
 
 	// Ensure action
 	const sure = await confirm('Are you sure you want to migrate contracts?', skipConfirmation)
@@ -87,22 +98,23 @@ export const migrate = async (
 			logger.info(`Address: ${savedAddress}\n`)
 			continue
 		}
-
+	
 		// Get config and deploy contract
 		const contractConfig = getContractConfig(bardsConfig, cli.addressBook, name, cli)
 		const deployFn = contractConfig.proxy ? deployContractWithProxyAndSave : deployContractAndSave
 		const contract = await deployFn(
+			proxyAdmin,
 			name,
 			contractConfig.params.map((a) => a.value), // keep only the values
 			cli.wallet,
 			cli.addressBook,
 		)
-		logger.info('')
-
+		
 		// Defer contract calls after deploying every contract
 		if (contractConfig.calls) {
 			pendingContractCalls.push({ name, contract, calls: contractConfig.calls })
 		}
+		console.log('\n')
 	}
 	logger.info('Contract deployments done! Contract calls are next')
 

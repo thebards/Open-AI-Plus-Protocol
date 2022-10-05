@@ -550,7 +550,6 @@ makeSuiteCleanRoom('Reward Manager', function () {
 					['address[]', 'uint256[]', 'uint32[]', 'uint32[]', 'uint32', 'uint32'],
 					[[userAddress, userThreeAddress], [], [800000, 200000], [], DEFAULT_CURATION_BPS, DEFAULT_STAKING_BPS]
 				);
-
 				// Close allocation. At this point rewards should be collected for that indexer
 				await expect(
 					bardsHub
@@ -586,7 +585,6 @@ makeSuiteCleanRoom('Reward Manager', function () {
 				await expect(
 					bardsStaking.connect(user).closeAllocation(2, 0)
 				).to.not.be.reverted;
-
 				const afterUserBalance = await bardsCurationToken.balanceOf(userAddress)
 				const afterUserThreeBalance = await bardsCurationToken.balanceOf(userThreeAddress)
 

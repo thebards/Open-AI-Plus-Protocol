@@ -21,7 +21,8 @@ import {
 	CurationType,
 	bardsCurationToken,
 	bardsStaking,
-	userTwoAddress
+	userTwoAddress,
+	governance
 } from '../__setup.test';
 
 import { 
@@ -467,7 +468,7 @@ const buildBCTPermitWithSigParams = (
 	deadline: string
 ) => ({
 	types: {
-		Permit: [
+		PermitWithSig: [
 			{ name: 'owner', type: 'address' },
 			{ name: 'spender', type: 'address' },
 			{ name: 'value', type: 'uint256' },
@@ -733,39 +734,33 @@ export async function approveToken(
 	spender: string,
 	tokensToApprove: BigNumber
 ){
-	const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
+	// const nonce = (await bardsCurationToken.sigNonces(testWallet.address)).toNumber();
 
-	const { v, r, s } = await getBCTPermitWithSigParts(
-		testWallet.address,
-		spender,
-		tokensToApprove,
-		nonce,
-		MAX_UINT256
-	);
+	// const { v, r, s } = await getBCTPermitWithSigParts(
+	// 	testWallet.address,
+	// 	spender,
+	// 	tokensToApprove,
+	// 	nonce,
+	// 	MAX_UINT256
+	// );
 
-	await bardsCurationToken.callStatic.permit({
-		owner: testWallet.address,
-		spender: spender,
-		value: tokensToApprove,
-		sig: {
-			v,
-			r,
-			s,
-			deadline: MAX_UINT256
-		},
-	})
+	// await bardsCurationToken.callStatic.permit({
+	// 	owner: testWallet.address,
+	// 	spender: spender,
+	// 	value: tokensToApprove,
+	// 	sig: {
+	// 		v,
+	// 		r,
+	// 		s,
+	// 		deadline: MAX_UINT256
+	// 	},
+	// })
 
 	await expect(
-		bardsCurationToken.permit({
+		bardsCurationToken.connect(testWallet).permit({
 			owner: testWallet.address,
 			spender: spender,
-			value: tokensToApprove,
-			sig: {
-				v,
-				r,
-				s,
-				deadline: MAX_UINT256
-			},
+			value: tokensToApprove
 		})
 	).to.not.be.reverted;
 }

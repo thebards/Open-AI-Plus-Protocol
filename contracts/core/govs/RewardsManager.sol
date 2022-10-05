@@ -76,11 +76,13 @@ contract RewardsManager is
     {
         require(_issuanceRate >= Constants.MIN_ISSUANCE_RATE, "Issuance rate under minimum allowed");
 
-        // Called since `issuance rate` will change
-        updateAccRewardsPerStaking();
-
         uint256 prevIssuanceRate = issuanceRate;
         issuanceRate = _issuanceRate;
+
+        // Called since `issuance rate` will change
+        if (prevIssuanceRate != 0){
+            updateAccRewardsPerStaking();
+        }
         emit Events.IssuanceRateSet(
             prevIssuanceRate, 
             _issuanceRate, 

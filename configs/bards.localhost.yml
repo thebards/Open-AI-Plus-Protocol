@@ -1,0 +1,137 @@
+general:
+  governor: &governor "0xc783df8a850f42e7F7e57013759C285caa701eB6" # Governor Council
+  treasury: &treasury "0xeAD9C93b79Ae7C1591b1FB5323BD777E86e150d4" # Treasury address
+  stakingTreasury: &stakingTreasury "0xE5904695748fe4A84b40b3fc79De2277660BD1D3" # staking treasury address
+  proxyAdmin: &proxyAdmin "0x92561F28Ec438Ee9831D00D1D59fbDC981b762b2" # proxyAdmin
+
+contracts:
+  BardsHub:
+    proxy: true
+    init:
+      name: "TheBards HUB"
+      symbol: "TBH"
+      newGovernance: *governor
+      cooldownBlocks: 555
+    calls:
+      - fn: "registerContract"
+        _id: "0x0f8a193ff464434486c0daf7db2a895884365d2bc84ba47a68fcf89c1b14b5b8" # keccak256('WETH')
+        _contractAddress: "${{WETH.address}}"
+      - fn: "registerContract"
+        _id: "0xc1c67c3a4be7f795c8f01881d2cee8200eb9c792f3b7e78a8063870ff5483408" # keccak256('BardsStaking')
+        _contractAddress: "${{BardsStaking.address}}"
+      - fn: "registerContract"
+        _id: "0x4817db94afb1e3f4a4ffe76df2ab84862e3b5a235dcfecd65f2a2595ad9d7302" # keccak256('BardsDaoData')
+        _contractAddress: "${{BardsDaoData.address}}"
+      - fn: "registerContract"
+        _id: "0x09155bee47fb4b626804f33e839932e594b14bb265f09bdcf740d6dd5c5cdf59" # keccak256('BardsCurationToken')
+        _contractAddress: "${{BardsCurationToken.address}}"
+      - fn: "registerContract"
+        _id: "0x966f1e8d8d8014e05f6ec4a57138da9be1f7c5a7f802928a18072f7c53180761" # keccak256('RewardsManager')
+        _contractAddress: "${{RewardsManager.address}}"
+      - fn: "registerContract"
+        _id: "0xc713c3df6d14cdf946460395d09af88993ee2b948b1a808161494e32c5f67063" # keccak256('EpochManager')
+        _contractAddress: "${{EpochManager.address}}"
+      - fn: "registerContract"
+        _id: "0xa0a8c9d175a3a991fd3ce91d525b8af4f923a234107ecd0a0073a0e644b8d6a4" # keccak256('TransferMinter')
+        _contractAddress: "${{TransferMinter.address}}"
+      - fn: "whitelistCurrency"
+        currency: "${{BardsCurationToken.address}}"
+        toWhitelist: true
+      - fn: "whitelistCurrency"
+        currency: "${{WETH.address}}"
+        toWhitelist: true
+      - fn: "whitelistMarketModule"
+        marketModule: "${{FixPriceMarketModule.address}}"
+        whitelist: true
+      - fn: "whitelistMarketModule"
+        marketModule: "${{FreeMarketModule.address}}"
+        whitelist: true
+      - fn: "whitelistMinterModule"
+        minterModule: "${{TransferMinter.address}}"
+        whitelist: true
+      - fn: "whitelistMinterModule"
+        minterModule: "${{CloneMinter.address}}"
+        whitelist: true
+  BardsDaoData:
+    proxy: true
+    init:
+      governance: *governor
+      treasury: *treasury
+      protocolFee: 10000 # in parts per million, 1%
+      defaultCurationBps: 100000 # in parts per million, 10%
+      defaultStakingBps: 100000 # in parts per million, 10%
+  EpochManager:
+    proxy: true
+    init:
+      _HUB: "${{BardsHub.address}}"
+      _epochLength: 554 # length in hours = lengthInBlocks*13/60/60 (~13 second blocks)
+    calls:
+      - fn: "syncAllContracts"
+  RewardsManager:
+    proxy: true
+    init:
+      _HUB: "${{BardsHub.address}}"
+      _issuanceRate: "1000000012184945188" # per block increase of total supply, blocks in a year = 365*60*60*24/13
+      _inflationChange: 3
+      _targetBondingRate: 500000
+    calls:
+      - fn: "syncAllContracts"
+  BardsCurationToken:
+    proxy: true
+    init:
+      _HUB: "${{BardsHub.address}}"
+      _initialSupply: "10000000000000000000000000000" # in wei, 10 billion
+    calls:
+      - fn: "addMinter"
+        minter: "${{RewardsManager.address}}"
+      - fn: "syncAllContracts"
+  BardsShareToken:
+    proxy: true
+    # calls:
+    #   - fn: "approveAll"
+  BardsStaking:
+    proxy: true
+    init:
+      _HUB: "${{BardsHub.address}}"
+      _bondingCurve: "${{BancorFormula.address}}"
+      _bardsShareTokenImpl: "${{BardsShareToken.address}}"
+      _defaultStakingReserveRatio: 500000 # in parts per million
+      _stakingTaxPercentage: 5000 # parts per million
+      _minimumStaking: "10000000000000000000000" # in wei
+      _stakingAddress: *stakingTreasury
+      _rebateAlphaNumerator: 77 # rebateAlphaNumerator / rebateAlphaDenominator
+      _rebateAlphaDenominator: 100 # rebateAlphaNumerator / rebateAlphaDenominator
+      _thawingPeriod: 6646 # in blocks
+      _maxAllocationEpochs: 4 # in epochs
+      _channelDisputeEpochs: 2 # in epochs
+    calls:
+      - fn: "syncAllContracts"
+  FixPriceMarketModule:
+    init:
+      _hub: "${{BardsHub.address}}"
+      _royaltyEngine: "${{RoyaltyEngine.address}}"
+      _stakingAddress: *stakingTreasury
+    calls:
+      - fn: "syncAllContracts"
+  FreeMarketModule:
+    init:
+      _hub: "${{BardsHub.address}}"
+      _royaltyEngine: "${{RoyaltyEngine.address}}"
+      _stakingAddress: *stakingTreasury
+    calls:
+      - fn: "syncAllContracts"
+  CloneMinter:
+    init:
+      _hub: "${{BardsHub.address}}"
+    calls:
+      - fn: "syncAllContracts"
+  TransferMinter:
+    init:
+      _hub: "${{BardsHub.address}}"
+    calls:
+      - fn: "syncAllContracts"
+
+  # Only in localhost
+  RoyaltyEngine:
+    init:
+      _royaltyRecipient: '0x0000000000000000000000000000000000000000'

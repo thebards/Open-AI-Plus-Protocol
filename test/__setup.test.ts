@@ -216,10 +216,21 @@ before(async function () {
 		bardsDaoData.address
 	);
 	// Bards Curation Tokens
-	bardsCurationToken = await new BardsCurationToken__factory(deployer).deploy(
-		bardsHub.address,
-		DEFAULTS.token.initialSupply
+	let bardsCurationTokenImpl = await new BardsCurationToken__factory(deployer).deploy();
+	let bardsCurationTokenData = bardsCurationTokenImpl.interface.encodeFunctionData(
+		'initialize',
+		[ 
+			bardsHub.address,
+			DEFAULTS.token.initialSupply
+		]
+	)
+	let bardsCurationTokenProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		bardsCurationTokenImpl.address,
+		deployerAddress,
+		bardsCurationTokenData
 	);
+	bardsCurationToken = BardsCurationToken__factory.connect(bardsCurationTokenProxy.address, user)
+
 	await bardsHub.connect(governance).registerContract(
 		utils.id('BardsCurationToken'),
 		bardsCurationToken.address
@@ -288,7 +299,9 @@ before(async function () {
 			testWallet.address,
 			DEFAULTS.staking.alphaNumerator,
 			DEFAULTS.staking.alphaDenominator,
-			DEFAULTS.staking.thawingPeriod
+			DEFAULTS.staking.thawingPeriod,
+			DEFAULTS.staking.channelDisputeEpochs,
+			DEFAULTS.staking.maxAllocationEpochs
 		]
 	)
 	let bardsStakingProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
@@ -305,7 +318,7 @@ before(async function () {
 	// WETH
 	weth = await new WETH__factory(deployer).deploy();
 	await bardsHub.connect(governance).registerContract(
-		utils.id('IWETH'),
+		utils.id('WETH'),
 		weth.address
 	);
 
@@ -341,12 +354,14 @@ before(async function () {
 	// market and mint module
 	freeMarketModule = await new FreeMarketModule__factory(deployer).deploy(
 		bardsHub.address,
-		royaltyEngine.address
+		royaltyEngine.address,
+		testWallet.address
 	)
 
 	fixPriceMarketModule = await new FixPriceMarketModule__factory(deployer).deploy(
 		bardsHub.address,
-		royaltyEngine.address
+		royaltyEngine.address,
+		testWallet.address
 	);
 	
 	await expect(

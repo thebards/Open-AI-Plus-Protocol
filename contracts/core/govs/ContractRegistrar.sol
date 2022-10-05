@@ -73,7 +73,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
      * @return IWETH contract registered with HUB
      */
     function iWETH() internal view returns (IWETH) {
-        return IWETH(_resolveContract(keccak256("IWETH")));
+        return IWETH(_resolveContract(keccak256("WETH")));
     }
 
     /**
@@ -159,7 +159,7 @@ abstract contract ContractRegistrar is IContractRegistrar {
      * HUB to ensure the protocol is using the latest version
      */
     function syncAllContracts() external {
-        _syncContract("IWETH");
+        _syncContract("WETH");
         _syncContract("BardsDaoData");
         _syncContract("BardsStaking");
         _syncContract("BardsCurationToken");

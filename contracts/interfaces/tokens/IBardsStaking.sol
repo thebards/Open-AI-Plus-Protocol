@@ -27,6 +27,8 @@ interface IBardsStaking {
      * @param _rebateAlphaNumerator The alphaNumerator of rebating;
      * @param _rebateAlphaDenominator The alphaDenominator of rebating;
      * @param _thawingPeriod The thawing period;
+     * @param _channelDisputeEpochs _channelDisputeEpochs
+     * @param _maxAllocationEpochs _maxAllocationEpochs
      */
     function initialize(
         address _HUB,
@@ -38,7 +40,9 @@ interface IBardsStaking {
         address _stakingAddress,
         uint32 _rebateAlphaNumerator,
         uint32 _rebateAlphaDenominator,
-        uint32 _thawingPeriod
+        uint32 _thawingPeriod,
+        uint32 _channelDisputeEpochs,
+        uint32 _maxAllocationEpochs
     ) external;
 
     /**

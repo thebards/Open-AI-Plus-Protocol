@@ -34,14 +34,15 @@ abstract contract MarketModuleBase is ContractRegistrar {
 
     function _initialize(
         address _hub, 
-        address _royaltyEngine
+        address _royaltyEngine,
+        address _stakingAddress
     ) internal {
         if (_hub == address(0) || _royaltyEngine == address(0)) revert Errors.InitParamsInvalid();
         ContractRegistrar._initialize(_hub);
 
         weth = iWETH();
         royaltyEngine = IRoyaltyEngineV1(_royaltyEngine);
-        stakingAddress = bardsStaking().getStakingAddress();
+        stakingAddress = _stakingAddress;
         
         emit Events.MarketModuleBaseInitialized(
             stakingAddress,

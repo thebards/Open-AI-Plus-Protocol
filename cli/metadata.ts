@@ -13,7 +13,7 @@ interface AccountMetadata {
 	displayName
 }
 
-interface SubgraphMetadata {
+interface CurationMetadata {
 	description: string
 	displayName: string
 	image: string
@@ -26,8 +26,8 @@ interface VersionMetadata {
 	description: string
 }
 
-const jsonToSubgraphMetadata = (json): SubgraphMetadata => {
-	const subgraphMetadata: SubgraphMetadata = {
+const jsonToCurationMetadata = (json): CurationMetadata => {
+	const subgraphMetadata: CurationMetadata = {
 		description: checkString(json.description),
 		displayName: checkString(json.displayName),
 		image: checkString(json.image),
@@ -67,9 +67,9 @@ const checkString = (field): string => {
 export {
 	ProtocolState,
 	AccountMetadata,
-	SubgraphMetadata,
+	CurationMetadata,
 	VersionMetadata,
-	jsonToSubgraphMetadata,
+	jsonToCurationMetadata,
 	jsonToVersionMetadata,
 	jsonToAccountMetadata,
 }

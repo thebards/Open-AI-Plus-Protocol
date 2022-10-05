@@ -29,9 +29,10 @@ contract FreeMarketModule is MarketModuleBase, IMarketModule {
 
     constructor(
         address _hub, 
-        address _royaltyEngine
+        address _royaltyEngine,
+        address _stakingAddress
     ) {
-        MarketModuleBase._initialize(_hub, _royaltyEngine);
+        MarketModuleBase._initialize(_hub, _royaltyEngine, _stakingAddress);
     }
 
     /**

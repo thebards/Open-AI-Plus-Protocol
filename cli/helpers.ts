@@ -10,9 +10,9 @@ import * as bs58 from 'bs58'
 import { logger } from './logging'
 
 import {
-	SubgraphMetadata,
+	CurationMetadata,
 	VersionMetadata,
-	jsonToSubgraphMetadata,
+	jsonToCurationMetadata,
 	jsonToVersionMetadata,
 } from './metadata'
 
@@ -47,17 +47,17 @@ export const pinMetadataToIPFS = async (
 	ipfs: string,
 	type: string,
 	path?: string, // Only pass path or metadata, not both
-	metadata?: SubgraphMetadata | VersionMetadata,
+	metadata?: CurationMetadata | VersionMetadata,
 ): Promise<string> => {
 	if (metadata == undefined && path != undefined) {
 		if (type == 'subgraph') {
-			metadata = jsonToSubgraphMetadata(JSON.parse(fs.readFileSync(__dirname + path).toString()))
+			metadata = jsonToCurationMetadata(JSON.parse(fs.readFileSync(__dirname + path).toString()))
 			logger.info('Meta data:')
-			logger.info(`  Subgraph Description:     ${metadata.description}`)
-			logger.info(`Subgraph Display Name:    ${metadata.displayName}`)
-			logger.info(`  Subgraph Image:           ${metadata.image}`)
-			logger.info(`  Subgraph Code Repository: ${metadata.codeRepository}`)
-			logger.info(`  Subgraph Website:         ${metadata.website}`)
+			logger.info(`  Curation Description:     ${metadata.description}`)
+			logger.info(`Curation Display Name:    ${metadata.displayName}`)
+			logger.info(`  Curation Image:           ${metadata.image}`)
+			logger.info(`  Curation Code Repository: ${metadata.codeRepository}`)
+			logger.info(`  Curation Website:         ${metadata.website}`)
 		} else if (type == 'version') {
 			metadata = jsonToVersionMetadata(JSON.parse(fs.readFileSync(__dirname + path).toString()))
 			logger.info('Meta data:')
