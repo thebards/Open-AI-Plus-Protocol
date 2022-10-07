@@ -1020,7 +1020,7 @@ context('Bards Staking', () => {
 				toBCT('123'),
 				toBCT('1'), // should mint below minimum deposit
 			]
-
+ 
 			// Mint multiple times
 			for (const tokensToDeposit of tokensToDepositMany) {
 				const stakingOut = await stakingReturningPair(thisBardsStaking, userTwo, toBN(FIRST_PROFILE_ID), tokensToDeposit);

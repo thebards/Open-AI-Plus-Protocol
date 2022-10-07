@@ -2,10 +2,7 @@
 
 pragma solidity ^0.8.12;
 
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
-import {ContractRegistrar} from '../govs/ContractRegistrar.sol';
-import {Errors} from '../../utils/Errors.sol';
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 /**
  * @title BardsShareToken contract
@@ -21,22 +18,13 @@ import {Errors} from '../../utils/Errors.sol';
  * gas-saving purposes.
  */
 contract BardsShareToken is
-    VersionedInitializable,
-    ContractRegistrar,
-    ERC20
+    ERC20Upgradeable
 {
-    uint256 internal constant REVISION = 1;
 
-    constructor() ERC20("Bards Share Token", "BST"){}
-
-    function initialize(
-        address _HUB
-    ) 
+    function initialize() 
         external 
-        initializer 
-    {   
-        if (_HUB == address(0)) revert Errors.InitParamsInvalid();
-        ContractRegistrar._initialize(_HUB);
+        initializer {
+        ERC20Upgradeable.__ERC20_init("Bards Share Token", "BST");
     }
 
     function mint(address _to, uint256 _amount) public {
@@ -45,10 +33,6 @@ contract BardsShareToken is
 
     function burnFrom(address _account, uint256 _amount) public {
         _burn(_account, _amount);
-    }
-
-    function getRevision() internal pure override returns (uint256) {
-        return REVISION;
     }
 
 }

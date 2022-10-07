@@ -13,6 +13,8 @@ const chainMap = new MapWithGetKey<number>([
 	[1, 42161], // Ethereum Mainnet - Arbitrum One
 	[4, 421611], // Ethereum Rinkeby - Arbitrum Rinkeby
 	[5, 421613], // Ethereum Goerli - Arbitrum Goerli
+	[80001, 80001], // Polygon mumbai - Polygon mumbai
+	[137, 137], // Polygon Mainnet - polygon Mainnet
 	[1337, 412346], // Localhost - Arbitrum Localhost
 ])
 
@@ -21,6 +23,8 @@ const nameMap = new MapWithGetKey<string>([
 	['mainnet', 'arbitrum-one'], // Ethereum Mainnet - Arbitrum One
 	['rinkeby', 'arbitrum-rinkeby'], // Ethereum Rinkeby - Arbitrum Rinkeby
 	['goerli', 'arbitrum-goerli'], // Ethereum Goerli - Arbitrum Goerli
+	['mumbai', 'mumbai'], // Polygon mumbai - Polygon mumbai
+	['polygon', 'polygon'], // Polygon Mainnet - polygon Mainnet
 	['localnitrol1', 'localnitrol2'], // Arbitrum testnode L1 - Arbitrum testnode L2
 ])
 

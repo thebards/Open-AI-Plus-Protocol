@@ -236,19 +236,19 @@ before(async function () {
 		bardsCurationToken.address
 	);
 	// Bards Share Tokens
-	let bardsShareTokenImpl = await new BardsShareToken__factory(deployer).deploy();
-	let bardsShareTokenData = bardsShareTokenImpl.interface.encodeFunctionData(
-		'initialize',
-		[
-			bardsHub.address,
-		]
-	)
-	let bardsShareTokenProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
-		bardsShareTokenImpl.address,
-		deployerAddress,
-		bardsShareTokenData
-	);
-	bardsShareToken = BardsShareToken__factory.connect(bardsShareTokenProxy.address, user)
+	bardsShareToken = await new BardsShareToken__factory(deployer).deploy();
+	// let bardsShareTokenData = bardsShareTokenImpl.interface.encodeFunctionData(
+	// 	'initialize',
+	// 	[
+	// 		bardsHub.address,
+	// 	]
+	// )
+	// let bardsShareTokenProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+	// 	bardsShareTokenImpl.address,
+	// 	deployerAddress,
+	// 	bardsShareTokenData
+	// );
+	// bardsShareToken = BardsShareToken__factory.connect(bardsShareTokenProxy.address, user)
 
 	// Epoch Manager
 	let epochManagerImpl = await new EpochManager__factory(deployer).deploy();
