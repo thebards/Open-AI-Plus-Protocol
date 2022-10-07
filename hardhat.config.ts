@@ -6,6 +6,7 @@ import { NETWORKS_RPC_URL } from './helper-hardhat-config';
 import * as dotenv from 'dotenv';
 import glob from 'glob';
 import path from 'path';
+import './bre/bre';
 
 dotenv.config();
 
@@ -33,7 +34,7 @@ const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 const TRACK_GAS = process.env.TRACK_GAS === 'true';
-const BLOCK_EXPLORER_KEY = process.env.BLOCK_EXPLORER_KEY || '';
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || '';
 
 const getCommonNetworkConfig = (networkName: eNetwork, chainId: number) => ({
   url: NETWORKS_RPC_URL[networkName] ?? '',
@@ -44,7 +45,7 @@ const getCommonNetworkConfig = (networkName: eNetwork, chainId: number) => ({
     initialIndex: 0,
     count: 20,
   },
-  bardsConfig: `configs/theBards.${networkName}.yml`
+  bardsConfig: `configs/bards.${networkName}.yml`
 });
 
 const mainnetFork = MAINNET_FORK
@@ -98,13 +99,13 @@ const config: HardhatUserConfig = {
         balance,
       })),
       forking: mainnetFork,
-      allowUnlimitedContractSize: true,
+      allowUnlimitedContractSize: false,
     },
   },
   bards: {
     addressBook: process.env.ADDRESS_BOOK ?? 'addresses.json',
-    l1GraphConfig: process.env.GRAPH_CONFIG ?? 'configs/bards.localhost.yml',
-    l2GraphConfig: process.env.L2_GRAPH_CONFIG,
+    l1BardsConfig: process.env.BARDS_CONFIG ?? 'configs/bards.localhost.yml',
+    l2BardsConfig: process.env.L2_BARDS_CONFIG,
   },
   gasReporter: {
     enabled: TRACK_GAS ? true : false,
@@ -118,6 +119,9 @@ const config: HardhatUserConfig = {
     flat: true,
     runOnCompile: true,
   },
+  etherscan: {
+    apiKey: ETHERSCAN_API_KEY,
+  },
   contractSizer: {
     alphaSort: true,
     runOnCompile: false,
@@ -130,9 +134,6 @@ const config: HardhatUserConfig = {
   spdxLicenseIdentifier: {
     overwrite: false,
     runOnCompile: false,
-  },
-  etherscan: {
-    apiKey: BLOCK_EXPLORER_KEY,
   },
 };
 

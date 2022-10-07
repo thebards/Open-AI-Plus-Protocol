@@ -10,6 +10,7 @@ task('migrate', 'Migrate contracts')
 	.addParam('bardsConfig', cliOpts.bardsConfig.description, cliOpts.bardsConfig.default)
 	.addFlag('skipConfirmation', cliOpts.skipConfirmation.description)
 	.addFlag('force', cliOpts.force.description)
+	.addFlag('callFn', cliOpts.callFn.description)
 	.addFlag('autoMine', 'Enable auto mining after deployment on local networks')
 	.setAction(async (taskArgs, hre) => {
 		const accounts = await hre.ethers.getSigners()

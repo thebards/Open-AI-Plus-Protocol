@@ -56,6 +56,12 @@ export const cliOpts = {
 		type: 'boolean',
 		default: false,
 	},
+	callFn: {
+		alias: 'call-fn',
+		description: "Call functions of contract",
+		type: 'boolean',
+		default: true,
+	},
 	skipConfirmation: {
 		alias: 'skip-confirmation',
 		description: 'Skip confirmation prompt on write actions',

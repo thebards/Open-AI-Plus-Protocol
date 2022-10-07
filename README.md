@@ -3,7 +3,7 @@
 ![logo](resources/imgs/thebards_logo.png)
 TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
 
-![TheBards protocol](resources/imgs/thebards_arch.png)
+![TheBards protocol](resources/imgs/thebards_arch2.png)
 
 ## Documentation
 
@@ -25,14 +25,11 @@ For a general overview of the protocol see:
 
 - Support future applications such as 1. Information Curation Applications; 2. Audio or video streaming applications; 3. book or comic applications. 4.Decentralized NFT Market Applications. 5. Decentralized e-Print archive, like arXiv.org, etc..
 
-
-## Contracts
-
-### Curation
+## Curation Overview
 
 Curation, as an NFT, is the core of the protocol, that is, it can be cast into a profile that represents the user's identity, or it can be any form of content published by the user, which can be collected and pledged.
 
-#### Curation Types
+### Curation Types
 
 - **$Self\ Curation$**: Presented as a CV or profile NFT that explains who we are, what we have and what we do.
   
@@ -43,10 +40,12 @@ Curation, as an NFT, is the core of the protocol, that is, it can be cast into a
 - **$Protfolio\ Curation$**: Equally and purposefully combine content into a list, such as a jazz playlist.
   
 - **$Feed\ Curation$**: Featured or specific types of information streams, such as news, funny videos, audio novels, etc.
+
+- **$Dapp\ Curation$**: Various types of applications developed based on thebards protocol.
   
 ![curation types](resources/imgs/curation_types.png)
 
-#### Stakeholders
+### Stakeholders
 
 Curation should allow nesting, each level of curation can share part of the revenue of NFT sales, and the stakeholders of NFT sales can also be multi-faceted, including creators, curators, delegators, and Developer.
 
@@ -60,25 +59,111 @@ As shown in the figure below, the system includes two value distribution modes: 
 
 ![static and dynamic distribution](resources/imgs/curation_nested.png)
 
-### Epoch Manager
-
-Keeps track of protocol Epochs. Epochs are configured to be a certain block length, which is configurable by The Governor.
+## Contracts
 
 ### BardsHub
 
 The BardsHub is a contract that has a registry of all protocol contract addresses. It also is the owner of all the contracts. The owner of the BardsHub is The Governor, which makes The Governor the address that can configure the whole protocol. The Governor is The Bards Council.
 
+### Epoch Manager
+
+Keeps track of protocol Epochs. Epochs are configured to be a certain block length, which is configurable by The Governor.
+
 ### Rewards Manager
 
 Tracks how inflationary TBT rewards should be handed out. It relies on the Curation contract and the Staking contract. Signaled TBT in Curation determine what percentage of inflationary tokens go towards each curation.
 
-### Staking
+### Bards Staking
 
-The Staking contract allows Delegators to Stake on curations. The contract also contains the slashing functionality.
+The Staking contract allows Delegators to Stake on curations.
 
-### The Bards Token
+### NFT Market Moduels
 
-An ERC-20 token (TBT) that is used as a work token to power the network incentives. The token is inflationary.
+Decentralized NFT trading market protocol, curators can freely choose any of the following trading methods when creating a curation.
+
+- FixPriceMarketModule
+- FreeMarketModule
+
+### Programmable NFT Minter Modules
+
+According to different scenarios and needs, curators can freely choose any of the following programmable NFT casting methods when creating a curation.
+
+- TransferMinter
+- CloneMinter
+
+### The Bards Curation Token
+
+An ERC-20 token (BCT) that is used as a work token to power the network incentives. The token is inflationary.
+
+### The Bards Share Token
+
+An ERC-20 token (BST) that is used as a share token. The delegator pledges BCT to the curation in exchange for BST to represent the stake.
+
+## Contract Addresses
+
+The testnet runs on Goerli, while mainnet is on Ethereum Mainnet. The addresses for both of these can be found in `./addresses.json`.
+
+## Local Setup
+
+To setup the contracts locally, checkout the `dev` branch, then run:
+
+```bash
+yarn
+yarn build
+```
+
+## Testing
+
+For testing details see [TESTING.md](./TESTING.md).
+
+## Deploying Contracts
+
+In order to run deployments, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+## Interacting with the contracts
+
+There are three ways to interact with the contracts through this repo:
+
+### Hardhat
+
+The most straightforward way to interact with the contracts is through the hardhat console. We have extended the hardhat runtime environment to include all of the contracts. This makes it easy to run the console with autocomplete for all contracts and all functions. It is a quick and easy way to read and write to the contracts.
+
+```
+# A console to interact with testnet contracts
+npx hardhat console --network goerli
+```
+
+### Hardhat Tasks
+
+There are hardhat tasks under the `/tasks` folder. Most tasks are for complex queries to get back data from the protocol.
+
+### CLI
+
+There is a CLI that can be used to read or write to the contracts. It includes scripts to help with deployment.
+
+## Environment
+
+When running the Hardhat console or tasks you can set what network and accounts to use when sending transactions.
+
+### Network
+
+Selecting a network requires just passing `--network <name>` when running Hardhat. It's important that the network exists in the Hardhat configuration file.
+
+_There is a special network called `localhost` that connects it to a node running on localhost._
+
+### Accounts
+
+The accounts used depends on a few environment variables:
+
+- If MNEMONIC is set you will have available the set of addresses derived from the seed.
+- If PRIVATE_KEY is set, just that account is imported. MNEMONIC always takes precedence over PRIVATE_KEY.
+- If no MNEMONIC or PRIVATE_KEY is set it will use the remote accounts from the provider node.
+- You can always get an account using `ethers.getSigner(<address>)`
+
+Considerations when forking a chain:
+
+- When running on the `localhost` network it will use by default a deterministic seed for testing purposes. If you want to connect to a local node that is forking while retaining the capability to impersonate accounts or use local accounts you need to set the FORK=true environment variable.
+- 
 
 ## Development
 

@@ -10,7 +10,8 @@ import { HttpNetworkHDAccountsConfig, NetworksConfig } from 'hardhat/types'
 const namedAccountList: AccountNames[] = [
 	'governor',
 	'treasury',
-	'stakingTreasury'
+	'stakingTreasury',
+	'proxyAdmin'
 ]
 
 export async function getNamedAccounts(

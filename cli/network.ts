@@ -192,8 +192,6 @@ export const deployContract = async (
 	}
 
 	// Deploy
-	console.log(name)
-	console.log(args)
 	const factory = getContractFactory(name, libraries)
 	const contract = await factory.connect(sender).deploy(...args)
 	const txHash = contract.deployTransaction.hash
@@ -221,10 +219,13 @@ export const deployContractWithProxy = async (
 	const { contract } = await deployContract(name, [], sender, true, overrides)
 
 	// Wrap implementation with proxy
+	let newArgs: Array<ContractParam> = []
+	let data = contract.interface.encodeFunctionData('initialize', args);
+	newArgs.push(data)
 	const proxy = await wrapContractWithProxy(
 		proxyAdmin,
 		contract,
-		args,
+		newArgs,
 		sender,
 		overrides,
 	)
@@ -239,15 +240,12 @@ export const wrapContractWithProxy = async (
 	args: Array<ContractParam>,
 	sender: Signer,
 	overrides?: Overrides,
-): Promise<Contract> => {
-	let newArgs: Array<ContractParam> = []
-	let data = contract.interface.encodeFunctionData('initialize', args);
-	newArgs.push(data)
+): Promise<Contract, string> => {
 	// Deploy proxy
 	const { contract: proxy } = await deployProxy(
 		contract.address,
 		await proxyAdmin.getAddress(),
-		newArgs,
+		args,
 		sender,
 		overrides,
 	)
@@ -263,7 +261,6 @@ export const deployContractAndSave = async (
 ): Promise<Contract> => {
 	// Deploy the contract
 
-	console.log(args)
 	const deployResult = await deployContract(name, args, sender)
 
 	// Save address entry
@@ -295,7 +292,10 @@ export const deployContractWithProxyAndSave = async (
 	const contract = await deployContractAndSave(proxyAdmin, name, [], sender, addressBook)
 
 	// Wrap implementation with proxy
-	const proxy = await wrapContractWithProxy(proxyAdmin, contract, args, sender)
+	let newArgs: Array<ContractParam> = []
+	let data = contract.interface.encodeFunctionData('initialize', args);
+	newArgs.push(data)
+	const proxy = await wrapContractWithProxy(proxyAdmin, contract, newArgs, sender)
 
 	// Overwrite address entry with proxy
 	const artifact = loadArtifact('TransparentUpgradeableProxy')
@@ -307,6 +307,7 @@ export const deployContractWithProxyAndSave = async (
 		runtimeCodeHash: hashHexString(await sender.provider!.getCode(proxy.address)),
 		txHash: proxy.deployTransaction.hash,
 		proxy: true,
+		proxyData: data,
 		implementation: contractEntry,
 	})
 	logger.info('> Contract saved to address book')

@@ -11,4 +11,3 @@ Testing is done with the following stack:
 
 To test all the smart contracts, use `yarn test`.
 To test a single file run: `npx hardhat test test/<FILE_NAME>.ts`
-

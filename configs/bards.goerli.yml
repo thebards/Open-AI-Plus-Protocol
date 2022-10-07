@@ -87,6 +87,8 @@ contracts:
       - fn: "syncAllContracts"
   BardsShareToken:
     proxy: true
+    init:
+      _HUB: "${{BardsHub.address}}"
     # calls:
     #   - fn: "approveAll"
   BardsStaking:

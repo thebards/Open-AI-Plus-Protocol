@@ -5,7 +5,7 @@ import { isFullyQualifiedName, parseFullyQualifiedName } from 'hardhat/utils/con
 import { TASK_COMPILE } from 'hardhat/builtin-tasks/task-names'
 import { loadEnv } from '../../cli/env'
 import { cliOpts } from '../../cli/defaults'
-import { getContractConfig } from '../../cli/config'
+import { getContractConfig, readConfig } from '../../cli/config'
 import { Wallet } from 'ethers'
 import fs from 'fs'
 import path from 'path'
@@ -25,7 +25,7 @@ task('sourcify', 'Verifies contract on sourcify')
 			throw new Error(`Contract source ${contractSource} not found.`)
 		}
 
-		await hre.run(TASK_COMPILE)
+		// await hre.run(TASK_COMPILE)
 		await submitSourcesToSourcify(hre, {
 			source: contractSource,
 			name: contractName,
@@ -57,7 +57,7 @@ task('sourcifyAll', 'Verifies all contracts on sourcify')
 
 					await hre.run('sourcify', {
 						address: contract.address,
-						contract: 'contracts/upgrades/GraphProxy.sol:GraphProxy',
+						contract: 'contracts/upgradeablity/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy',
 					})
 				}
 
@@ -84,10 +84,9 @@ task('verifyAll', 'Verifies all contracts on etherscan')
 		}
 
 		console.log(`> Verifying all contracts on chain ${chainName}[${chainId}]...`)
-		const { addressBook, bardsConfig } = hre.bards({
-			addressBook: args.addressBook,
-			bardsConfig: args.bardsConfig,
-		})
+		const { addressBook } = hre.bards(args)
+
+		const bardsConfig = readConfig(args.bardsConfig)
 
 		const accounts = await hre.ethers.getSigners()
 		const env = await loadEnv(args, accounts[0] as unknown as Wallet)
@@ -104,13 +103,13 @@ task('verifyAll', 'Verifies all contracts on etherscan')
 
 				if (contract.implementation) {
 					console.log('Contract is upgradeable, verifying proxy...')
-					const proxyAdmin = addressBook.getEntry('GraphProxyAdmin')
+					const proxyAdminAddress = bardsConfig.general['proxyAdmin']
 
 					// Verify proxy
 					await safeVerify(hre, {
 						address: contract.address,
-						contract: 'contracts/upgrades/GraphProxy.sol:GraphProxy',
-						constructorArgsParams: [contract.implementation.address, proxyAdmin.address],
+						contract: 'contracts/upgradeablity/TransparentUpgradeableProxy.sol:TransparentUpgradeableProxy',
+						constructorArgsParams: [contract.implementation.address, proxyAdminAddress, contract.proxyData],
 					})
 				}
 

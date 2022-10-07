@@ -60,7 +60,7 @@ export const upgradeProxy = async (cli: CLIEnvironment, cliArgs: CLIArgs): Promi
 	const proxyAdmin = getContractAt('GraphProxyAdmin', proxyAdminEntry.address).connect(cli.wallet)
 
 	// Get the current proxy and the new implementation contract
-	const proxy = getContractAt('GraphProxy', addressEntry.address).connect(cli.wallet)
+	const proxy = getContractAt('TransparentUpgradeableProxy', addressEntry.address).connect(cli.wallet)
 	const contract = getContractAt(contractName, implAddress).connect(cli.wallet)
 
 	// Check if implementation already set
@@ -114,18 +114,6 @@ export const upgradeProxy = async (cli: CLIEnvironment, cliArgs: CLIArgs): Promi
 		} else {
 			logger.info('> upgrade() tx failed!')
 			return
-		}
-
-		// Accept upgrade from the implementation
-		if (initArgs) {
-			const initTx = await contract.populateTransaction.initialize(...initArgs.split(','))
-			await sendTransaction(cli.wallet, proxyAdmin, 'acceptProxyAndCall', [
-				implAddress,
-				proxy.address,
-				initTx.data,
-			])
-		} else {
-			await sendTransaction(cli.wallet, proxyAdmin, 'acceptProxy', [implAddress, proxy.address])
 		}
 	}
 

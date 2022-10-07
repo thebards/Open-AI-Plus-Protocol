@@ -64,6 +64,7 @@ export async function submitSourcesToSourcify(
 		const submissionResponse = await axios.post(sourcifyUrl, formData, {
 			headers: formData.getHeaders(),
 		})
+		console.log(submissionResponse)
 		const { status } = submissionResponse.data.result[0]
 		if (status === 'perfect') {
 			console.log(` => contract ${contract.name} is now verified`)

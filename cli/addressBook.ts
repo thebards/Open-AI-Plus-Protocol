@@ -11,6 +11,7 @@ export type AddressBookEntry = {
 	runtimeCodeHash?: string
 	txHash?: string
 	proxy?: boolean
+	proxyData?: string
 	implementation?: AddressBookEntry
 	libraries?: { [libraryName: string]: string }
 }

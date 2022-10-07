@@ -22,6 +22,8 @@
         "@ethersproject/experimental": "^5.4.0",
         "@nomiclabs/hardhat-ethers": "^2.0.2",
         "@nomiclabs/hardhat-etherscan": "^2.1.1",
+        "@openzeppelin/contracts-upgradeable": "3.4.2",
+        "@openzeppelin/hardhat-upgrades": "^1.6.0",
         "@openzeppelin/contracts": "^4.5.0",
         "@rari-capital/solmate": "^6.4.0",
         "@typechain/hardhat": "3.0.0",
@@ -75,9 +77,9 @@
         "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
         "predeploy": "scripts/predeploy",
         "deploy": "yarn build && yarn predeploy && hardhat migrate",
-        "deploy-localhost": "yarn deploy --force --network localhost --graph-config config/graph.localhost.yml",
-        "deploy-goerli": "yarn deploy --force --network goerli --theBards-config config/theBards.goerli.yml",
-        "deploy-sepolia": "yarn deploy --force --network sepolia --theBards-config config/theBards.sepolia.yml",
+        "deploy-localhost": "yarn deploy --force --network localhost --bards-config configs/bards.localhost.yml",
+        "deploy-goerli": "yarn deploy --force --network goerli --bards-config configs/bards.goerli.yml",
+        "deploy-sepolia": "yarn deploy --force --network sepolia --bards-config configs/bards.sepolia.yml",
         "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
         "run-env": "npm i && tail -f /dev/null",
         "hardhat": "hardhat",
@@ -92,7 +94,8 @@
         "console:fork": "MAINNET_FORK=true hardhat console",
         "format": "prettier --write .",
         "lint": "eslint .",
-        "analyze": "scripts/analyze"
+        "analyze": "scripts/analyze",
+        "verify": "hardhat verify"
     },
     "author": "TheBards",
     "contributors": [

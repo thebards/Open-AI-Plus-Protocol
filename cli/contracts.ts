@@ -19,7 +19,7 @@ import {
 	FreeMarketModule,
 	CloneMinter,
 	TransferMinter,
-	IWETH
+	WETH
 } from '../dist/types/'
 
 export interface NetworkContracts {
@@ -35,7 +35,7 @@ export interface NetworkContracts {
 	FreeMarketModule: FreeMarketModule,
 	CloneMinter: CloneMinter,
 	TransferMinter: TransferMinter,
-	IWETH: IWETH
+	WETH: WETH
 }
 
 export const loadContracts = (

@@ -16,6 +16,7 @@ export type AccountNames =
 	| 'governor'
 	| 'treasury'
 	| 'stakingTreasury'
+	| 'proxyAdmin'
 
 export type NamedAccounts = {
 	[name in AccountNames]: SignerWithAddress

@@ -45,6 +45,8 @@ export const migrate = async (
 	const chainId = cli.chainId
 	const skipConfirmation = cliArgs.skipConfirmation
 	const proxyAdmin = cliArgs.proxyAdmin
+	const callFn = cliArgs.callFn
+	const contracts = cli.contracts
 
 	// console.log(utils.id('WETH') + " WETH")
 	// console.log(utils.id('BardsStaking') + " BardsStaking")
@@ -93,18 +95,23 @@ export const migrate = async (
 			cli.addressBook,
 			cli.wallet.provider,
 		)
+		const contractConfig = getContractConfig(bardsConfig, cli.addressBook, name, cli)
+
 		if (!force && isDeployed) {
 			logger.info(`${name} is up to date, no action required`)
 			logger.info(`Address: ${savedAddress}\n`)
+			if (callFn && contractConfig.calls) {
+				let contract = contracts[name]
+				pendingContractCalls.push({ name, contract, calls: contractConfig.calls })
+			}
 			continue
 		}
 	
 		// Get config and deploy contract
-		const contractConfig = getContractConfig(bardsConfig, cli.addressBook, name, cli)
 		const deployFn = contractConfig.proxy ? deployContractWithProxyAndSave : deployContractAndSave
 		const contract = await deployFn(
 			proxyAdmin,
-			name,
+			name, 
 			contractConfig.params.map((a) => a.value), // keep only the values
 			cli.wallet,
 			cli.addressBook,
