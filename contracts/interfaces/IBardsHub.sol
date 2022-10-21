@@ -468,18 +468,6 @@ interface IBardsHub {
 		view 
 		returns (string memory);
 
-	    /**
-     * @notice Returns the URI associated with a given curation.
-     *
-     * @param curationId The token ID of the curation to query.
-     *
-     * @return string The URI associated with a given publication.
-     */
-    function getContentURI(uint256 curationId) 
-		external 
-		view 
-		returns (string memory);
-
     /**
      * @notice Returns the profile token ID according to a given handle.
      *

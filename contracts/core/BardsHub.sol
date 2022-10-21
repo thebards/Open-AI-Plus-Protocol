@@ -906,9 +906,11 @@ contract BardsHub is
         return _curationById[curationId].minterMarketModule;
     }
 
-    /// @inheritdoc IBardsHub
-    function getContentURI(uint256 curationId)
-        external
+    /**
+     * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
+     */
+    function tokenURI(uint256 curationId)
+        public
         view
         override
         returns (string memory)
