@@ -907,15 +907,15 @@ contract BardsHub is
     }
 
     /**
-     * @dev Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
+     * @notice Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
-    function tokenURI(uint256 curationId)
+    function tokenURI(uint256 tokenId)
         public
         view
         override
         returns (string memory)
     {
-        return _curationById[curationId].contentURI;
+        return _curationById[tokenId].contentURI;
     }
 
     /// ****************************
