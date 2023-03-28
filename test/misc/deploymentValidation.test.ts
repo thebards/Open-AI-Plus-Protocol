@@ -100,7 +100,7 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 				DEFAULTS.staking.alphaNumerator,
 				DEFAULTS.staking.alphaDenominator,
 				DEFAULTS.staking.thawingPeriod,
-				DEFAULTS.staking.channelDisputeEpochs,
+				DEFAULTS.staking.claimThawingPeriod,
 				DEFAULTS.staking.maxAllocationEpochs
 			]
 		)
@@ -138,69 +138,137 @@ makeSuiteCleanRoom('Deployment Validation', () => {
 		);
 	});
 
-	it('Should fail to deploy a market module implementation with zero address hub or zero address royaltyEngine', async function () {
-		await expect(
-			new FixPriceMarketModule__factory(deployer).deploy(
+	it('Should fail to deploy a fix Price market module implementation with zero address hub or zero address royaltyEngine', async function () {
+		let fixPriceMarketModuleImpl = await new FixPriceMarketModule__factory(deployer).deploy()
+		let fixPriceMarketModuleData1 = fixPriceMarketModuleImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS,
 				royaltyEngine.address,
 				testWallet.address
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				fixPriceMarketModuleImpl.address,
+				deployerAddress,
+				fixPriceMarketModuleData1
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
 			ERRORS.INIT_PARAMS_INVALID
 		);
 
-		await expect(
-			new FixPriceMarketModule__factory(deployer).deploy(
+		let fixPriceMarketModuleData2 = fixPriceMarketModuleImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				bardsHub.address,
 				ZERO_ADDRESS,
 				testWallet.address
-			)
-		).to.be.revertedWithCustomError(
-			errorsLib,
-			ERRORS.INIT_PARAMS_INVALID
-		);
+			]
+		)
 
 		await expect(
-			new FreeMarketModule__factory(deployer).deploy(
-				ZERO_ADDRESS,
-				royaltyEngine.address,
-				testWallet.address
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				fixPriceMarketModuleImpl.address,
+				deployerAddress,
+				fixPriceMarketModuleData2
 			)
 		).to.be.revertedWithCustomError(
 			errorsLib,
 			ERRORS.INIT_PARAMS_INVALID
 		);
-
-		await expect(
-			new FreeMarketModule__factory(deployer).deploy(
-				bardsHub.address,
-				ZERO_ADDRESS,
-				testWallet.address
-			)
-		).to.be.revertedWithCustomError(
-			errorsLib,
-			ERRORS.INIT_PARAMS_INVALID
-		);
-		
 	});
 
-	it('Should fail to deploy a minter moudle implementation with zero address hub', async function () {
+	it('Should fail to deploy a free market module implementation with zero address hub or zero address royaltyEngine', async function () {
+		let freeMarketModuleImpl = await new FreeMarketModule__factory(deployer).deploy()
+		let freeMarketModuleData1 = freeMarketModuleImpl.interface.encodeFunctionData(
+			'initialize',
+			[
+				ZERO_ADDRESS,
+				royaltyEngine.address,
+				testWallet.address
+			]
+		)
 		await expect(
-			new TransferMinter__factory(deployer).deploy(
-				ZERO_ADDRESS
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				freeMarketModuleImpl.address,
+				deployerAddress,
+				freeMarketModuleData1
 			)
-		).to.be.revertedWith("HUB must be set");
+		).to.be.revertedWithCustomError(
+			errorsLib,
+			ERRORS.INIT_PARAMS_INVALID
+		);
+
+		let freeMarketModuleData2 = freeMarketModuleImpl.interface.encodeFunctionData(
+			'initialize',
+			[
+				bardsHub.address,
+				ZERO_ADDRESS,
+				testWallet.address
+			]
+		)
 
 		await expect(
-			new EmptyMinter__factory(deployer).deploy(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				freeMarketModuleImpl.address,
+				deployerAddress,
+				freeMarketModuleData2
+			)
+		).to.be.revertedWithCustomError(
+			errorsLib,
+			ERRORS.INIT_PARAMS_INVALID
+		);
+	});
+
+	it('Should fail to deploy a clone minter moudle implementation with zero address hub', async function () {
+		let cloneMinterImpl = await new CloneMinter__factory(deployer).deploy()
+		let cloneMinterData = cloneMinterImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				cloneMinterImpl.address,
+				deployerAddress,
+				cloneMinterData
 			)
 		).to.be.revertedWith("HUB must be set");
+	});
 
-		await expect(
-			new CloneMinter__factory(deployer).deploy(
+	it('Should fail to deploy a empty minter moudle implementation with zero address hub', async function () {
+		let EmptyMinterImpl = await new EmptyMinter__factory(deployer).deploy()
+		let EmptyMinterData = EmptyMinterImpl.interface.encodeFunctionData(
+			'initialize',
+			[
 				ZERO_ADDRESS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				EmptyMinterImpl.address,
+				deployerAddress,
+				EmptyMinterData
+			)
+		).to.be.revertedWith("HUB must be set");
+	});
+
+	it('Should fail to deploy a transfer minter moudle implementation with zero address hub', async function () {
+		let transferMinterImpl = await new TransferMinter__factory(deployer).deploy()
+		let transferMinterData = transferMinterImpl.interface.encodeFunctionData(
+			'initialize',
+			[
+				ZERO_ADDRESS
+			]
+		)
+		await expect(
+			new TransparentUpgradeableProxy__factory(deployer).deploy(
+				transferMinterImpl.address,
+				deployerAddress,
+				transferMinterData
 			)
 		).to.be.revertedWith("HUB must be set");
 	});

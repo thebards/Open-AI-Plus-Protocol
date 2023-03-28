@@ -907,7 +907,7 @@ contract BardsHub is
     }
 
     /**
-     * @notice Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
+     * @notice TODO Overrides the ERC721 tokenURI function to return the associated URI with a given profile.
      */
     function tokenURI(uint256 tokenId)
         public

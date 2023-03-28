@@ -442,7 +442,7 @@ library DataTypes {
      * - Null = indexer == address(0)
      * - Active = not Null && tokens > 0
      * - Closed = Active && closedAtEpoch != 0
-     * - Finalized = Closed && closedAtEpoch + channelDisputeEpochs > now()
+     * - Finalized = Closed && closedAtEpoch + claimThawingPeriod > now()
      * - Claimed = not Null && tokens == 0
      */
     enum AllocationState {

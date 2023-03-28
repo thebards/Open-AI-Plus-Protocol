@@ -9,6 +9,21 @@ pragma solidity ^0.8.12;
  * @notice This is the standard interface for all TheBards-compatible NFT market modules.
  */
 interface IMarketModule {
+
+    /**
+     * @notice Initializes the Market, setting the initial hub address as well as the royaltyEngine and stakingAddress in
+     * the Market contract.
+     *
+     * @param _hub The address of hub.
+     * @param _royaltyEngine The address of royaltyEngine.
+     * @param _stakingAddress The address of staking to.
+     */
+    function initialize(
+        address _hub, 
+        address _royaltyEngine,
+        address _stakingAddress
+    ) external;
+
 	/**
      * @notice Initializes data for a given publication being published. This can only be called by the hub.
      *

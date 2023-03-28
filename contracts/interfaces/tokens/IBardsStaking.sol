@@ -27,7 +27,7 @@ interface IBardsStaking {
      * @param _rebateAlphaNumerator The alphaNumerator of rebating;
      * @param _rebateAlphaDenominator The alphaDenominator of rebating;
      * @param _thawingPeriod The thawing period;
-     * @param _channelDisputeEpochs _channelDisputeEpochs
+     * @param _claimThawingPeriod _claimThawingPeriod
      * @param _maxAllocationEpochs _maxAllocationEpochs
      */
     function initialize(
@@ -41,7 +41,7 @@ interface IBardsStaking {
         uint32 _rebateAlphaNumerator,
         uint32 _rebateAlphaDenominator,
         uint32 _thawingPeriod,
-        uint32 _channelDisputeEpochs,
+        uint32 _claimThawingPeriod,
         uint32 _maxAllocationEpochs
     ) external;
 
@@ -77,9 +77,9 @@ interface IBardsStaking {
     /**
      * @notice Set the period in epochs that need to pass before fees in rebate pool can be claimed.
      * 
-     * @param _channelDisputeEpochs Period in epochs
+     * @param _claimThawingPeriod Period in epochs
      */
-    function setChannelDisputeEpochs(uint32 _channelDisputeEpochs) external;
+    function setClaimThawingPeriod(uint32 _claimThawingPeriod) external;
 
     /**
      * @notice Set the max time allowed for stake on allocations.

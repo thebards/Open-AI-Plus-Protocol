@@ -73,13 +73,15 @@
         "quick-test": "hardhat test",
         "spdx": "hardhat prepend-spdx-license",
         "size": "npm run compile && hardhat size-contracts",
+        "migrate-accounts-mumbai": "yarn hardhat migrate:accounts --network mumbai --bards-config configs/bards.mumbai.yml",
+        "migrate-accounts-polygon": "yarn hardhat migrate:accounts --network ploygon --bards-config configs/bards.polygon.yml",
         "full-deploy-local": "hardhat full-deploy --network localhost",
         "full-deploy-mumbai": "hardhat full-deploy --network mumbai",
         "predeploy": "scripts/predeploy",
         "deploy": "yarn build && yarn predeploy && hardhat migrate",
         "deploy-localhost": "yarn deploy --network localhost --bards-config configs/bards.localhost.yml",
+        "deploy-mumbai": "yarn deploy --network mumbai --bards-config configs/bards.mumbai.yml",
         "deploy-goerli": "yarn deploy --network goerli --bards-config configs/bards.goerli.yml",
-        "deploy-sepolia": "yarn deploy --network sepolia --bards-config configs/bards.sepolia.yml",
         "coverage": "npm run compile && hardhat coverage --temp temp-artifacts --testfiles test/emptyrun.coverage.ts && hardhat coverage --temp temp-artifacts --testfiles '!test/emptyrun.coverage.ts'",
         "run-env": "npm i && tail -f /dev/null",
         "hardhat": "hardhat",
@@ -99,7 +101,7 @@
     },
     "author": "TheBards",
     "contributors": [
-        "yingyuankai (yingyuankai.eth)"
+        "bards (thebards.eth)"
     ],
     "license": "MIT",
     "keywords": [

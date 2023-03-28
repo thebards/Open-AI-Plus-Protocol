@@ -103,10 +103,11 @@ contracts:
       _rebateAlphaDenominator: 100 # rebateAlphaNumerator / rebateAlphaDenominator
       _thawingPeriod: 6646 # in blocks
       _maxAllocationEpochs: 4 # in epochs
-      _channelDisputeEpochs: 2 # in epochs
+      _claimThawingPeriod: 2 # in epochs
     calls:
       - fn: "syncAllContracts"
   FixPriceMarketModule:
+    proxy: true
     init:
       _hub: "${{BardsHub.address}}"
       _royaltyEngine: "${{RoyaltyEngine.address}}"
@@ -114,6 +115,7 @@ contracts:
     calls:
       - fn: "syncAllContracts"
   FreeMarketModule:
+    proxy: true
     init:
       _hub: "${{BardsHub.address}}"
       _royaltyEngine: "${{RoyaltyEngine.address}}"
@@ -121,11 +123,13 @@ contracts:
     calls:
       - fn: "syncAllContracts"
   CloneMinter:
+    proxy: true
     init:
       _hub: "${{BardsHub.address}}"
     calls:
       - fn: "syncAllContracts"
   TransferMinter:
+    proxy: true
     init:
       _hub: "${{BardsHub.address}}"
     calls:

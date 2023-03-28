@@ -32,7 +32,7 @@ export const DEFAULTS = {
 		minimumStake: toBCT('10'),
 		reserveRatio: toBN('500000'),
 		stakingTaxPercentage: toBN('0'),
-		channelDisputeEpochs: 1,
+		claimThawingPeriod: 1,
 		maxAllocationEpochs: 5,
 		thawingPeriod: 1, // in epochs
 		alphaNumerator: 85,

@@ -11,6 +11,16 @@ pragma solidity ^0.8.12;
  */
 interface IProgrammableMinter {
 
+
+    /**
+     * @notice Initializes the ProgrammableMinter, setting the initial hub address in the Minter contract.
+     *
+     * @param _hub The address of hub.
+     */
+    function initialize(
+        address _hub
+    ) external;
+
 	/**
 	 * @notice Mint programmable NFT.
 	 * 

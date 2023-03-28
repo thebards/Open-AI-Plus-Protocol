@@ -33,7 +33,7 @@ import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable
  * 
  * @author TheBards Protocol
  * 
- * @notice Allows delegator to delegate to curations by staking Bards Curation Tokens (BCT). 
+ * @notice Allows delegator to delegate to curations by staking Bards Curation Tokens. 
  * Additionally, delegator will earn a share of all the curation share revenue that the curation generates.
  * A delegator deposit goes to a curation staking pool along with the deposits of other delegators,
  * only one such pool exists for each curation.
@@ -68,7 +68,7 @@ contract BardsStaking is
         uint32 _rebateAlphaNumerator,
         uint32 _rebateAlphaDenominator,
         uint32 _thawingPeriod,
-        uint32 _channelDisputeEpochs,
+        uint32 _claimThawingPeriod,
         uint32 _maxAllocationEpochs
     ) 
         public
@@ -86,7 +86,7 @@ contract BardsStaking is
             _rebateAlphaNumerator,
             _rebateAlphaDenominator,
             _thawingPeriod,
-            _channelDisputeEpochs,
+            _claimThawingPeriod,
             _maxAllocationEpochs
         );
     }
@@ -102,7 +102,7 @@ contract BardsStaking is
         uint32 _rebateAlphaNumerator,
         uint32 _rebateAlphaDenominator,
         uint32 _thawingPeriod,
-        uint32 _channelDisputeEpochs,
+        uint32 _claimThawingPeriod,
         uint32 _maxAllocationEpochs
     ) 
         internal
@@ -119,7 +119,7 @@ contract BardsStaking is
         _setStakingAddress(_stakingAddress);
         _setRebateRatio(_rebateAlphaNumerator, _rebateAlphaDenominator);
         _setThawingPeriod(_thawingPeriod);
-        _setChannelDisputeEpochs(_channelDisputeEpochs);
+        _setClaimThawingPeriod(_claimThawingPeriod);
         _setMaxAllocationEpochs(_maxAllocationEpochs);
     }
 
@@ -160,12 +160,12 @@ contract BardsStaking is
     }
 
     /// @inheritdoc IBardsStaking
-    function setChannelDisputeEpochs(uint32 _channelDisputeEpochs) 
+    function setClaimThawingPeriod(uint32 _claimThawingPeriod) 
         external 
         override 
         onlyGov
     {
-        _setChannelDisputeEpochs(_channelDisputeEpochs);
+        _setClaimThawingPeriod(_claimThawingPeriod);
     }
 
     /// @inheritdoc IBardsStaking
@@ -301,6 +301,7 @@ contract BardsStaking is
             if (stakingPool.bst == address(0)) {
                 // Use a minimal proxy to reduce gas cost
                 IBardsShareToken bst = IBardsShareToken(Clones.clone(bardsShareTokenImpl));
+                // todo naming it.
                 bst.initialize();
                 stakingPool.bst = address(bst);
             }
@@ -1087,17 +1088,17 @@ contract BardsStaking is
     /**
      * @notice Internal: Set the period in epochs that need to pass before fees in rebate pool can be claimed.
      * 
-     * @param _newChannelDisputeEpochs Period in epochs
+     * @param _newClaimThawingPeriod Period in epochs
      */
-    function _setChannelDisputeEpochs(uint32 _newChannelDisputeEpochs) 
+    function _setClaimThawingPeriod(uint32 _newClaimThawingPeriod) 
         private 
     {
-        require(_newChannelDisputeEpochs > 0, "!channelDisputeEpochs");
-        uint32 prevChannelDisputeEpochs = channelDisputeEpochs;
-        channelDisputeEpochs = _newChannelDisputeEpochs;
-        emit Events.ChannelDisputeEpochsSet(
-            prevChannelDisputeEpochs,
-            _newChannelDisputeEpochs,
+        require(_newClaimThawingPeriod > 0, "!claimThawingPeriod");
+        uint32 prevClaimThawingPeriod = claimThawingPeriod;
+        claimThawingPeriod = _newClaimThawingPeriod;
+        emit Events.ClaimThawingPeriodSet(
+            prevClaimThawingPeriod,
+            _newClaimThawingPeriod,
             block.timestamp
         );
     }
@@ -1113,7 +1114,7 @@ contract BardsStaking is
         require(_newMaxAllocationEpochs > 0, "!maxAllocationEpochs");
         uint32 prevMaxAllocationEpochs = maxAllocationEpochs;
         maxAllocationEpochs = _newMaxAllocationEpochs;
-        emit Events.ChannelDisputeEpochsSet(
+        emit Events.ClaimThawingPeriodSet(
             prevMaxAllocationEpochs,
             _newMaxAllocationEpochs,
             block.timestamp
@@ -1509,7 +1510,7 @@ contract BardsStaking is
         }
 
         uint256 epochs = epochManager().epochsSince(closedAtEpoch);
-        if (epochs >= channelDisputeEpochs) {
+        if (epochs >= claimThawingPeriod) {
             return DataTypes.AllocationState.Finalized;
         }
         return DataTypes.AllocationState.Closed;
@@ -1570,7 +1571,7 @@ contract BardsStaking is
         uint256 delegationRewards = _collectDelegationRewardsAndFees(
             allocations[_allocationId].curationId, 
             address(bct), 
-            totalRewards, 
+            totalRewards,
             curationData.stakingBps
         );
         uint256 remainingRewards = totalRewards.sub(delegationRewards);

@@ -33,7 +33,7 @@ abstract contract BardsStakingStorage {
     uint32 public thawingPeriod; // in blocks
 
     // Period for allocation to be finalized
-    uint32 public channelDisputeEpochs;
+    uint32 public claimThawingPeriod;
 
     // Maximum allocation time
     uint32 public maxAllocationEpochs;

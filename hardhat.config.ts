@@ -35,6 +35,7 @@ const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 const TRACK_GAS = process.env.TRACK_GAS === 'true';
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || '';
+const PLOYGONSCAN_API_KEY = process.env.PLOYGONSCAN_API_KEY || '';
 
 const getCommonNetworkConfig = (networkName: eNetwork, chainId: number) => ({
   url: NETWORKS_RPC_URL[networkName] ?? '',

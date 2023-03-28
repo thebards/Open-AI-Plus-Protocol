@@ -368,7 +368,7 @@ context('Bards Staking', () => {
 				DEFAULTS.staking.alphaNumerator,
 				DEFAULTS.staking.alphaDenominator,
 				DEFAULTS.staking.thawingPeriod,
-				DEFAULTS.staking.channelDisputeEpochs,
+				DEFAULTS.staking.claimThawingPeriod,
 				DEFAULTS.staking.maxAllocationEpochs
 			]
 		)
@@ -514,24 +514,24 @@ context('Bards Staking', () => {
 			})
 		})
 
-		context('channelDisputeEpochs', function () {
-			it('should set `channelDisputeEpochs`', async function () {
+		context('claimThawingPeriod', function () {
+			it('should set `claimThawingPeriod`', async function () {
 				const newValue = toBN('5')
-				await thisBardsStaking.connect(governance).setChannelDisputeEpochs(newValue)
-				expect(await thisBardsStaking.channelDisputeEpochs()).eq(newValue)
+				await thisBardsStaking.connect(governance).setClaimThawingPeriod(newValue)
+				expect(await thisBardsStaking.claimThawingPeriod()).eq(newValue)
 			})
 
-			it('reject set `channelDisputeEpochs` if not allowed', async function () {
+			it('reject set `claimThawingPeriod` if not allowed', async function () {
 				const newValue = toBN('5')
 				await expect(
-					thisBardsStaking.setChannelDisputeEpochs(newValue)
+					thisBardsStaking.setClaimThawingPeriod(newValue)
 				).to.be.revertedWith('Only governance can call')
 			})
 
-			it('reject set `channelDisputeEpochs` to zero', async function () {
+			it('reject set `claimThawingPeriod` to zero', async function () {
 				await expect(
-					thisBardsStaking.connect(governance).setChannelDisputeEpochs(0)
-				).to.be.revertedWith('!channelDisputeEpochs')
+					thisBardsStaking.connect(governance).setClaimThawingPeriod(0)
+				).to.be.revertedWith('!claimThawingPeriod')
 			})
 		})
 
@@ -731,7 +731,7 @@ context('Bards Staking', () => {
 							DEFAULTS.staking.alphaNumerator,
 							DEFAULTS.staking.alphaDenominator,
 							DEFAULTS.staking.thawingPeriod,
-							DEFAULTS.staking.channelDisputeEpochs,
+							DEFAULTS.staking.claimThawingPeriod,
 							DEFAULTS.staking.maxAllocationEpochs
 						]
 					)
@@ -811,7 +811,7 @@ context('Bards Staking', () => {
 						DEFAULTS.staking.alphaNumerator,
 						DEFAULTS.staking.alphaDenominator,
 						DEFAULTS.staking.thawingPeriod,
-						DEFAULTS.staking.channelDisputeEpochs,
+						DEFAULTS.staking.claimThawingPeriod,
 						DEFAULTS.staking.maxAllocationEpochs
 					]
 				)
@@ -890,7 +890,7 @@ context('Bards Staking', () => {
 					DEFAULTS.staking.alphaNumerator,
 					DEFAULTS.staking.alphaDenominator,
 					DEFAULTS.staking.thawingPeriod,
-					DEFAULTS.staking.channelDisputeEpochs,
+					DEFAULTS.staking.claimThawingPeriod,
 					DEFAULTS.staking.maxAllocationEpochs
 				]
 			)

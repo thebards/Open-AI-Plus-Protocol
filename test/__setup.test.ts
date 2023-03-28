@@ -313,7 +313,7 @@ before(async function () {
 			DEFAULTS.staking.alphaNumerator,
 			DEFAULTS.staking.alphaDenominator,
 			DEFAULTS.staking.thawingPeriod,
-			DEFAULTS.staking.channelDisputeEpochs,
+			DEFAULTS.staking.claimThawingPeriod,
 			DEFAULTS.staking.maxAllocationEpochs
 		]
 	)
@@ -340,41 +340,100 @@ before(async function () {
 
 	// Minters
 	// transfer minter as default minter.
-	transferMinter = await new TransferMinter__factory(deployer).deploy(
-		bardsHub.address
-	);
+	let transferMinterImpl = await new TransferMinter__factory(deployer).deploy();
+	let transferMinterData = transferMinterImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address
+		]
+	)
+	let transferMinterProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		transferMinterImpl.address,
+		deployerAddress,
+		transferMinterData
+	)
+	transferMinter = TransferMinter__factory.connect(transferMinterProxy.address, user)
 	await bardsHub.connect(governance).registerContract(
 		utils.id('TransferMinter'),
 		transferMinter.address
 	);
 	// clone minter
-	cloneMinter = await new CloneMinter__factory(deployer).deploy(
-		bardsHub.address
+	let cloneMinterImpl = await new CloneMinter__factory(deployer).deploy()
+	let cloneMinterData = cloneMinterImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address
+		]
 	)
+	let cloneMinterProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		cloneMinterImpl.address,
+		deployerAddress,
+		cloneMinterData
+	)
+	cloneMinter = CloneMinter__factory.connect(cloneMinterProxy.address, user)
 	await bardsHub.connect(governance).registerContract(
 		utils.id('CloneMinter'),
 		cloneMinter.address
 	);
 	// Empty minter
-	emptyMinter = await new EmptyMinter__factory(deployer).deploy(
-		bardsHub.address
+	let emptyMinterImpl = await new EmptyMinter__factory(deployer).deploy()
+	let emptyMinterData = emptyMinterImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address
+		]
 	)
+	let emptyMinterProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		emptyMinterImpl.address,
+		deployerAddress,
+		emptyMinterData
+	)
+	emptyMinter = EmptyMinter__factory.connect(emptyMinterProxy.address, user)
 	await bardsHub.connect(governance).registerContract(
 		utils.id('EmptyMinter'),
 		emptyMinter.address
 	);
 
-	// market and mint module
-	freeMarketModule = await new FreeMarketModule__factory(deployer).deploy(
-		bardsHub.address,
-		royaltyEngine.address,
-		testWallet.address
+	// free market module
+	let freeMarketModuleImpl = await new FreeMarketModule__factory(deployer).deploy()
+	let freeMarketModuleData = freeMarketModuleImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address,
+			royaltyEngine.address,
+			testWallet.address
+		]
 	)
+	let freeMarketModuleProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		freeMarketModuleImpl.address,
+		deployerAddress,
+		freeMarketModuleData
+	)
+	freeMarketModule = FreeMarketModule__factory.connect(freeMarketModuleProxy.address, user)
+	await bardsHub.connect(governance).registerContract(
+		utils.id('freeMarketModule'),
+		freeMarketModule.address
+	);
 
-	fixPriceMarketModule = await new FixPriceMarketModule__factory(deployer).deploy(
-		bardsHub.address,
-		royaltyEngine.address,
-		testWallet.address
+	// fix price market module
+	let fixPriceMarketModuleImpl = await new FixPriceMarketModule__factory(deployer).deploy()
+	let fixPriceMarketModuleData = fixPriceMarketModuleImpl.interface.encodeFunctionData(
+		'initialize',
+		[
+			bardsHub.address,
+			royaltyEngine.address,
+			testWallet.address
+		]
+	)
+	let fixPriceMarketModuleProxy = await new TransparentUpgradeableProxy__factory(deployer).deploy(
+		fixPriceMarketModuleImpl.address,
+		deployerAddress,
+		fixPriceMarketModuleData
+	)
+	fixPriceMarketModule = FixPriceMarketModule__factory.connect(fixPriceMarketModuleProxy.address, user)
+	await bardsHub.connect(governance).registerContract(
+		utils.id('fixPriceMarketModule'),
+		fixPriceMarketModule.address
 	);
 	
 	await expect(

@@ -755,13 +755,13 @@ library Events {
     /**
      * @notice Emitted when ThawingPeriod update
      * 
-     * @param prevChannelDisputeEpochs The previous Period in blocks to wait for token withdrawals after unstaking
-     * @param newChannelDisputeEpochs The new Period in blocks to wait for token withdrawals after unstaking
+     * @param prevClaimThawingPeriod The previous Period in blocks to wait for token withdrawals after unstaking
+     * @param newClaimThawingPeriod The new Period in blocks to wait for token withdrawals after unstaking
      * @param timestamp The current block timestamp.
      */
-    event ChannelDisputeEpochsSet(
-        uint32 prevChannelDisputeEpochs,
-        uint32 newChannelDisputeEpochs,
+    event ClaimThawingPeriodSet(
+        uint32 prevClaimThawingPeriod,
+        uint32 newClaimThawingPeriod,
         uint256 timestamp
     );
 

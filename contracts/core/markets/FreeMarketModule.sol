@@ -5,6 +5,7 @@ pragma solidity ^0.8.12;
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {VersionedInitializable} from '../../upgradeablity/VersionedInitializable.sol';
 import {IMarketModule} from '../../interfaces/markets/IMarketModule.sol';
 import {IBardsHub} from '../../interfaces/IBardsHub.sol';
 import {IBardsCurationBase} from '../../interfaces/curations/IBardsCurationBase.sol';
@@ -21,17 +22,35 @@ import {Constants} from '../../utils/Constants.sol';
  * 
  * @notice This module allows sellers to list an owned ERC-721 token for sale for free.
  */
-contract FreeMarketModule is MarketModuleBase, IMarketModule {
+contract FreeMarketModule is 
+    VersionedInitializable, 
+    MarketModuleBase, 
+    IMarketModule {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+
+    uint256 internal constant REVISION = 1;
 	// tokenContract address -> tokenId -> market data
 	mapping(address => mapping(uint256 => DataTypes.FreeMarketData)) internal _marketMetaData;
 
-    constructor(
+    // constructor(
+    //     address _hub, 
+    //     address _royaltyEngine,
+    //     address _stakingAddress
+    // ) {
+    //     MarketModuleBase._initialize(_hub, _royaltyEngine, _stakingAddress);
+    // }
+    
+    /// @inheritdoc IMarketModule
+    function initialize(
         address _hub, 
         address _royaltyEngine,
         address _stakingAddress
-    ) {
+    )   
+        external 
+        override 
+        initializer
+    {
         MarketModuleBase._initialize(_hub, _royaltyEngine, _stakingAddress);
     }
 
@@ -107,4 +126,7 @@ contract FreeMarketModule is MarketModuleBase, IMarketModule {
         return (retTokenContract, retTokenId);
 	}
 
+    function getRevision() internal pure override returns (uint256) {
+        return REVISION;
+    }
 }
