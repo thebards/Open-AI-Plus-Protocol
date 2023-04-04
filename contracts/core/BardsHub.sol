@@ -1067,8 +1067,10 @@ contract BardsHub is
     }
 
     function _getBardsStaking() internal view returns (IBardsStaking) {
-        return IBardsStaking(_registry[keccak256("BardsStaking")]);
-    } 
+        address bs_add = _registry[keccak256("BardsStaking")];
+        require(bs_add != address(0), "BardsStaking must be registried");
+        return IBardsStaking(bs_add);
+    }
 
     function getRevision() internal pure override returns (uint256) {
         return REVISION;
