@@ -1,18 +1,14 @@
 node_modules
 cache
 dist
-build
 lib
 out
-build
 .env
 .DS_Store
-coverage
 coverage.json
 .idea
 node_modules
 .env
-coverage
 coverage.json
 typechain
 
