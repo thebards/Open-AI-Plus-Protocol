@@ -13,7 +13,7 @@ import {DataTypes} from '../../utils/DataTypes.sol';
 
 /**
  * @title BardsCurationBase
- * @author TheBards Protocol
+ * @author TheBards Protocol 
  *
  * @notice This is an abstract base contract to be inherited by other TheBards Protocol Curations, it includes
  * NFT module and curation fee setting module.

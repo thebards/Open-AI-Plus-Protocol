@@ -3,7 +3,7 @@
 pragma solidity ^0.8.12;
 
 library Constants{
-	uint32 constant MAX_BPS = 1000000;
+	uint32 constant MAX_BPS = 1000000; 
 	uint8 constant MAX_HANDLE_LENGTH = 31;
 	// The indicator to pass all remaining gas when paying out royalties
     uint256 constant USE_ALL_GAS_FLAG = 0;
