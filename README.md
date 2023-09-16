@@ -1,23 +1,14 @@
-# TheBards Protocol
+# open AI+ Protocol
 
-![logo](resources/imgs/thebards_logo.png)
-TheBards is a Creator + Curation + NFT economy system. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
+open AI+ is a curation economy system for AI marketplace. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
 
-![TheBards protocol](resources/imgs/thebards_arch2.png)
-
-## Documentation
-
-For a general overview of the protocol see:
-
-- The [Official website](https://thebards.xyz)
-
-- The [whitepaper](https://www.thebards.xyz/TheBards%20Protocol%20-%20TheDecentralizedContent%20Curation%20Economy.pdf) for the original proposal
+![open AI+ protocol](resources/imgs/open AI+_arch2.png)
 
 ## Features
 
 - Curation is essentially storytelling, and we support users who are good at storytelling to drive the sales of NFTs by creating high-quality content and curations.
 
-- All content is seen as curation and will be minted into NFTs, including user profiles, various content, lists, feeds, Dapps, etc..
+- All content is seen as curation and will be minted into NFTs, including user profiles, plugins, llms, agents, various content, lists, feeds, Dapps, etc..
 
 - All curations can accept staking to share value on a larger scale.
 
@@ -41,7 +32,7 @@ Curation, as an NFT, is the core of the protocol, that is, it can be cast into a
   
 - **$Feed\ Curation$**: Featured or specific types of information streams, such as news, funny videos, audio novels, etc.
 
-- **$Dapp\ Curation$**: Various types of applications developed based on thebards protocol.
+- **$Dapp\ Curation$**: Various types of applications developed based on open AI+ protocol.
   
 ![curation types](resources/imgs/curation_types.png)
 
@@ -51,7 +42,7 @@ Curation should allow nesting, each level of curation can share part of the reve
 
 - Creator: Creators publish microblogs, articles, pictures, audios, videos, Q&A, etc. as NFTs.
   
-- Curator: Curators are also creators. However, They try to combine different elements to tell a story. Like a literati combining words into prose, like a musician combining notes into a symphony. It is worth noting that the main curation method of this article is combined curation, protfdio curation, and feed curation, excludes the other two special curation types. The TheBards rewards Curators that tell a unique and valuable story earn a share of sale fees of NFTs and rewards.
+- Curator: Curators are also creators. However, They try to combine different elements to tell a story. Like a literati combining words into prose, like a musician combining notes into a symphony. It is worth noting that the main curation method of this article is combined curation, protfdio curation, and feed curation, excludes the other two special curation types. The open AI+ rewards Curators that tell a unique and valuable story earn a share of sale fees of NFTs and rewards.
 - Delegator: Delegator are critical to the decentralized curation economy. They use their knowledge or intuition to assess and signal on the curations.  Delegator are economically incentivized to siganl early. By signalling on a curation, you will earn a share of all the curation share revenue that this curation generates. x% of all curation share revenue goes to the delegators pro-rata to their delegation shares.
 - Developer: Create a feed curation or use existing data or feeds in a dapp.
 
