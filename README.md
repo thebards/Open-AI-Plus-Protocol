@@ -2,7 +2,7 @@
 
 open AI+ is a curation economy system for AI marketplace. For simplicity, hereafter collectively referred to as the curation economy. Smart contracts specify the interaction between the four roles (like creator, curator, delegator, developer) and the fair distribution of profits in the system.
 
-![open AI+ protocol](resources/imgs/open AI+_arch2.png)
+![open AI+ protocol](resources/imgs/thebards_arch2.png)
 
 ## Features
 
